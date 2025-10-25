@@ -26,11 +26,11 @@ CREATE TABLE IF NOT EXISTS customer (
         ON DELETE restrict
 );
 
-CREATE TABLE IF NOT EXISTS admin (
+CREATE TABLE IF NOT EXISTS `admin` (
     admin_id BIGINT PRIMARY KEY,
     lastLogin TIMESTAMP DEFAULT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NULL DEFAULT NULL ,
     CONSTRAINT fk_admin_user FOREIGN KEY (admin_id)
         REFERENCES `user`(usr_id)
         ON UPDATE CASCADE
@@ -57,7 +57,7 @@ CREATE TABLE IF NOT EXISTS product (
     stock INT DEFAULT 0 CHECK (stock >= 0),
     title VARCHAR(63) NOT NULL,
     description MEDIUMTEXT,
-    price DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+    price DECIMAL(12,2) NOT NULL DEFAULT 0.00 check(price >= 0),
     isDeleted BOOLEAN DEFAULT FALSE
 );
 
@@ -185,10 +185,10 @@ CREATE TABLE IF NOT EXISTS payment (
     payment_id BIGINT PRIMARY KEY AUTO_INCREMENT,
     order_id BIGINT,
     paymentState ENUM('failed','pending','confirmed','refunded') DEFAULT 'pending',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
     card_type VARCHAR(31) NOT NULL,
     card_last_4 CHAR(4) NOT NULL,
+	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT fk_payment_order FOREIGN KEY (order_id)
         REFERENCES `order`(order_id)
         ON UPDATE CASCADE
@@ -212,4 +212,61 @@ CREATE TABLE IF NOT EXISTS customerCreditCards (
         ON UPDATE CASCADE
         ON DELETE RESTRICT
 );
+-- ============ Triggers ======================
 
+DELIMITER $$
+--  When a new user is inserted → create either customer or admin
+create trigger addNewUser after insert on `user` for each row
+begin
+	if NEW.role = 'customer' then
+        insert into customer values(new.usr_id);
+	ELSEIF new.role = 'admin' then
+		insert into admin values(new.usr_id);	
+	end if; 
+end$$
+-- When a new customer is created → create their cart automatically
+create trigger newCustomerCartCreation after insert on customer for each row
+begin
+
+	insert into cart(cust_id) values(new.cust_id);
+end$$
+
+-- Prevent user physical deletion → convert to soft delete instead
+create trigger user_deletion before delete on `user` for each row
+begin
+		update `user` set isDelete = true where usr_id=old.usr_id ;
+        -- prevernt physical deletion
+        Signal sqlstate '4500'
+			set MESSAGE_TEXT = 'soft deletion applied , physical deletion not allowed';
+end$$
+
+-- Update admin timestamp when related user data changes
+create trigger admin_update after update on `user` for each row
+begin
+	if new.role = 'admin'and (old.usr_name <> new.usr_name or old.usr_email <> new.usr_email  or old.usr_pass <> new.usr_pass) then
+		update `admin` set updated_at = CURRENT_timestamp where admin_id = NEW.usr_id;
+	end if; 
+end$$
+-- Prevent product physical deletion → apply soft delete
+create trigger product_delete before delete on product for each row
+begin
+		update product set isDelete = true where product_id = old.product_id;
+        Signal sqlstate '4500'
+			set MESSAGE_TEXT = 'soft deletion prodcut applied , physical deletion not allowed';
+end$$
+
+-- Prevent Payment deletion
+create trigger Prevent_PaymentHistory_deletion before delete on payment  for each row
+begin
+	signal SQLSTATE '4500'
+		set MESSAGE_TEXT = 'Payment histroy deletion are not allowed';
+end$$
+
+-- prevent order history deletion
+create trigger prevent_orderDeletion before delete on `order` for each row
+begin
+	signal SQLSTATE '4500'
+		set MESSAGE_TEXT = 'Order deletion are not allowed';
+end $$
+
+DELIMITER ;
