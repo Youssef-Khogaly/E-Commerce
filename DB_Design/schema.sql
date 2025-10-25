@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS `user` (
     usr_name VARCHAR(16) UNIQUE NOT NULL,
     usr_email VARCHAR(127) UNIQUE NOT NULL,
     usr_pass VARCHAR(128) NOT NULL,
-    role ENUM('customer','admin') NOT NULL DEFAULT 'customer',
+    `role` ENUM('customer','admin') NOT NULL DEFAULT 'customer',
     isDeleted BOOLEAN DEFAULT FALSE,
     CONSTRAINT usrNameCheck CHECK (usr_name REGEXP '^[A-Za-z][A-Za-z0-9_]{5,15}$'),
     CONSTRAINT usr_passLen CHECK (CHAR_LENGTH(usr_pass) > 7),
@@ -184,7 +184,7 @@ CREATE TABLE IF NOT EXISTS order_item (
 CREATE TABLE IF NOT EXISTS payment (
     payment_id BIGINT PRIMARY KEY AUTO_INCREMENT,
     order_id BIGINT,
-    paymentState ENUM('failed','pending','confirmed','refunded') DEFAULT 'pending',
+    paymentState ENUM('failed','pending','confirmed','refunded') DEFAULT 'pending' not null,
     card_type VARCHAR(31) NOT NULL,
     card_last_4 CHAR(4) NOT NULL,
 	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -192,7 +192,7 @@ CREATE TABLE IF NOT EXISTS payment (
     CONSTRAINT fk_payment_order FOREIGN KEY (order_id)
         REFERENCES `order`(order_id)
         ON UPDATE CASCADE
-        ON DELETE RESTRICT,
+        ON DELETE RESTRICT
 );
 
 -- CUSTOMER CREDIT CARDS
@@ -218,7 +218,7 @@ DELIMITER $$
 --  When a new user is inserted → create either customer or admin
 create trigger addNewUser after insert on `user` for each row
 begin
-	if NEW.role = 'customer' then
+	if NEW.`role` = 'customer' then
         insert into customer values(new.usr_id);
 	ELSEIF new.role = 'admin' then
 		insert into admin values(new.usr_id);	
@@ -234,38 +234,36 @@ end$$
 -- Prevent user physical deletion → convert to soft delete instead
 create trigger user_deletion before delete on `user` for each row
 begin
-		update `user` set isDelete = true where usr_id=old.usr_id ;
         -- prevernt physical deletion
-        Signal sqlstate '4500'
-			set MESSAGE_TEXT = 'soft deletion applied , physical deletion not allowed';
+        Signal sqlstate '45000'
+			set MESSAGE_TEXT = 'user physical deletion not allowed';
 end$$
 
 -- Update admin timestamp when related user data changes
 create trigger admin_update after update on `user` for each row
 begin
-	if new.role = 'admin'and (old.usr_name <> new.usr_name or old.usr_email <> new.usr_email  or old.usr_pass <> new.usr_pass) then
+	if new.`role` = 'admin'and (old.usr_name <> new.usr_name or old.usr_email <> new.usr_email  or old.usr_pass <> new.usr_pass) then
 		update `admin` set updated_at = CURRENT_timestamp where admin_id = NEW.usr_id;
 	end if; 
 end$$
 -- Prevent product physical deletion → apply soft delete
 create trigger product_delete before delete on product for each row
 begin
-		update product set isDelete = true where product_id = old.product_id;
-        Signal sqlstate '4500'
-			set MESSAGE_TEXT = 'soft deletion prodcut applied , physical deletion not allowed';
+        Signal sqlstate '45000'
+			set MESSAGE_TEXT = 'physical product deletion are not allowed';
 end$$
 
 -- Prevent Payment deletion
 create trigger Prevent_PaymentHistory_deletion before delete on payment  for each row
 begin
-	signal SQLSTATE '4500'
+	signal SQLSTATE '45000'
 		set MESSAGE_TEXT = 'Payment histroy deletion are not allowed';
 end$$
 
 -- prevent order history deletion
 create trigger prevent_orderDeletion before delete on `order` for each row
 begin
-	signal SQLSTATE '4500'
+	signal SQLSTATE '45000'
 		set MESSAGE_TEXT = 'Order deletion are not allowed';
 end $$
 
