@@ -17,7 +17,10 @@ Supports product management, categories, cart, orders, checkout with Stripe paym
 - **Security:** JWT-secured endpoints; admin-only access where applicable  
 
 ---
+## Database schema
+![alt text]([https://github.com/[username]/[reponame]/blob/[branch]/image.jpg?raw=true](https://github.com/Youssef-Khogaly/E-Commerce/blob/main/E_Commerce_DBSCHEM_DEMOV1.png))
 
+--
 ## API Endpoints
 
 ### Public
