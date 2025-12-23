@@ -1,20 +1,19 @@
-package com.ecommerce.Inegration.PaymentGateWay.Stripe;
+package com.ecommerce.Inegration.PaymentGateWay.Mappers;
 
-
-import com.ecommerce.Inegration.PaymentGateWay.Model.GateWayLineItemAbstract;
+import com.ecommerce.Inegration.PaymentGateWay.Model.PaymentGatewayLineItem;
 import com.stripe.param.checkout.SessionCreateParams;
-import org.springframework.stereotype.Component;
 
-@Component
-public class StripeLineItemConversionStratigyImpl implements StripeLineItemConversionStratigy{
-    @Override
-    public <T extends GateWayLineItemAbstract> SessionCreateParams.LineItem convertToLineItem(T itemModel) {
+public class StripeMappers {
+
+
+
+    static public <T extends PaymentGatewayLineItem> SessionCreateParams.LineItem convertToLineItem(T itemModel) {
 
         var product = SessionCreateParams.LineItem.PriceData.ProductData.builder()
                 .setName(itemModel.getItemName() + "  Qty: " + itemModel.getQuantity())
                 .setDescription(
-                itemModel.getItemDescription()
-        );
+                        itemModel.getItemDescription()
+                );
         long finalAmount = itemModel.getFinalAmountInCents();
         if(itemModel.getImgUrl() != null)
             product = product.addImage(itemModel.getImgUrl());

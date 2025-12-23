@@ -3,19 +3,17 @@ package com.ecommerce.Inegration.PaymentGateWay.Stripe;
 
 import com.ecommerce.Inegration.PaymentGateWay.Exception.GateWayException;
 import com.ecommerce.Inegration.PaymentGateWay.Exception.GateWayInvalidSessionDuration;
-import com.ecommerce.Inegration.PaymentGateWay.GeneratePaymentSession;
-import com.ecommerce.Inegration.PaymentGateWay.Model.GateWayLineItem;
+import com.ecommerce.Inegration.PaymentGateWay.Interfaces.GeneratePaymentSession;
+import com.ecommerce.Inegration.PaymentGateWay.Mappers.StripeMappers;
+import com.ecommerce.Inegration.PaymentGateWay.Model.PaymentGatewayLineItem;
 import com.ecommerce.Inegration.PaymentGateWay.Model.PaymentSession;
 import com.ecommerce.Inegration.PaymentGateWay.Model.SessionGenerationCommand;
 import com.stripe.Stripe;
 import com.stripe.exception.StripeException;
 import com.stripe.model.checkout.Session;
 import com.stripe.param.checkout.SessionCreateParams;
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Scope;
-import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
@@ -24,21 +22,14 @@ import java.util.List;
 
 @Slf4j
 @Service
-@Scope("prototype")
 public class StripeGeneratePaymentSession implements GeneratePaymentSession {
 
-    private final StripeLineItemConversionStratigy conversionStratigy;
-
-    private  final String StApisec;
-
-    public StripeGeneratePaymentSession(StripeLineItemConversionStratigy conversionStratigy, Environment env) {
-        this.conversionStratigy = conversionStratigy;
-        StApisec = env.getProperty("StripeApisec");
-        Stripe.apiKey = StApisec ;
+    public StripeGeneratePaymentSession(@Value("${StripeApisec}")String sec) {
+        Stripe.apiKey = sec ;
     }
 
-    protected List<SessionCreateParams.LineItem> toLineItemsList(List<GateWayLineItem> items){
-        return items.stream().map(conversionStratigy::convertToLineItem).toList();
+    protected List<SessionCreateParams.LineItem> toLineItemsList(List<PaymentGatewayLineItem> items){
+        return items.stream().map(StripeMappers::convertToLineItem).toList();
     }
     protected <T extends SessionGenerationCommand> SessionCreateParams createSessionPara(T command){
             return

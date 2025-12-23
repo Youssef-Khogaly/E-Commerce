@@ -13,10 +13,10 @@ import java.util.UUID;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public  abstract class GateWayOrderModel {
+public class PaymentGatewayOrderModel {
     private UUID order_id;
     private  long customer_id;
     private  UUID payment_id;
-    private  List<GateWayLineItem> items;
+    private  List<PaymentGatewayLineItem> items;
 
 }

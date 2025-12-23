@@ -10,7 +10,7 @@ import java.util.Currency;
 @AllArgsConstructor
 @Getter@Setter
 @NoArgsConstructor
-public abstract class GateWayLineItemAbstract {
+public class PaymentGatewayLineItem {
     private  String itemName;
     private   String itemDescription;
     private   Currency currency;

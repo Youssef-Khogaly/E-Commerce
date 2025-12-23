@@ -16,6 +16,7 @@ import com.ecommerce.repository.PaymentJpaRepo;
 import com.ecommerce.repository.Product.ProductJpaRepo;
 import com.ecommerce.repository.UsersRepo.CustomerJpaRepo;
 import com.ecommerce.services.StockService.StockService;
+import com.ecommerce.services.interfaces.IPaymentGatewayService;
 import com.ecommerce.services.interfaces.OrderService;
 import com.stripe.exception.StripeException;
 import com.stripe.model.checkout.Session;
@@ -43,7 +44,7 @@ public class OrderServiceImpl implements OrderService {
     private final CustomerJpaRepo customerJpaRepo;
     private final ProductJpaRepo productJpaRepo;
     private final StockService stockService;
-    private final CancelPaymentSessionFactory cancelPaymentSessionFactory;
+    private final IPaymentGatewayService paymentGatewayService;
     @Override
     public Order createOrder(CartDTO cartDTO, ShippingDTO shippingDTO, PaymentMethod method) {
         final Long[] subTotalOrder  = new Long[1];
@@ -92,16 +93,13 @@ public class OrderServiceImpl implements OrderService {
         Order order = orderCrudRepo.findWithAllByIdAndCustId(orderId,customer_id);
         if(order == null)
             throw new NotFoundException("order is not found or not attached to this customer");
-        Payment payment = order.getPayment();
         if(order.getOrderState() ==  OrderState.PENDING){
             // cancel session
             cancelSession(order.getPayment().getSession_id() , order.getPayment().getPaymentMethod());
             // don't handle it stock un reservation logic here or update states
-            // gateway gonna send webhook and even will be handled async
+            // gateway gonna send webhook and event will be handled async
 
         }
-        else if (order.getOrderState() == OrderState.CANCELED) // already canceled before ignoreit
-            return;
         else if (order.getOrderState() == OrderState.SHIPPING || order.getOrderState() == OrderState.DELIVERED)
             throw new BadRequestException("can't cancel the order already paid");
         else if (OrderState.REFUNDED == order.getOrderState())
@@ -109,7 +107,7 @@ public class OrderServiceImpl implements OrderService {
 
     }
     private void cancelSession(String sessionId , PaymentMethod method){
-        cancelPaymentSessionFactory.getCancelSessionStratigy(method).cancelSession(sessionId);
+        paymentGatewayService.cancelSession(sessionId,method);
     }
     private List<OrderItemDTO> toOrderItemDto(List<OrderItem> orderItems){
 

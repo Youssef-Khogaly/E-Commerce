@@ -11,7 +11,7 @@ public class PaymentSession{
     private final String session_id;
     private final String session_url;
     private final String clientRefUUID;
-    private final GateWayOrderModel orderModel;
+    private final PaymentGatewayOrderModel orderModel;
     private final Instant expireAt;
 
 }
