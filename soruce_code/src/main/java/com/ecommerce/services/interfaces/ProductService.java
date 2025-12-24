@@ -36,8 +36,8 @@ public interface ProductService  {
         SOFT_DELETED_ONLY , INCLUDE_SOFT_DELETED , NON_DELETED
     }
         public static record QueryProduct(int page, int pageSize
-                , Optional<String> name , Optional<Long> minPrice , Optional<Long> maxPrice
-                , Optional<Integer> category
+                , String name , Long minPrice , Long maxPrice
+                , Integer category
                 , ProductSortByOptions sortBy, ProductSortDirection direction
         ){}
 

@@ -21,7 +21,6 @@ public class ProductDTO{
     long priceInCents;
     long discountInCents = 0;
     int availableStock ;
-    Set<Category> categories ;
     List<String> imagesUrl;
 
     @Override

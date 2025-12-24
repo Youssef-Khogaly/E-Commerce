@@ -7,18 +7,18 @@ import com.ecommerce.entities.Products.Product;
 import com.ecommerce.entities.Products.ProductStock;
 import com.ecommerce.entities.images.Image;
 import com.ecommerce.repository.Category.CategoryJpaRepo;
+import com.ecommerce.repository.Product.IProductSearchRepo;
 import com.ecommerce.repository.Product.ProductJpaRepo;
 import com.ecommerce.repository.Product.ProductQueryRepo;
-import com.ecommerce.repository.Product.ProductQuerySpecs;
 import com.ecommerce.Exception.BadRequestException;
 import com.ecommerce.Exception.NotFoundException;
+import com.ecommerce.repository.Product.ProductSearchRepo;
 import com.ecommerce.services.interfaces.ProductService;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,9 +30,9 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class ProductServiceImpl implements ProductService {
 
+    private IProductSearchRepo productSearchRepo;
     private ProductJpaRepo productJpaRepo;
     private CategoryJpaRepo categoryJpaRepo;
-    private ProductQueryRepo productQueryRepo;
 
 
     @Override
@@ -43,20 +43,14 @@ public class ProductServiceImpl implements ProductService {
 
         String sortby = queryProduct.sortBy().toProductField();
         Sort sort = Sort.by(direction,sortby);
+
         Pageable page = PageRequest.of(pageNum,pageSize,sort);
+        String name = queryProduct.name();
+        Long maxPrice = queryProduct.maxPrice();
+        Long minPrice = queryProduct.minPrice();
+        Integer catId = queryProduct.category();
 
-        Long maxPrice = queryProduct.maxPrice().orElse(null);
-        Long minPrice = queryProduct.minPrice().orElse(null);
-        Integer catId = queryProduct.category().orElse(null);
-
-        Specification<Product> spec = ProductQuerySpecs.empty();
-
-        spec = spec.and(ProductQuerySpecs.priceLessThanOrEqual(maxPrice));
-        spec = spec.and(ProductQuerySpecs.priceGreaterThanOrEqual(minPrice));
-        spec = spec.and(ProductQuerySpecs.hasCategory(catId));
-        spec = spec.and(ProductQuerySpecs.searchInTitle(queryProduct.name().orElseGet(()->null)));
-
-        return productQueryRepo.findAll(spec,page).map(this::toProductDTO);
+        return productSearchRepo.searchForProducts(name , catId ,minPrice,maxPrice,page).map(this::toProductDTO);
     }
 
     @Override
@@ -66,7 +60,7 @@ public class ProductServiceImpl implements ProductService {
                 ()-> new NotFoundException("product with id:" +product_id +" doesn't exists")
         );
 
-        return new ProductDTO(product_id,product.getTitle(),product.getDescription(),product.getPrice(),0,product.getStock().getAvailableStock(),product.getCategories(),product.getImages().stream().map(Image::getImage_url).toList());
+        return new ProductDTO(product_id,product.getTitle(),product.getDescription(),product.getPrice(),0,product.getStock().getAvailableStock(),product.getImages().stream().map(Image::getImage_url).toList());
     }
 
 
@@ -151,7 +145,8 @@ public class ProductServiceImpl implements ProductService {
         return productJpaRepo.findAllByIdReadOnly(ids).stream().collect(Collectors.toMap(Product::getId,this::toProductDTO));
     }
     private ProductDTO toProductDTO(Product product){
-        return new ProductDTO(product.getId(),product.getTitle(),product.getDescription(),product.getPrice(),0,product.getStock().getAvailableStock(),product.getCategories(),product.getImages().stream().map(Image::getImage_url).toList());
+        //product.getImages().stream().map(Image::getImage_url).toList()
+        return new ProductDTO(product.getId(),product.getTitle(),product.getDescription(),product.getPrice(),0,product.getStock().getAvailableStock(), null);
 
     }
 }

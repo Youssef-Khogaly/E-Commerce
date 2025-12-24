@@ -43,8 +43,9 @@ public class ProductController {
             @RequestParam(name = "page",defaultValue = "0") @PositiveOrZero int page
             ,@RequestParam(name = "size",defaultValue = "50") @Positive int pageSize,
             @RequestParam(required = false,name = "name") @Length(max = 64 ,message = "title text query can't have length more than 64") String title ,
-            @RequestParam(required = false, name = "minPrice") @PositiveOrZero Long minPrice , @RequestParam(required = false, name = "maxPrice") @PositiveOrZero Long maxPrice,
-            @RequestParam(required = false, name = "categoryId")  @Positive Integer categoies,
+            @RequestParam( name = "minPrice" , defaultValue = "0")  @PositiveOrZero Long minPrice ,
+            @RequestParam(name = "maxPrice" , defaultValue = "1000000000") @Positive Long maxPrice,
+            @RequestParam(required = false, name = "categoryId")  @Positive Integer category,
             @RequestParam(name = "sortBy" , defaultValue = "DATE") ProductSortByOptions sortBy,
             @RequestParam(name = "direction" , defaultValue = "DESC") ProductSortDirection direction
     )
@@ -53,9 +54,7 @@ public class ProductController {
 
             throw new BadRequestException("max product price can't be less than min price in query product");
         }
-        Optional<Long> minPriceOpt = Optional.ofNullable(minPrice);
-        Optional<Long>maxPriceOpt = Optional.ofNullable(maxPrice);
-        var query = new ProductService.QueryProduct(page,pageSize,Optional.ofNullable(title),minPriceOpt,maxPriceOpt,Optional.ofNullable(categoies),sortBy,direction);
+        var query = new ProductService.QueryProduct(page,pageSize,title,minPrice,maxPrice,category,sortBy,direction);
         var result = productService.getProducts(query);
         return ResponseEntity.ok(result);
     }
