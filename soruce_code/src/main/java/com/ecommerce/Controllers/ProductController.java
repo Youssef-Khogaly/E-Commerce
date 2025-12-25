@@ -2,6 +2,7 @@ package com.ecommerce.Controllers;
 
 
 import com.ecommerce.DTO.ProductDTO;
+import com.ecommerce.DTO.ProductSearchView;
 import com.ecommerce.DTO.Requests.AddProductRequest;
 import com.ecommerce.DTO.Requests.PutProductRequest;
 
@@ -39,10 +40,10 @@ public class ProductController {
 
 
     @GetMapping
-    public ResponseEntity<Page<ProductDTO>> getProducts(
+    public ResponseEntity<Page<ProductSearchView>> getProducts(
             @RequestParam(name = "page",defaultValue = "0") @PositiveOrZero int page
             ,@RequestParam(name = "size",defaultValue = "50") @Positive int pageSize,
-            @RequestParam(required = false,name = "name") @Length(max = 64 ,message = "title text query can't have length more than 64") String title ,
+            @RequestParam(required = false,name = "s") @Length(max = 64 ,message = "title text query can't have length more than 64") String title ,
             @RequestParam( name = "minPrice" , defaultValue = "0")  @PositiveOrZero Long minPrice ,
             @RequestParam(name = "maxPrice" , defaultValue = "1000000000") @Positive Long maxPrice,
             @RequestParam(required = false, name = "categoryId")  @Positive Integer category,

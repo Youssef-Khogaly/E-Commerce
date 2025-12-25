@@ -1,5 +1,6 @@
 package com.ecommerce.repository.Product;
 
+import com.ecommerce.DTO.ProductSearchView;
 import com.ecommerce.entities.Products.Product;
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotNull;
@@ -10,6 +11,6 @@ import org.springframework.data.domain.Pageable;
 
 public interface IProductSearchRepo {
 
-    public Page<Product> searchForProducts(@Nullable String name , @Nullable Integer categoryId , @PositiveOrZero long minPrice
+    public Page<ProductSearchView> searchForProducts(@Nullable String searchText , @Nullable Integer categoryId , @PositiveOrZero long minPrice
             , @Positive long maxPrice, @NotNull Pageable pageable);
 }

@@ -1,6 +1,7 @@
 package com.ecommerce.services.interfaces;
 
 import com.ecommerce.DTO.ProductDTO;
+import com.ecommerce.DTO.ProductSearchView;
 import com.ecommerce.entities.Categories.Category;
 import com.ecommerce.entities.Products.Product;
 import com.ecommerce.Exception.NotFoundException;
@@ -41,9 +42,9 @@ public interface ProductService  {
                 , ProductSortByOptions sortBy, ProductSortDirection direction
         ){}
 
-    public Page<ProductDTO> getProducts(QueryProduct queryProduct);
+    public Page<ProductSearchView> getProducts(QueryProduct queryProduct);
     public ProductDTO getProduct(Long product_id);
-    public boolean isExistsAndNotSoftDeleted(Long product_id);
+    public boolean isProductExists(Long product_id);
 
     Collection<Category> getProductCategory(Long product_id);
     // real deletion are not allowed

@@ -40,9 +40,12 @@ CREATE TABLE IF NOT EXISTS product (
     product_id  bigint PRIMARY KEY AUTO_INCREMENT,
     title VARCHAR(63) NOT NULL,
     description MEDIUMTEXT,
-    price DECIMAL(12,2) NOT NULL DEFAULT 0.00 check(price >= 0),
+    price long NOT NULL DEFAULT 0.00 check(price >= 0),
     addedAt TIMESTAMP default CURRENT_TIMESTAMP not null
     );
+create index product_priceIdx on product(price) using BTREE;
+create FULLTEXT INDEX product_title_idx on product(title);
+create index  product_addedAt_idx  on product(addedAt) using BTREE;
 create table if not exists product_stock(
     product_id bigint primary key ,
     stock INT  not null DEFAULT 0 CHECK (stock >= 0),
@@ -83,7 +86,7 @@ CREATE TABLE IF NOT EXISTS product_category (
 -- CART
 
 create table if not exists cart(
-        cart_id bigint not null primary key ,
+        cart_id int not null primary key ,
        subTotalInCents bigint not null ,
         constraint fk_customer foreign key (cart_id) references customer(cust_id)
 );
@@ -144,7 +147,6 @@ CREATE TABLE IF NOT EXISTS Payment (
                                            ON UPDATE CASCADE
                                            ON DELETE RESTRICT
 );
-
 -- ====================================================
 -- REVIEWS
 -- ====================================================

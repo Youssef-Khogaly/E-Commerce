@@ -1,6 +1,7 @@
 package com.ecommerce.services;
 
 import com.ecommerce.DTO.ProductDTO;
+import com.ecommerce.DTO.ProductSearchView;
 import com.ecommerce.Exception.ConflictException;
 import com.ecommerce.entities.Categories.Category;
 import com.ecommerce.entities.Products.Product;
@@ -9,10 +10,8 @@ import com.ecommerce.entities.images.Image;
 import com.ecommerce.repository.Category.CategoryJpaRepo;
 import com.ecommerce.repository.Product.IProductSearchRepo;
 import com.ecommerce.repository.Product.ProductJpaRepo;
-import com.ecommerce.repository.Product.ProductQueryRepo;
 import com.ecommerce.Exception.BadRequestException;
 import com.ecommerce.Exception.NotFoundException;
-import com.ecommerce.repository.Product.ProductSearchRepo;
 import com.ecommerce.services.interfaces.ProductService;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -35,8 +34,27 @@ public class ProductServiceImpl implements ProductService {
     private CategoryJpaRepo categoryJpaRepo;
 
 
+    private String normalizeSearchQuery(String name){
+        if(name == null || name.isBlank())
+                return null;
+        // build search query match
+        // allow only  chars and numbers and space
+        String normalizedTxt = name.trim().toLowerCase().replaceAll("[^a-z0-9\\s]" , "");
+        if(normalizedTxt.isBlank())
+            throw new BadRequestException("only English chars and number are allowed in search query");
+        String[] words = normalizedTxt.split("\\s+");
+        StringBuilder searchQuery = new StringBuilder(name.length());
+
+        for(String str : words)
+        {
+            if(!str.isBlank()){
+                searchQuery.append('+').append(str).append(' ');
+            }
+        }
+        return searchQuery.toString();
+    }
     @Override
-    public Page<ProductDTO> getProducts(QueryProduct queryProduct) {
+    public Page<ProductSearchView> getProducts(QueryProduct queryProduct) {
         int pageNum = queryProduct.page();
         int pageSize = queryProduct.pageSize();
         Sort.Direction direction = (queryProduct.direction() == ProductSortDirection.ASC) ? Sort.Direction.ASC : Sort.Direction.DESC;
@@ -45,12 +63,12 @@ public class ProductServiceImpl implements ProductService {
         Sort sort = Sort.by(direction,sortby);
 
         Pageable page = PageRequest.of(pageNum,pageSize,sort);
-        String name = queryProduct.name();
-        Long maxPrice = queryProduct.maxPrice();
-        Long minPrice = queryProduct.minPrice();
+        String searchQuery = normalizeSearchQuery(queryProduct.name());
         Integer catId = queryProduct.category();
 
-        return productSearchRepo.searchForProducts(name , catId ,minPrice,maxPrice,page).map(this::toProductDTO);
+
+        System.out.println(searchQuery);
+        return productSearchRepo.searchForProducts(searchQuery, catId ,queryProduct.minPrice(),queryProduct.maxPrice(),page);
     }
 
     @Override
@@ -65,14 +83,14 @@ public class ProductServiceImpl implements ProductService {
 
 
     @Override
-    public boolean isExistsAndNotSoftDeleted(Long product_id) {
-        return productJpaRepo.isExists(product_id);
+    public boolean isProductExists(Long product_id) {
+        return !productJpaRepo.isExists(product_id);
     }
 
     @Override
     @Transactional(readOnly = true)
     public Collection<Category> getProductCategory(Long product_id) {
-        if(!isExistsAndNotSoftDeleted(product_id))
+        if(isProductExists(product_id))
             throw new NotFoundException("product with id:" +product_id +" doesn't exists");
 
         return productJpaRepo.findCategoriesById(product_id);
@@ -121,7 +139,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional
     public void putProductCategories(Long product_id,Set<Integer> categoriesIds) {
-        if(!isExistsAndNotSoftDeleted(product_id)){
+        if(isProductExists(product_id)){
             throw new NotFoundException("product with id:" + product_id +"doesn't exists or soft deleted");
         }
             Product product = productJpaRepo.getReferenceById(product_id);

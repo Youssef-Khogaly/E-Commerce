@@ -31,7 +31,7 @@ public class CartServiceImpl implements CartService {
     @Transactional
     public void addToCart(Long cust_id, Long product_id, Integer quantity) {
 
-        if(!productService.isExistsAndNotSoftDeleted(product_id))
+        if(productService.isProductExists(product_id))
             throw new BadRequestException("product id doesnot exist + id:" + product_id);
         Optional<CartItem> cartItemOptional = cartItemRepo.findById(new CartItemId(cust_id,product_id));
         if(cartItemOptional.isPresent()){
@@ -70,7 +70,7 @@ public class CartServiceImpl implements CartService {
             deleteFromCart(cust_id,product_id);
             return;
         }
-        if(!productService.isExistsAndNotSoftDeleted(product_id))
+        if(productService.isProductExists(product_id))
             throw new BadRequestException("product id doesnot exist + id:" + product_id);
 
         Optional<CartItem> cartItemOptional = cartItemRepo.findById(new CartItemId(cust_id,product_id));
