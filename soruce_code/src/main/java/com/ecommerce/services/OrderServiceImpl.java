@@ -48,7 +48,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public Order createOrder(CartDTO cartDTO, ShippingDTO shippingDTO, PaymentMethod method) {
         final Long[] subTotalOrder  = new Long[1];
-        subTotalOrder[0] = 0l;
+        subTotalOrder[0] = 0L;
         Order order = new Order();
         order.setOrderState(OrderState.PENDING);
 
@@ -87,7 +87,6 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public void cancelOrder(Long customer_id, UUID orderId) {
         Order order = orderCrudRepo.findWithAllByIdAndCustId(orderId,customer_id);
@@ -104,6 +103,10 @@ public class OrderServiceImpl implements OrderService {
             throw new BadRequestException("can't cancel the order already paid");
         else if (OrderState.REFUNDED == order.getOrderState())
             throw new BadRequestException("can't cancel refunded order");
+        else {
+            // already canceled or expired
+            // nothing
+        }
 
     }
     private void cancelSession(String sessionId , PaymentMethod method){
