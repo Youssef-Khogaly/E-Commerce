@@ -1,6 +1,6 @@
 # E-Commerce REST API
 
-A demo e-commerce REST API built with **Spring Boot**, **Spring JPA**, **Hibernate**, **Spring Security**, and **MySQL**.  
+A e-commerce REST API built with **Spring Boot**, **Spring JPA**, **Hibernate**, **Spring Security**, and **MySQL**.  
 Supports product management, categories, cart, orders, checkout with Stripe payment Gateway, integration with Amazon S3 for efficient image storage and management. and JWT-based stateless authentication.
 
 ---
