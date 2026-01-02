@@ -1,5 +1,6 @@
 package com.ecommerce;
 
+import com.ecommerce.entities.user.UserRoles;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
@@ -12,6 +13,7 @@ public class Application {
 
 	public static void main(String[] args) {
         var springContext = SpringApplication.run(Application.class, args);
+        System.out.println(UserRoles.ADMIN.toString());
     }
 
 }

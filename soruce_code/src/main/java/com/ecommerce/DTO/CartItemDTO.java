@@ -14,7 +14,8 @@ import lombok.Setter;
 @NoArgsConstructor
 public class CartItemDTO {
 
-    private ProductDTO productDTO;
+    private ProductSearchView productDTO;
     private int quantity;
     private long subTotalInCents;
+
 }

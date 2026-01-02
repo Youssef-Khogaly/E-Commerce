@@ -1,14 +1,11 @@
 package com.ecommerce.entities.images;
 
 
-import com.ecommerce.entities.Products.Product;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.math.BigInteger;
 import java.util.Objects;
-import java.util.Set;
 
 @Entity
 @Table(name = "image")
@@ -17,14 +14,17 @@ public class Image {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "image_id",unique = true,nullable = false )
+    @Column(name = "image_id")
     private Long id;
+    @Column(unique = true,nullable = false)
+    private String storage_key;
+    @Enumerated(EnumType.STRING)
+    private StorageProvider storageProvider;
+    @Column(nullable = true)
+    private String region;
     @Column(name = "image_url" , nullable = false)
-    private String image_url;
+    private String imageUrl;
 
-    @ManyToOne
-    @JoinColumn(name = "product_id" , nullable = false)
-    private Product product;
 
     @Override
     public boolean equals(Object o) {

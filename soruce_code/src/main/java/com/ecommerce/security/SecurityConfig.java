@@ -84,9 +84,12 @@ public class SecurityConfig {
                             requests
                                     // product config
                                     .requestMatchers(HttpMethod.GET,"/api/products/**").permitAll()
+                                    .requestMatchers(HttpMethod.GET,"/api/products/*/images").permitAll()
                                     .requestMatchers(HttpMethod.DELETE,"/api/products/**").hasRole(UserRoles.ADMIN.toString())
                                     .requestMatchers(HttpMethod.POST,"/api/products/**").hasRole(UserRoles.ADMIN.toString())
-                                    .requestMatchers(HttpMethod.PUT,"/api/products/**").hasRole(UserRoles.ADMIN.toString())
+                                    .requestMatchers(HttpMethod.PUT,"/api/products/*/images/**").hasRole(UserRoles.ADMIN.toString())
+                                    // images
+                                    .requestMatchers("/api/images/**").hasRole(UserRoles.ADMIN.toString())
                                     // reg
                                     .requestMatchers(HttpMethod.POST,"/api/auth/register").not().authenticated()
                                     .requestMatchers(HttpMethod.POST, "/api/auth/login").not().authenticated()

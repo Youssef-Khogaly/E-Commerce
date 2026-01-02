@@ -1,5 +1,6 @@
 package com.ecommerce.repository.Product;
 
+import com.ecommerce.DTO.ProductSearchView;
 import com.ecommerce.DTO.productCategoryRow;
 import com.ecommerce.entities.Categories.Category;
 import com.ecommerce.entities.Products.Product;
@@ -26,12 +27,18 @@ public interface ProductJpaRepo extends JpaRepository<Product, Long> , ProductQu
     boolean isExists(Long id);
 
     @EntityGraph(
-            attributePaths = {"stock","images","categories"},
+            attributePaths = {"stock","imagesList","imagesList.image"},
             type = EntityGraph.EntityGraphType.FETCH
     )
     @Override
-    Optional<Product> findById(Long aLong);
+    Optional<Product> findById(Long id);
 
+    @Query("""
+            select new  com.ecommerce.DTO.ProductSearchView(p.id , p.title , s.availableStock , p.price  , i.imageUrl , p.addedAt)  from Product p inner join ProductStock s on p.id= s.product_id 
+            left join ProductImages  pi on p.id=pi.productImageId.product_id and pi.isMain = true  left join Image i  on pi.image.id = i.id 
+            where p.id in :ids 
+                        """ )
+    List<ProductSearchView>findAllByidsForProductSearchView(Collection<Long> ids);
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @EntityGraph(
             attributePaths = {"stock"},
@@ -60,7 +67,7 @@ public interface ProductJpaRepo extends JpaRepository<Product, Long> , ProductQu
 
 
     @EntityGraph(
-            attributePaths = {"images","categories","stock"},
+            attributePaths = {"imagesList","categories","stock"},
             type = EntityGraph.EntityGraphType.FETCH
     )
     @Query(
@@ -70,4 +77,12 @@ public interface ProductJpaRepo extends JpaRepository<Product, Long> , ProductQu
         """
     )
     List<Product>findAllByIdReadOnly(Collection<Long>ids);
+
+    @EntityGraph(
+            attributePaths = {"imagesList","imagesList.image"},
+            type = EntityGraph.EntityGraphType.FETCH
+    )
+    @Query("select p from Product p where p.id = :product_id")
+    Optional<Product> findByIdWithImagesOnly(long product_id);
+
 }

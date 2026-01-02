@@ -3,7 +3,9 @@ package com.ecommerce.repository.Product;
 import com.ecommerce.DTO.ProductSearchView;
 import com.ecommerce.entities.Categories.Category;
 import com.ecommerce.entities.Products.Product;
+import com.ecommerce.entities.Products.ProductImages;
 import com.ecommerce.entities.Products.ProductStock;
+import com.ecommerce.entities.images.Image;
 import com.ecommerce.services.ProductSortByOptions;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.EntityManager;
@@ -71,7 +73,14 @@ public class ProductSearchRepo  implements IProductSearchRepo {
         CriteriaQuery<ProductSearchView> query = builder.createQuery(ProductSearchView.class);
         Root<Product> productRoot = query.from(Product.class); // select p from product p
         Join<Product,ProductStock> productStockJoin = productRoot.join("stock");
-        query.select(builder.construct(ProductSearchView.class,productRoot.get("id"),productRoot.get("title"),productStockJoin.get("availableStock"),productRoot.get("price"),productRoot.get("addedAt")));
+        /*product -> product Image join*/
+        Join<Product, ProductImages> productProductImagesJoin = productRoot.join("imagesList",JoinType.LEFT);
+        productProductImagesJoin.on(builder.isTrue(productProductImagesJoin.get("isMain")));
+        /*product image -> image join to get the main image url*/
+        Join<ProductImages, Image> productImagesImageJoin = productProductImagesJoin.join("image",JoinType.LEFT);
+
+        query.select(builder.construct(ProductSearchView.class,productRoot.get("id"),productRoot.get("title")
+                ,productStockJoin.get("availableStock"),productRoot.get("price"),productImagesImageJoin.get("imageUrl"),productRoot.get("addedAt")));
         Sort sort = pageable.getSort();
         Predicate[] predicates = buildPredicates(categoryId,minPrice,maxPrice,productRoot,builder);
         query.where(builder.and(predicates));

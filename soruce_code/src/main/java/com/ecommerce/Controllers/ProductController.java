@@ -2,6 +2,7 @@ package com.ecommerce.Controllers;
 
 
 import com.ecommerce.DTO.ProductDTO;
+import com.ecommerce.DTO.ProductImageResponseDto;
 import com.ecommerce.DTO.ProductSearchView;
 import com.ecommerce.DTO.Requests.AddProductRequest;
 import com.ecommerce.DTO.Requests.PutProductRequest;
@@ -19,10 +20,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.net.URI;
 import java.util.Collection;
-import java.util.Optional;
+import java.util.List;
 import java.util.Set;
 
 @RestController
@@ -30,13 +32,7 @@ import java.util.Set;
 @AllArgsConstructor
 @Validated
 public class ProductController {
-
-
     private ProductService productService;
-
-    public static record AdminQueryRequest(ProductService.DeletedOptions deletedOptions){
-
-    }
 
 
     @GetMapping
@@ -105,18 +101,22 @@ public class ProductController {
     /// //////////////////
     /// / product images
     @GetMapping("/{id}/images")
-    public ResponseEntity<?> getProductImages(@RequestParam(defaultValue = "false") Boolean mainOnly, @PathVariable @Positive long id){
-         // to do later
+    public ResponseEntity<List<ProductImageResponseDto>> getProductImages(@PathVariable  @NotNull  @Positive Long id){
 
-        return null;
+        List<ProductImageResponseDto> productImageResponseDtoList = productService.getProductImages(id);
+        return ResponseEntity.ok(productImageResponseDtoList);
     }
 
-    static public record PutProductImagesRequest(@NotNull Set<@NotNull@Positive Long>  image_ids)
-    {
+    @PutMapping("/{id}/images/")
+    public ResponseEntity<Void> addProductImages(@PathVariable @NotNull @Positive Long id , @RequestParam Set<@Positive @NotNull Long> imagesIds){
+        productService.putProductImages(id,imagesIds);
+        return  ResponseEntity.ok().build();
     }
-    @PutMapping("/{id}/images")
-    public ResponseEntity<?> putProductImage(@RequestBody @Valid PutProductImagesRequest req, @PathVariable @NotNull @Positive Long id){
-        // to do later
-        return  null;
+    @PutMapping(value = "/{id}/images/" ,params = "mainId")
+    public ResponseEntity<Void> setProductMainImage(@PathVariable @NotNull @Positive Long id , @RequestParam @NotNull @Positive Long mainId){
+        productService.setProductMainImage(id,mainId);
+        return  ResponseEntity.ok().build();
     }
+
+
 }

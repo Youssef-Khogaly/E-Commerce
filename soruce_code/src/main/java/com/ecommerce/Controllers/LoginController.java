@@ -46,7 +46,7 @@ public class LoginController {
             Map<String,String> claimsMap = new HashMap<>(2);
             claimsMap.put("id",id);
             claimsMap.put("authorities",authorities);
-            String token = jwtService.generateNewToken(claimsMap, Duration.ofMinutes(60));
+            String token = jwtService.generateNewToken(claimsMap, Duration.ofMinutes(30));
             return ResponseEntity.ok().header(ApplicationConstants.JWT_HEADER_NAME,token).body(new LoginResponse("Login success",token));
         }
 

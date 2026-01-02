@@ -168,8 +168,8 @@ public class OrderServiceImpl implements OrderService {
                     var product = item.getProductDTO();
                     orderItem.setProduct(productJpaRepo.getReferenceById(product.getId()));
                     orderItem.setQuantity(item.getQuantity());
-                    orderItem.setName(product.getName());
-                    orderItem.setDescription(product.getDescription());
+                    orderItem.setName(product.getTitle());
+                    orderItem.setDescription(null);
                     orderItem.setDiscountInCents(product.getDiscountInCents());
                     orderItem.setUnitPriceInCents(product.getPriceInCents());
                     orderItem.setSubTotalInCents((product.getPriceInCents() - product.getDiscountInCents()) * orderItem.getQuantity());

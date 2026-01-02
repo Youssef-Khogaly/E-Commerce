@@ -15,10 +15,9 @@ import org.hibernate.validator.constraints.Length;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.sql.Timestamp;
 import java.time.Instant;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 @DynamicUpdate
 @Entity
@@ -42,12 +41,12 @@ public class Product{
     )
     private Set<Category> categories;
     @Column(updatable = false,insertable = false,nullable = false)
-    private Instant addedAt;
+    private Timestamp addedAt;
     @OneToOne(mappedBy = "product" , fetch = FetchType.EAGER , optional = false , cascade = CascadeType.PERSIST)
     private ProductStock stock;
 
-    @OneToMany(mappedBy = "product",fetch = FetchType.LAZY )
-    private Set<Image> images;
+    @OneToMany(mappedBy = "product",cascade = CascadeType.ALL,orphanRemoval = true)
+    private List<ProductImages> imagesList = new ArrayList<>();
 
     @Override
     public boolean equals(Object o) {

@@ -3,6 +3,7 @@ package com.ecommerce.services;
 import com.ecommerce.DTO.CartDTO;
 import com.ecommerce.DTO.CartItemDTO;
 import com.ecommerce.DTO.ProductDTO;
+import com.ecommerce.DTO.ProductSearchView;
 import com.ecommerce.Exception.BadRequestException;
 import com.ecommerce.entities.Carts.Cart;
 import com.ecommerce.entities.Carts.CartItem;
@@ -57,7 +58,7 @@ public class CartServiceImpl implements CartService {
         cartDTO.setCartId(cust_id);
         List<Long> productIds = cart.getCartItemSet().stream().map(i -> i.getId().getProduct_id()).toList();
 
-        Map<Long, ProductDTO> productDTOMap = productService.getProducts(productIds);
+        Map<Long, ProductSearchView> productDTOMap = productService.getProducts(productIds);
 
         cartDTO.setItems(toCartItemsDTO(cart.getCartItemSet(),productDTOMap));
         return cartDTO;
@@ -90,7 +91,7 @@ public class CartServiceImpl implements CartService {
         cartItemRepo.deleteById(new CartItemId(cust_id,product_id));
     }
 
-    private List<CartItemDTO> toCartItemsDTO(Collection<CartItem> cartItems, Map<Long, ProductDTO> longProductDTOMap){
+    private List<CartItemDTO> toCartItemsDTO(Collection<CartItem> cartItems, Map<Long, ProductSearchView> longProductDTOMap){
         return cartItems.stream().map(
                 (i) -> {
                   var dto = new CartItemDTO();

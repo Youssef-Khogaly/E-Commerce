@@ -53,11 +53,28 @@ create table if not exists product_stock(
     availableStock int  generated always as (stock-reservedStock)virtual,
     constraint frg_p foreign key (product_id) references product(product_id)
 );
-CREATE TABLE IF NOT EXISTS image
+create table image
 (
-    image_id  bigint primary key auto_increment not null,
-    image_url VARCHAR(1024)  NOT NULL,
-    product_id bigint references product(product_id) on update cascade  on delete set null
+    image_id        bigint auto_increment
+        primary key,
+    image_url       varchar(256)                           not null,
+    storage_key     varchar(256)                           not null,
+    storageProvider enum ('AMAZON_S3') default 'AMAZON_S3' not null,
+    region          varchar(64)            default null      null
+);
+
+create table ProductImages
+(
+    product_id bigint               not null,
+    image_id   bigint               not null,
+    isMain     boolean default false not null,
+    primary key (product_id, image_id),
+    constraint ProductImages_image_image_id_fk
+        foreign key (image_id) references image (image_id)
+            on update cascade on delete cascade,
+    constraint ProductImages_product_product_id_fk
+        foreign key (product_id) references product (product_id)
+            on update cascade on delete cascade
 );
 
 -- ====================================================

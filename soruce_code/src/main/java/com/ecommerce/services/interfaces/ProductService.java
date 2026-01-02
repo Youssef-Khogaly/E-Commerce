@@ -1,6 +1,7 @@
 package com.ecommerce.services.interfaces;
 
 import com.ecommerce.DTO.ProductDTO;
+import com.ecommerce.DTO.ProductImageResponseDto;
 import com.ecommerce.DTO.ProductSearchView;
 import com.ecommerce.entities.Categories.Category;
 import com.ecommerce.entities.Products.Product;
@@ -56,6 +57,11 @@ public interface ProductService  {
 
     public void putProductCategories(Long product_id,Set<Integer>categoriesIds);
 
-    public Map<Long,ProductDTO> getProducts(Collection<Long> ids);
+    public Map<Long,ProductSearchView> getProducts(Collection<Long> ids);
+
+
+    public void putProductImages(Long productId,Set<Long> imageIds);
+    public List<ProductImageResponseDto> getProductImages(Long ProductId);
+    public void setProductMainImage(Long productId , Long mainImageId);
 }
 

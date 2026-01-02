@@ -1,6 +1,8 @@
 package com.ecommerce.DTO;
 
 import com.ecommerce.entities.Categories.Category;
+import com.ecommerce.entities.Products.Product;
+import com.ecommerce.entities.Products.ProductImages;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -21,8 +23,13 @@ public class ProductDTO{
     long priceInCents;
     long discountInCents = 0;
     int availableStock ;
-    List<String> imagesUrl;
+    List<ImageDTO> imagesUrl;
 
+
+    public static ProductDTO fromProduct(Product product){
+        return new ProductDTO(product.getId(),product.getTitle(),product.getDescription(),product.getPrice(),0,product.getStock().getAvailableStock()
+                , product.getImagesList().stream().map(pi -> ImageDTO.fromImage(pi.getImage())).toList());
+    }
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
