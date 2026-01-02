@@ -1,7 +1,7 @@
 # E-Commerce REST API
 
 A demo e-commerce REST API built with **Spring Boot**, **Spring JPA**, **Hibernate**, **Spring Security**, and **MySQL**.  
-Supports product management, categories, cart, orders, checkout with Stripe payment Gateway, and JWT-based stateless authentication.
+Supports product management, categories, cart, orders, checkout with Stripe payment Gateway, integration with Amazon S3 for efficient image storage and management. and JWT-based stateless authentication.
 
 ---
 
@@ -9,7 +9,9 @@ Supports product management, categories, cart, orders, checkout with Stripe paym
 - **User Authentication:** Registration & login using JWT with Spring Security filters (stateless authentication)
 - **Product Management:**  
   - Public: Search, pagination, sorting, filtering, view product details  
-  - Admin: Create, update products  
+  - Admin: Create, update products 
+- **Image Management(Admin):**
+  - Admin: upload and delete images to amazon s3 storage ,  attach images , set main image for a product   
 - **Category Management (Admin):** CRUD operations  
 - **Cart Management (/me):** Add, update, remove items, view cart  
 - **Checkout (/me):** Stripe payment integration  
@@ -28,7 +30,8 @@ Supports product management, categories, cart, orders, checkout with Stripe paym
 - `POST /api/auth/register` – Register user  
 - `POST /api/auth/login` – Login & receive JWT  
 - `GET /api/products` – Search products (pagination, filter, sort)  
-- `GET /api/products/{id}` – Get product details  
+- `GET /api/products/{id}` – Get product details
+- `GET /api/products/{id}/images` – get all product images
 - `POST /api/webhook/stripe` – handle Stripe webhook events  
 
 ### Admin
@@ -36,7 +39,11 @@ Supports product management, categories, cart, orders, checkout with Stripe paym
 - `PUT /api/products/{id}` – Update product  
 - `POST /api/categories?name=` – Create category  
 - `DELETE /api/categories/{id}` – Delete category  
-
+- `GET   /api/images/{id}`     – get image public url
+- `POST /api/images`     – upload and save images
+- `PUT /api/products/{id}/images/?imagesIds=` – attach these images to this product
+- `PUT /api/products/{id}/images/?mainId=`     – set main image for product
+- 
 ### Authenticated User (/me)
 apply to current authenticated user
 - **Cart**
@@ -53,7 +60,7 @@ apply to current authenticated user
 
 ---
 ## To Do / Future Improvements
-- [ ]  Implement product image upload using presigned urls
+- [X]  Implement product images end points and integrate with amazon s3 cloud storage
 - [ ]  Implement caching for product search to improve performance
 - [ ]   Use multithreading to improve API performance
 - [ ]   implement email verification feature 
