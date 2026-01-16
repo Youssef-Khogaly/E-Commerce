@@ -62,17 +62,21 @@ apply to current authenticated user
 ## To Do / Future Improvements
 - [X]  Implement product images end points and integrate with amazon s3 cloud storage
 - [ ]  Implement caching for product search to improve performance
-- [ ]   Use multithreading to improve API performance
-- [ ]   implement email verification feature 
-- [ ]   Add email notifications for order creation, shipment, and cancellation
-- [ ]   integration with shipping service
-- [ ]   Expand Admin Dashboard with charts and insights for orders, revenue, and products  
-- [ ]   Implement product reviews and ratings  
+- [ ]  Use multithreading to improve API performance
+- [ ]  implement email verification feature 
+- [ ]  Add email notifications for order creation, shipment, and cancellation
+- [ ]  integration with shipping service
+- [ ]  Expand Admin Dashboard with charts and insights for orders, revenue, and products  
+- [ ]  Implement product reviews and ratings  
+- [X]  Use docker and docker compose to simplify setup and deployment
+## Running with Docker
 
+This project uses Docker and Docker Compose to simplify setup and deployment.  
+All services (backend, database) run in isolated containers, so you don't need to install dependencies manually.
 
 ## Tech Stack
 - **Backend:** Spring Boot, Spring JPA, Hibernate, Spring MVC  
 - **Security:** Spring Security, JWT  
 - **Database:** MySQL  
 - **Payment Gateway:** Stripe  
-- **Build Tool:** Maven  
+- **Build Tool:** Maven  Docker Docker-compose
