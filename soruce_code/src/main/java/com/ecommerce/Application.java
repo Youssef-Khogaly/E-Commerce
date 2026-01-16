@@ -13,7 +13,6 @@ public class Application {
 
 	public static void main(String[] args) {
         var springContext = SpringApplication.run(Application.class, args);
-        System.out.println(UserRoles.ADMIN.toString());
     }
 
 }
