@@ -2,3 +2,5 @@
 *.env
 target
 .idea
+.gitignore
+.git
