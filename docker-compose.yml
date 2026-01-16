@@ -1,0 +1,47 @@
+
+services:
+
+  backend:
+      build: ./soruce_code/
+      networks:
+        - e-commernce-backend-net
+      expose:
+        - 8080
+      ports:
+        - target: 8080
+          host_ip: 127.0.0.1
+          published: 8080
+      env_file:
+        - required: true
+          path: ./soruce_code/backend.env
+  db-sql-service:
+    image: mysql:8.4
+    expose:
+        - 3306
+    ports:
+        - host_ip: 127.0.0.1
+          published: 3306
+          target: 3306
+    networks:
+        - e-commernce-backend-net
+
+    env_file:
+        - required: true
+          path: ./db-sql/db-sql.env
+    volumes:
+        - target: /var/lib/mysql
+          source: e-commernce-sql
+          type: volume
+
+        - type: bind
+          source: ./db-sql/db-init
+          target: /docker-entrypoint-initdb.d
+          read_only: true
+
+networks:
+  e-commernce-backend-net:
+
+volumes:
+    e-commernce-sql:
+
+

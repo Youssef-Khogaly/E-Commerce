@@ -40,12 +40,13 @@ CREATE TABLE IF NOT EXISTS product (
     product_id  bigint PRIMARY KEY AUTO_INCREMENT,
     title VARCHAR(63) NOT NULL,
     description MEDIUMTEXT,
-    price long NOT NULL DEFAULT 0.00 check(price >= 0),
+    price bigint NOT NULL DEFAULT 0.00 check(price >= 0),
     addedAt TIMESTAMP default CURRENT_TIMESTAMP not null
     );
 create index product_priceIdx on product(price) using BTREE;
 create FULLTEXT INDEX product_title_idx on product(title);
 create index  product_addedAt_idx  on product(addedAt) using BTREE;
+
 create table if not exists product_stock(
     product_id bigint primary key ,
     stock INT  not null DEFAULT 0 CHECK (stock >= 0),
@@ -103,9 +104,11 @@ CREATE TABLE IF NOT EXISTS product_category (
 -- CART
 
 create table if not exists cart(
-        cart_id int not null primary key ,
+        cart_id bigint not null primary key ,
        subTotalInCents bigint not null ,
-        constraint fk_customer foreign key (cart_id) references customer(cust_id)
+        constraint fk_cart_customer foreign key (cart_id) references customer(cust_id)
+                               on update cascade
+                               on delete restrict
 );
 
 CREATE TABLE IF NOT EXISTS cart_item (
@@ -185,28 +188,13 @@ CREATE TABLE IF NOT EXISTS review (
                                            ON UPDATE CASCADE
     ) DEFAULT CHARSET=utf8mb4;
 
--- ORDERS
-
-
-insert into user(usr_name, usr_email, usr_pass, role, isDeleted, isEmailVerified)
-values ('test','test@email.com','12345678' , 'customer',false,true);
-
-insert into customer(cust_id)values (1);
-insert into product(title, description, price)values ('laptop' , 'for sale' , 15400);
-insert into product_stock (product_id, stock, reservedStock)
-values (1,10,0);
-
+-- cart add trigger
 
 DELIMITER $$
-create trigger afterCustomerInsert  after insert on customer
+
+create trigger afterUserInsert after insert on customer
     for each row
     begin
-        insert into cart(cart_id , subTotalInCents)values (new.cust_id,0);
-    end;
+        insert into cart(cart_id , subTotalInCents)values (NEW.cust_id,0);
+    END $$
 DELIMITER ;
-
-drop database E_Commerce;
-
-insert into CustomerOrder (cust_id, recipientName, recipientPhone, country, city, street, building, order_state, subTotal)
-values (1,'name','123','aa','aa'
-       , '111','112','PENDING',1234,'EGP')

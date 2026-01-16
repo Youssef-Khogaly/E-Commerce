@@ -6,4 +6,4 @@ WORKDIR /usr/app
 EXPOSE 8080
 EXPOSE 3306
 
-ENTRYPOINT ["java" , "-jar" , "testingDocker.jar"]
+ENTRYPOINT ["java" , "-jar" , "E-commerce-app.jar"]
