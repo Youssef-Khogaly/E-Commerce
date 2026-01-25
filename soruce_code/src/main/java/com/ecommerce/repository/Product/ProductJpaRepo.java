@@ -5,16 +5,12 @@ import com.ecommerce.DTO.productCategoryRow;
 import com.ecommerce.entities.Categories.Category;
 import com.ecommerce.entities.Products.Product;
 
-import com.ecommerce.services.checkout.ProductRepoForCheckOut;
 import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.*;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
-public interface ProductJpaRepo extends JpaRepository<Product, Long> , ProductQueryRepo , ProductRepoForCheckOut {
+public interface ProductJpaRepo extends JpaRepository<Product, Long> , ProductQueryRepo  {
 
     @Query(
             """
@@ -53,14 +49,6 @@ public interface ProductJpaRepo extends JpaRepository<Product, Long> , ProductQu
     @Query("select new com.ecommerce.DTO.productCategoryRow(p.id , c.cate_id , c.name)  from Product p  inner join  Category c on p.id = c.cate_id ")
     List<productCategoryRow>findAllCategoriesById(Collection<Long>ids);
 
-    @Override
-    @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @EntityGraph(
-            attributePaths = {"images","stock"},
-            type = EntityGraph.EntityGraphType.FETCH
-    )
-    @Query("select p from Product p  where  p.id in :ids")
-    List<Product> findAllByIdForCheckout(Collection<Long> ids);
 
 
 

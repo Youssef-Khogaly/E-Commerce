@@ -1,10 +1,9 @@
 package com.ecommerce.services;
 
 import com.ecommerce.DTO.CartDTO;
-import com.ecommerce.DTO.CartItemDTO;
-import com.ecommerce.DTO.ProductDTO;
 import com.ecommerce.DTO.ProductSearchView;
 import com.ecommerce.Exception.BadRequestException;
+import com.ecommerce.Mappers.CartItemsDtoMapper;
 import com.ecommerce.entities.Carts.Cart;
 import com.ecommerce.entities.Carts.CartItem;
 import com.ecommerce.entities.Carts.CartItemId;
@@ -16,6 +15,7 @@ import com.ecommerce.services.interfaces.CartService;
 import com.ecommerce.services.interfaces.ProductService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
@@ -23,11 +23,11 @@ import java.util.*;
 @Service
 @AllArgsConstructor
 public class CartServiceImpl implements CartService {
-    private CartJpaRepo cartJpaRepo;
-    private  CartItemRepo cartItemRepo;
-    private ProductService productService;
-    private ProductJpaRepo productJpaRepo;
-
+    private final CartJpaRepo cartJpaRepo;
+    private  final CartItemRepo cartItemRepo;
+    private final ProductService productService;
+    private final ProductJpaRepo productJpaRepo;
+    private CartItemsDtoMapper cartItemsDtoMapper;
     @Override
     @Transactional
     public void addToCart(Long cust_id, Long product_id, Integer quantity) {
@@ -58,12 +58,11 @@ public class CartServiceImpl implements CartService {
         cartDTO.setCartId(cust_id);
         List<Long> productIds = cart.getCartItemSet().stream().map(i -> i.getId().getProduct_id()).toList();
 
-        Map<Long, ProductSearchView> productDTOMap = productService.getProducts(productIds);
+        Map<Long, ProductSearchView> productDTOMap = productService.getProductSearchView(productIds);
 
-        cartDTO.setItems(toCartItemsDTO(cart.getCartItemSet(),productDTOMap));
+        cartDTO.setItems(cartItemsDtoMapper.from(productDTOMap,cart.getCartItemSet()));
         return cartDTO;
     }
-
     @Override
     @Transactional
     public void putToCart(Long cust_id, Long product_id, Integer quantity) {
@@ -91,16 +90,10 @@ public class CartServiceImpl implements CartService {
         cartItemRepo.deleteById(new CartItemId(cust_id,product_id));
     }
 
-    private List<CartItemDTO> toCartItemsDTO(Collection<CartItem> cartItems, Map<Long, ProductSearchView> longProductDTOMap){
-        return cartItems.stream().map(
-                (i) -> {
-                  var dto = new CartItemDTO();
-                  var product = longProductDTOMap.get(i.getId().getProduct_id());
-                  dto.setQuantity(i.getQuantity());
-                  dto.setProductDTO(product);
-                  dto.setSubTotalInCents((product.getPriceInCents()-product.getDiscountInCents()) * dto.getQuantity());
-                  return dto;
-                }
-        ).toList();
+    @Override
+    @Transactional(readOnly = true,propagation = Propagation.REQUIRES_NEW)
+    public Optional<Cart> getCartForCheckout(Long cust_id) {
+        return cartJpaRepo.findByIdForCheckOut(cust_id);
     }
+
 }

@@ -30,7 +30,7 @@ services:
           path: ./db-sql/db-sql.env
     volumes:
         - target: /var/lib/mysql
-          source: e-commernce-sql
+          source: e-commerce-sql
           type: volume
 
         - type: bind
@@ -42,6 +42,6 @@ networks:
   e-commernce-backend-net:
 
 volumes:
-    e-commernce-sql:
+    e-commerce-sql:
 
 

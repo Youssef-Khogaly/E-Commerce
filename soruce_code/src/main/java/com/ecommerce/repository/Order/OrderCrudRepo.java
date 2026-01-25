@@ -24,20 +24,20 @@ public interface OrderCrudRepo extends CrudRepository<Order, UUID> {
             attributePaths = {"payment"},
             type = EntityGraph.EntityGraphType.FETCH
     )
-    @Query("select o from Order o where o.customer.id = :cust_id")
+    @Query("select o from Order o where o.customer_id = :cust_id")
     public List<Order> findAllByCustomerIdListView(Long cust_id);
 
     @EntityGraph(
             attributePaths = {"payment","orderItems"},
             type = EntityGraph.EntityGraphType.FETCH
     )
-    @Query("select o from Order o where o.id =:orderId and o.customer.id = :cust_id")
+    @Query("select o from Order o where o.id =:orderId and o.customer_id = :cust_id")
     public Order findByCustomerIdAndOrderId(UUID orderId , Long cust_id);
 
     @EntityGraph(
             attributePaths = {"orderItems","payment"},
             type = EntityGraph.EntityGraphType.FETCH
     )
-    @Query("select o from Order o where o.id = :id and o.customer.id = :cust_id")
+    @Query("select o from Order o where o.id = :id and o.customer_id = :cust_id")
     public Order findWithAllByIdAndCustId(UUID id, Long cust_id);
 }

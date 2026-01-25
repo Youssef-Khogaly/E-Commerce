@@ -1,9 +1,7 @@
 package com.ecommerce.DTO;
 
-import com.ecommerce.entities.images.Image;
 import lombok.Getter;
 
-import java.sql.Time;
 import java.sql.Timestamp;
 import java.time.Instant;
 
@@ -17,8 +15,8 @@ public class ProductSearchView {
     private final long id;
     private final String title;
     private final int availableStock;
-    private final long priceInCents;
-    private final long discountInCents;
+    private final Money priceInCents;
+    private final DiscountDTO discount;
     private final String mainImgUrl;
     private final Instant addedAt;
 
@@ -26,10 +24,10 @@ public class ProductSearchView {
         this.id = id;
         this.title = title;
         this.availableStock = availableStock;
-        this.priceInCents = priceInCents;
+        this.priceInCents = new Money(priceInCents);
         this.mainImgUrl = mainImgUrl;
         this.addedAt = addedAt.toInstant();
-        this.discountInCents = 0;
+        this.discount = new DiscountDTO(0);
     }
 //    public ProductSearchView(Long id, String title, Integer availableStock, Long priceInCents, String mainImgUrl, Instant addedAt ) {
 //        this.id = id;

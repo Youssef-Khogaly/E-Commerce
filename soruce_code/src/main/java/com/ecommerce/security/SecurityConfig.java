@@ -145,10 +145,11 @@ public class SecurityConfig {
     }
     // custom filter to validate the jwt token
     @Bean
-    JwtAuthenticationFilter jwtAuthenticationFilter(JwtService jwtService ){
-        return new JwtAuthenticationFilter(publicApis(),jwtService);
+    JwtAuthenticationFilter jwtAuthenticationFilter(JwtService jwtService , AuthenticationEntryPoint authenticationEntryPoint ){
+        return new JwtAuthenticationFilter(publicApis(),jwtService,authenticationEntryPoint);
     }
     // for jwt validation filter to skip validation
+    @Bean
     List<PathPatternRequestMatcher> publicApis(){
         var products = PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.GET,"/api/products/**");
         var login = PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.POST,"/api/auth/login");

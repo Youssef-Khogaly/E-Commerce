@@ -1,4 +1,4 @@
-package com.ecommerce.Controllers;
+package com.ecommerce.services;
 
 import com.ecommerce.entities.Payments.Payment;
 import com.ecommerce.entities.Payments.PaymentState;
@@ -7,13 +7,11 @@ import com.ecommerce.entities.orders.OrderItem;
 import com.ecommerce.entities.orders.OrderState;
 import com.ecommerce.repository.Order.OrderCrudRepo;
 import com.ecommerce.repository.PaymentJpaRepo;
-import com.ecommerce.services.StockService.OutOfStock;
 import com.ecommerce.services.StockService.StockService;
 import jakarta.persistence.LockModeType;
 import jakarta.persistence.OptimisticLockException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.aspectj.weaver.ast.Or;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
@@ -62,7 +60,7 @@ public class PaymentHookHandler {
             // order can't be deleted without payment
             order.setOrderState(OrderState.SHIPPING);
             // release stock
-            Map<Long , Integer> iq_quantity_map = order.getOrderItems().stream().collect(Collectors.toMap(o -> o.getProduct().getId() , OrderItem::getQuantity));
+            Map<Long , Integer> iq_quantity_map = order.getOrderItems().stream().collect(Collectors.toMap(OrderItem::getProduct_id, OrderItem::getQuantity));
             stockHandle(iq_quantity_map, StockService.StockOperation.COMMIT);
             log.info("order:" + orderId + " paid successfully");
 
@@ -80,7 +78,7 @@ public class PaymentHookHandler {
             // order can't be deleted without payment
             order.setOrderState(OrderState.CANCELED);
             // release stock
-            Map<Long , Integer> iq_quantity_map = order.getOrderItems().stream().collect(Collectors.toMap(o -> o.getProduct().getId() , OrderItem::getQuantity));
+            Map<Long , Integer> iq_quantity_map = order.getOrderItems().stream().collect(Collectors.toMap(OrderItem::getProduct_id , OrderItem::getQuantity));
 
             stockHandle(iq_quantity_map, StockService.StockOperation.RELEASE);
             log.info("order:" + orderId + " expired and handled");

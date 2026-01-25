@@ -3,36 +3,28 @@ package com.ecommerce.services;
 import com.ecommerce.DTO.*;
 import com.ecommerce.Exception.BadRequestException;
 import com.ecommerce.Exception.NotFoundException;
-import com.ecommerce.Inegration.PaymentGateWay.CancelPaymentSessionFactory;
+import com.ecommerce.Mappers.OrderDtoViewMapper;
+import com.ecommerce.Mappers.OrderMapper;
 import com.ecommerce.entities.Payments.Payment;
 import com.ecommerce.entities.Payments.PaymentMethod;
 import com.ecommerce.entities.Payments.PaymentState;
-import com.ecommerce.entities.Products.Product;
 import com.ecommerce.entities.orders.Order;
 import com.ecommerce.entities.orders.OrderItem;
 import com.ecommerce.entities.orders.OrderState;
 import com.ecommerce.repository.Order.OrderCrudRepo;
-import com.ecommerce.repository.PaymentJpaRepo;
 import com.ecommerce.repository.Product.ProductJpaRepo;
 import com.ecommerce.repository.UsersRepo.CustomerJpaRepo;
-import com.ecommerce.services.StockService.StockService;
 import com.ecommerce.services.interfaces.IPaymentGatewayService;
 import com.ecommerce.services.interfaces.OrderService;
-import com.stripe.exception.StripeException;
-import com.stripe.model.checkout.Session;
-import jakarta.persistence.LockModeType;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.antlr.v4.runtime.atn.SemanticContext;
-import org.springframework.data.jpa.repository.Lock;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
+import java.util.concurrent.CompletableFuture;
 
 
 @Slf4j
@@ -41,31 +33,44 @@ import java.util.stream.Collectors;
 public class OrderServiceImpl implements OrderService {
 
     private final OrderCrudRepo orderCrudRepo;
-    private final CustomerJpaRepo customerJpaRepo;
-    private final ProductJpaRepo productJpaRepo;
-    private final StockService stockService;
     private final IPaymentGatewayService paymentGatewayService;
+    private final OrderMapper orderMapper;
+    private final OrderDtoViewMapper orderDtoViewMapper;
     @Override
-    public Order createOrder(CartDTO cartDTO, ShippingDTO shippingDTO, PaymentMethod method) {
-        final Long[] subTotalOrder  = new Long[1];
-        subTotalOrder[0] = 0L;
-        Order order = new Order();
-        order.setOrderState(OrderState.PENDING);
+    public Order createOrder(OrderDTO orderDTO) {
+        if(orderDTO.getOrderState() == null || orderDTO.getOrderState() != OrderState.PENDING)
+            throw new BadRequestException("Can't create new order with null or not pending state");
 
-        order.setCurrency("EGP");
-        setOrderShipping(shippingDTO,order);
+        Order order = orderMapper.from(orderDTO);
 
-        List<OrderItem> orderItems = toOrderItem(cartDTO.getItems(),subTotalOrder,order);
-        order.setSubTotal(subTotalOrder[0]);
-        order.setOrderItems(orderItems);
-
-        order.setCustomer(customerJpaRepo.getReferenceById(cartDTO.getCartId()));
-
-
-        order.setPayment(createPayment(method,order));
-        order.getPayment().setOrder(order);
-        order = orderCrudRepo.save(order);
+        orderDTO.setOrder_id(order.getId());
+        orderDTO.getPaymentDTO().setId(order.getId());
         return order;
+    }
+
+    public Order createOrder(Order order){
+        if(order == null)
+            throw new IllegalArgumentException("Can't presist null order");
+        if(order.getPayment() == null)
+            throw new BadRequestException("Can't create order without payment");
+
+        if(order.getRecipientName() == null || order.getRecipientPhone() == null || order.getBuilding() == null || order.getStreet() == null || order.getCity() == null
+        || order.getRecipientName().isBlank() || order.getRecipientPhone().isBlank() || order.getBuilding().isBlank()|| order.getStreet().isBlank() || order.getCity().isBlank())
+            throw new BadRequestException("Order creation failed incompleted shipping address");
+
+        if(order.getOrderItems() == null || order.getOrderItems().isEmpty())
+            throw new BadRequestException("Order creation failed can't create order without items");
+
+        if(order.getPayment().getPaymentState() == null || order.getPayment().getPaymentState() != PaymentState.PENDING)
+            throw new BadRequestException("Order creation failed  Payment state must be pending");
+
+
+        return orderCrudRepo.save(order);
+    }
+
+    @Override
+    public CompletableFuture<Order> createOrderAsync(Order order) {
+        return CompletableFuture.supplyAsync(() -> this.createOrder(order));
     }
 
     @Override
@@ -73,17 +78,15 @@ public class OrderServiceImpl implements OrderService {
 
         List<Order> order = orderCrudRepo.findAllByCustomerIdListView(cust_id);
 
-        return order.stream().map(this::toListView).toList();
+        return order.stream().map(orderDtoViewMapper::from).toList();
     }
     public OrderDTOView getOrder(Long customer_id , UUID orderId){
 
         Order order = orderCrudRepo.findByCustomerIdAndOrderId(orderId,customer_id);
         if(order == null)
             throw new NotFoundException("order is not found or not attached to this customer");
-        OrderDTOView orderDTOView = toListView(order);
-        orderDTOView.setOrderItemDTOS(toOrderItemDto(order.getOrderItems()));
 
-        return orderDTOView;
+        return orderDtoViewMapper.from(order);
     }
 
     @Override
@@ -112,71 +115,5 @@ public class OrderServiceImpl implements OrderService {
     private void cancelSession(String sessionId , PaymentMethod method){
         paymentGatewayService.cancelSession(sessionId,method);
     }
-    private List<OrderItemDTO> toOrderItemDto(List<OrderItem> orderItems){
 
-        return orderItems.stream().map(
-                i ->{
-                    var  dto = new OrderItemDTO();
-                    dto.setName(i.getName());
-                    dto.setDescription(dto.getDescription());
-                    dto.setQuantity(dto.getQuantity());
-                    dto.setSubtotalInCents(i.getSubTotalInCents());
-                    return dto;
-                }
-        ).toList();
-    }
-    private OrderDTOView toListView(Order order){
-        var view = new OrderDTOView();
-        view.setCurrency(order.getCurrency());
-        view.setOrder_id(order.getId());
-        view.setPaymentMethod(order.getPayment().getPaymentMethod());
-        view.setTotalInCents(order.getSubTotal());
-        view.setTransactionId(order.getPayment().getTransaction_id());
-        view.setOrderState(order.getOrderState());
-        var shipping = toShippingDto(order);
-        view.setShippingDTO(shipping);
-        view.setOrderItemDTOS(null);
-        return view;
-    }
-    private ShippingDTO toShippingDto(Order order){
-        var shipping = new ShippingDTO();
-        shipping.setRecipientName(order.getRecipientName());
-        shipping.setRecipientPhone(order.getRecipientPhone());
-        var add = new AddressDto(order.getCountry(),order.getCity(),order.getStreet(),order.getBuilding());
-        shipping.setShippingAddress(add);
-        return shipping;
-    }
-    protected void setOrderShipping(ShippingDTO shipping , Order order){
-        order.setCountry(shipping.getShippingAddress().country());
-        order.setCity(shipping.getShippingAddress().city());
-        order.setStreet(shipping.getShippingAddress().street());
-        order.setBuilding(shipping.getShippingAddress().buildingDetail());
-        order.setRecipientName(shipping.getRecipientName());
-        order.setRecipientPhone(shipping.getRecipientPhone());
-    }
-    protected Payment createPayment(PaymentMethod paymentMethod, Order order){
-        Payment payment = new Payment();
-        payment.setPaymentMethod(paymentMethod);
-        payment.setPaymentState(PaymentState.PENDING);
-        payment.setOrder(order);
-        return payment;
-    }
-    protected List<OrderItem> toOrderItem(List<CartItemDTO> cartItems , final Long[] subTotal , Order order){
-        return cartItems.stream().map(
-                item ->{
-                    var orderItem = new OrderItem();
-                    var product = item.getProductDTO();
-                    orderItem.setProduct(productJpaRepo.getReferenceById(product.getId()));
-                    orderItem.setQuantity(item.getQuantity());
-                    orderItem.setName(product.getTitle());
-                    orderItem.setDescription(null);
-                    orderItem.setDiscountInCents(product.getDiscountInCents());
-                    orderItem.setUnitPriceInCents(product.getPriceInCents());
-                    orderItem.setSubTotalInCents((product.getPriceInCents() - product.getDiscountInCents()) * orderItem.getQuantity());
-                    subTotal[0] += orderItem.getSubTotalInCents();
-                    orderItem.setOrder(order);
-                    return orderItem;
-                }
-        ).toList();
-    }
 }

@@ -1,5 +1,7 @@
 package com.ecommerce.entities.Products;
 
+import com.ecommerce.ApplicationConstants;
+import com.ecommerce.DTO.Money;
 import com.ecommerce.entities.Categories.Category;
 import com.ecommerce.entities.images.Image;
 import com.ecommerce.entities.review.Review;
@@ -45,16 +47,24 @@ public class Product{
     @OneToOne(mappedBy = "product" , fetch = FetchType.EAGER , optional = false , cascade = CascadeType.PERSIST)
     private ProductStock stock;
 
+
+
     @OneToMany(mappedBy = "product",cascade = CascadeType.ALL,orphanRemoval = true)
     private List<ProductImages> imagesList = new ArrayList<>();
 
+
+    public Money getMoneyPrice(){
+        return new Money(price, ApplicationConstants.defaultCurrency);
+    }
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         Product product = (Product) o;
         return Objects.equals(getId(), product.getId());
     }
-
+    public Money getPriceMoney(){
+        return new Money(getPrice());
+    }
     @Override
     public int hashCode() {
         return Objects.hashCode(getId());

@@ -43,7 +43,7 @@ public interface ProductService  {
                 , ProductSortByOptions sortBy, ProductSortDirection direction
         ){}
 
-    public Page<ProductSearchView> getProducts(QueryProduct queryProduct);
+    public Page<ProductSearchView> getProductSearchView(QueryProduct queryProduct);
     public ProductDTO getProduct(Long product_id);
     public boolean isProductExists(Long product_id);
 
@@ -57,8 +57,7 @@ public interface ProductService  {
 
     public void putProductCategories(Long product_id,Set<Integer>categoriesIds);
 
-    public Map<Long,ProductSearchView> getProducts(Collection<Long> ids);
-
+    public Map<Long,ProductSearchView> getProductSearchView(Collection<Long> ids);
 
     public void putProductImages(Long productId,Set<Long> imageIds);
     public List<ProductImageResponseDto> getProductImages(Long ProductId);

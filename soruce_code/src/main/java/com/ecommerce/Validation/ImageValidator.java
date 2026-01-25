@@ -41,6 +41,6 @@ public class ImageValidator implements ConstraintValidator<ValidImage, ImageWrap
                 return true;
             }
         }
-        throw new InvalidImageException("Invalid Image Format, name:"+ value.getOriginalName()+ ", supported formats:"+ Arrays.toString(allowed));
+        throw new InvalidImageException("Invalid Image Format, name:"+ value.getOriginalName()+ ", supported formats:"+ Arrays.toString(allowedFormats));
     }
 }

@@ -9,6 +9,7 @@ import com.ecommerce.Inegration.PaymentGateWay.Model.PaymentGatewayLineItem;
 import com.ecommerce.Inegration.PaymentGateWay.Model.PaymentSession;
 import com.ecommerce.Inegration.PaymentGateWay.Model.SessionGenerationCommand;
 import com.stripe.Stripe;
+import com.stripe.StripeClient;
 import com.stripe.exception.StripeException;
 import com.stripe.model.checkout.Session;
 import com.stripe.param.checkout.SessionCreateParams;
@@ -56,7 +57,6 @@ public class StripeGeneratePaymentSession implements GeneratePaymentSession {
             throw new GateWayInvalidSessionDuration("min stripe session url duration is: 30min");
         }
         SessionCreateParams params =createSessionPara(command);
-
         Session session = null;
         try{
             session = Session.create(params);

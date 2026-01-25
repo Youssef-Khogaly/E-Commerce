@@ -1,6 +1,9 @@
 package com.ecommerce.services.interfaces;
 
 import com.ecommerce.DTO.CartDTO;
+import com.ecommerce.entities.Carts.Cart;
+
+import java.util.Optional;
 
 public interface CartService {
 
@@ -10,5 +13,7 @@ public interface CartService {
     public CartDTO getCart(Long cust_id);
     public void putToCart(Long cust_id , Long product_id , Integer quantity);
     public void deleteFromCart(Long cust_id , Long product_id);
+
+    public Optional<Cart> getCartForCheckout(Long cust_id);
 
 }

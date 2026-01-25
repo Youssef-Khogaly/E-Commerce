@@ -20,7 +20,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.net.URI;
 import java.util.Collection;
@@ -52,7 +51,7 @@ public class ProductController {
             throw new BadRequestException("max product price can't be less than min price in query product");
         }
         var query = new ProductService.QueryProduct(page,pageSize,title,minPrice,maxPrice,category,sortBy,direction);
-        var result = productService.getProducts(query);
+        var result = productService.getProductSearchView(query);
         return ResponseEntity.ok(result);
     }
     @GetMapping("/{id}")

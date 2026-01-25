@@ -15,12 +15,12 @@ public class ProductImages {
     private ProductImageId productImageId;
 
     @MapsId("product_id")
-    @ManyToOne
-    @JoinColumn(name = "product_id")
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "product_id",nullable = false)
     private Product product;
     @MapsId("image_id")
-    @ManyToOne
-    @JoinColumn(name = "image_id")
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "image_id",nullable = false)
     private Image image;
 
     private boolean isMain;

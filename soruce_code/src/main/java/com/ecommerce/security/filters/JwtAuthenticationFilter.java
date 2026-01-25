@@ -13,6 +13,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -36,11 +37,18 @@ import java.util.Set;
 
 
 
-@AllArgsConstructor
+@Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final List<PathPatternRequestMatcher> skipValidationMatchersList;
     private final JwtService jwtService;
+    private final AuthenticationEntryPoint authenticationEntryPoint;
+
+    public JwtAuthenticationFilter(@Qualifier("publicApis") List<PathPatternRequestMatcher> skipValidationMatchersList, JwtService jwtService, AuthenticationEntryPoint authenticationEntryPoint) {
+        this.skipValidationMatchersList = skipValidationMatchersList;
+        this.jwtService = jwtService;
+        this.authenticationEntryPoint = authenticationEntryPoint;
+    }
 
     private void createSuccessfullAuthenticaionObject(long id , String authorities){
 
@@ -53,12 +61,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
         String token = request.getHeader(ApplicationConstants.JWT_HEADER_NAME);
-
         Claims claims;
         try{
             claims = jwtService.isValid(token);
         }catch (JwtInvalidTokenException | JwtExpiredTokenException e ){
-            throw new BadCredentialsException(e.getMessage());
+            authenticationEntryPoint.commence(request,response,e);
+            return;
         }
 
         Long id = Long.parseLong(claims.get("id",String.class));

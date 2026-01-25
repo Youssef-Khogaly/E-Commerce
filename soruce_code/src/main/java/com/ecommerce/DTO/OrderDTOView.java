@@ -2,7 +2,6 @@ package com.ecommerce.DTO;
 
 import com.ecommerce.entities.Payments.PaymentMethod;
 import com.ecommerce.entities.orders.OrderState;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Getter;
 import lombok.Setter;
@@ -19,7 +18,6 @@ public class OrderDTOView {
     private PaymentMethod paymentMethod;
     private String transactionId;
     private ShippingDTO shippingDTO;
-    private long totalInCents;
-    private String currency;
+    private Money total;
     private List<OrderItemDTO> orderItemDTOS;
 }

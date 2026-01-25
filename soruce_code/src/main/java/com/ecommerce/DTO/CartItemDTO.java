@@ -16,6 +16,6 @@ public class CartItemDTO {
 
     private ProductSearchView productDTO;
     private int quantity;
-    private long subTotalInCents;
+    private Money subTotalInCents;
 
 }

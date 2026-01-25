@@ -60,7 +60,7 @@ public class ProductServiceImpl implements ProductService {
         return searchQuery.toString();
     }
     @Override
-    public Page<ProductSearchView> getProducts(QueryProduct queryProduct) {
+    public Page<ProductSearchView> getProductSearchView(QueryProduct queryProduct) {
         int pageNum = queryProduct.page();
         int pageSize = queryProduct.pageSize();
         Sort.Direction direction = (queryProduct.direction() == ProductSortDirection.ASC) ? Sort.Direction.ASC : Sort.Direction.DESC;
@@ -157,7 +157,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public Map<Long,ProductSearchView> getProducts(Collection<Long> ids) {
+    public Map<Long,ProductSearchView> getProductSearchView(Collection<Long> ids) {
 
         return productJpaRepo.findAllByidsForProductSearchView(ids).stream().collect(Collectors.toMap(ProductSearchView::getId,p -> p));
     }

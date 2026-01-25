@@ -15,9 +15,8 @@ public class StripeMappers {
                         itemModel.getItemDescription()
                 );
         long finalAmount = itemModel.getFinalAmountInCents();
-        if(itemModel.getImgUrl() != null)
-            product = product.addImage(itemModel.getImgUrl());
-
+        if(itemModel.getImgesUrl() != null)
+            product = product.addAllImage(itemModel.getImgesUrl());
         var priceData = SessionCreateParams.LineItem.PriceData.builder()
                 .setProductData(product.build())
                 .setCurrency(itemModel.getCurrency().getCurrencyCode())

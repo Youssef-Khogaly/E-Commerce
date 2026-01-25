@@ -1,5 +1,6 @@
 package com.ecommerce.entities.Carts;
 
+import com.ecommerce.DTO.Money;
 import com.ecommerce.entities.Products.Product;
 import com.ecommerce.entities.user.Customer;
 import jakarta.persistence.*;
@@ -31,6 +32,10 @@ public class CartItem {
     @PositiveOrZero
     private  int quantity;
 
+
+    public Money getSubTotal(){
+        return product.getPriceMoney().multi(quantity);
+    }
 
 
     @Override

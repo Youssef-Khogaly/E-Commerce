@@ -19,22 +19,21 @@ import java.util.Objects;
 @Getter@Setter
 public class OrderItem {
 
-    @EmbeddedId
-    private OrderItemId id = new OrderItemId();
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private long id;
 
-    @MapsId(value = "orderId")
     @ManyToOne
     @JoinColumn(name = "order_id" , columnDefinition = "BINARY(16)")
     private Order order;
+    private Long product_id;
 
-    @MapsId(value = "productId")
-    @ManyToOne(fetch = FetchType.LAZY , optional = true)
-    @JoinColumn(name = "product_id_reference")
-    private Product product;
     private int quantity;
-    private long unitPriceInCents;
-    private long discountInCents;
-    private long subTotalInCents;
+    private Long unitPriceInCents;
+    private Long discountInCents;
+    private Long subTotalInCents;
+    @Column(name = "currency_code")
+    private String currencyCode;
     private String name;
     private String description;
 

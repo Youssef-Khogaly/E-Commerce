@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.SQLDelete;
 
 import java.util.Objects;
 import java.util.UUID;
@@ -44,7 +45,6 @@ public class Payment {
     @Enumerated(EnumType.STRING)
     private PaymentState paymentState;
     @Enumerated(EnumType.STRING)
-    @NotNull
     private PaymentMethod paymentMethod;
 
     private String transaction_id;

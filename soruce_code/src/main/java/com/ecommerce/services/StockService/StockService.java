@@ -1,5 +1,6 @@
 package com.ecommerce.services.StockService;
 
+import com.ecommerce.entities.Carts.Cart;
 import com.ecommerce.entities.Products.ProductStock;
 import com.ecommerce.repository.StockJpaRepo;
 import lombok.AllArgsConstructor;
@@ -22,6 +23,9 @@ public class StockService {
         RELEASE,        // Release reserved stock (cancel)
         COMMIT          // Decrement total stock after payment
     }
+
+
+
     @Transactional(isolation = Isolation.READ_COMMITTED , propagation = Propagation.REQUIRES_NEW)
     // ids should be valid
     public void updatestock(Map<Long,Integer> id_quantityMap , StockOperation operationEnum) {
