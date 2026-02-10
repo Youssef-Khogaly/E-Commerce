@@ -25,9 +25,6 @@ public class OrderMapper {
         order.setOrderItems(orderItemMapper.from(orderDTO.getOrderItemDTOS()));
         // address
         order = setOrderShipping(order,orderDTO.getShippingDTO());
-        order.setPayment(paymentMapper.from(orderDTO.getPaymentDTO()));
-
-        order.getPayment().setOrder(order);
         order.setCurrencyCode(orderDTO.getTotal().getCurrency().toString());
         order.setSubTotal(orderDTO.getTotal().getPrice());
 
@@ -46,15 +43,11 @@ public class OrderMapper {
         order.setBuilding(shippingDTO.getShippingAddress().buildingDetail());
         return order;
     }
-    public Order from(Cart cart , ShippingDTO shippingDTO , PaymentMethod paymentMethod , PaymentState paymentState)
+    public Order from(Cart cart , ShippingDTO shippingDTO)
     {
         var  order = new Order();
         order.setCustomer_id(cart.getId());
         order.setCurrencyCode(ApplicationConstants.defaultCurrency.getCurrencyCode());
-        var payment = new Payment();
-        payment.setOrder(order);
-        payment.setPaymentState(paymentState);
-        order.setPayment(payment);
         setOrderShipping(order,shippingDTO);
         order.setOrderItems(cart.getCartItemSet().stream().map(orderItemMapper::from).toList());
         order.getOrderItems().forEach(item -> item.setOrder(order));

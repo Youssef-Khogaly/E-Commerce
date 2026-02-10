@@ -2,6 +2,7 @@ package com.ecommerce.services.interfaces;
 
 import com.ecommerce.DTO.OrderDTO;
 import com.ecommerce.DTO.OrderDTOView;
+import com.ecommerce.entities.Payments.Payment;
 import com.ecommerce.entities.orders.Order;
 
 import java.util.List;
@@ -17,4 +18,6 @@ public interface OrderService {
      List<OrderDTOView> getOrders(Long cust_id);
      OrderDTOView getOrder(Long customer_id , UUID orderId);
      void cancelOrder(Long customer_id , UUID orderId);
+     void deleteOrder(UUID orderId);
+
 }

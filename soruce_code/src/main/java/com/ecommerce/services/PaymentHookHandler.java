@@ -5,9 +5,10 @@ import com.ecommerce.entities.Payments.PaymentState;
 import com.ecommerce.entities.orders.Order;
 import com.ecommerce.entities.orders.OrderItem;
 import com.ecommerce.entities.orders.OrderState;
-import com.ecommerce.repository.Order.OrderCrudRepo;
+import com.ecommerce.repository.Order.OrderJpaRepo;
 import com.ecommerce.repository.PaymentJpaRepo;
 import com.ecommerce.services.StockService.StockService;
+import com.ecommerce.services.interfaces.IPaymentService;
 import jakarta.persistence.LockModeType;
 import jakarta.persistence.OptimisticLockException;
 import lombok.AllArgsConstructor;
@@ -24,34 +25,56 @@ import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
+@Slf4j
 public class PaymentHookHandler {
 
     private final Handler handler;
     public static enum PaymentEvents{
         PAID_SUCCESSFULLY , SESSION_EXPIRED
     }
-
-    @Transactional
-    protected void updatePaymentState(long paymentId , @Nullable String transaction_id , PaymentState state){
-
+    public void handle(UUID orderId , UUID paymentId , String transaction_id ,PaymentEvents event){
+        int maxRetry = 5;
+        int attempts = 0;
+        long delay = 200;
+        while(attempts < maxRetry){
+            attempts++;
+                try{
+                    if(event == PaymentEvents.PAID_SUCCESSFULLY){
+                        handler.paidSuccessfullyHandle(orderId,paymentId,transaction_id);
+                        break;
+                    }
+                    else if (event == PaymentEvents.SESSION_EXPIRED){
+                        handler.sessionExpireHandle(orderId,paymentId);
+                        break;
+                    }
+                    log.error("Unexpected payment webhook event , event: {} , orderId: {} , paymentId: {} , transaction_id: {}" ,event,orderId,paymentId,transaction_id);
+                    break;
+                } catch (RuntimeException e) {
+                    if(attempts > maxRetry-1)
+                        throw  e;
+                    try{
+                        Thread.sleep(delay, 0);
+                    } catch (InterruptedException ignored) {}
+                }
+        }
     }
 
-    // just to make method transactional
+
     @AllArgsConstructor
     @Service
     @Slf4j
     public static class Handler{
-        private final PaymentJpaRepo paymentJpaRepo;
-        private final OrderCrudRepo orderCrudRepo;
+        private final IPaymentService paymentService;
+        private final OrderJpaRepo orderJpaRepo;
         private final StockService stockService;
 
         @Lock(value = LockModeType.PESSIMISTIC_WRITE)
         @Transactional(isolation = Isolation.READ_COMMITTED)
         public void paidSuccessfullyHandle(UUID orderId, UUID paymentId , @Nullable String transaction_id){
-            Order order = orderCrudRepo.findByIdForPaymentEvent(orderId);
+            Order order = orderJpaRepo.findByIdForPaymentEvent(orderId);
             Payment payment = order.getPayment();
             if(order.getOrderState() != OrderState.CANCELED && payment.getPaymentState() != PaymentState.EXPIRED){
-                log.info("Error stripe payment successfully order event with expired order , orderId:" + orderId + " paymnetId"+paymentId);
+                log.error("Error stripe payment successfully order event with expired order , orderId:{} paymnetId:{} , transactionId : {}", orderId, paymentId , transaction_id);
             }
             if(payment.getPaymentState() == PaymentState.CONFIRMED) // duplicate stripe web event
                 return;
@@ -62,26 +85,36 @@ public class PaymentHookHandler {
             // release stock
             Map<Long , Integer> iq_quantity_map = order.getOrderItems().stream().collect(Collectors.toMap(OrderItem::getProduct_id, OrderItem::getQuantity));
             stockHandle(iq_quantity_map, StockService.StockOperation.COMMIT);
-            log.info("order:" + orderId + " paid successfully");
+            log.info("order:{} paid successfully", orderId);
 
         }
         @Lock(value = LockModeType.PESSIMISTIC_WRITE)
         @Transactional(isolation = Isolation.READ_COMMITTED)
         public void sessionExpireHandle(UUID orderId,UUID paymentId){
-            Order order = orderCrudRepo.findByIdForPaymentEvent(orderId);
-            if(order == null || order.getPayment() == null)
-                    return; // already handled // duplicated event
-            Payment payment = order.getPayment();
-            if(payment.getPaymentState() == PaymentState.CONFIRMED) // already paid
+            Order order = orderJpaRepo.findById(orderId).orElse(null);
+            Payment payment = paymentService.findPayment(paymentId).orElseGet(() -> null);
+            if(order == null) {
+                log.error("session expire webhook for non existing order , orderId: {}", orderId);
                 return;
-            payment.setPaymentState(PaymentState.EXPIRED);
-            // order can't be deleted without payment
+            }
+            if(payment == null)
+            {
+                log.error("session expire webhook for order that does not have payment!! , orderId: {} , paymentId: {}" , orderId , paymentId);
+                return;
+            }
+
+            if(payment.getPaymentState() == PaymentState.CONFIRMED) // already paid , ignore
+            {
+                return;
+            }
+
+            paymentService.updateState(payment,PaymentState.EXPIRED);
             order.setOrderState(OrderState.CANCELED);
             // release stock
             Map<Long , Integer> iq_quantity_map = order.getOrderItems().stream().collect(Collectors.toMap(OrderItem::getProduct_id , OrderItem::getQuantity));
 
             stockHandle(iq_quantity_map, StockService.StockOperation.RELEASE);
-            log.info("order:" + orderId + " expired and handled");
+            log.info("order:{} expired and handled", orderId);
         }
         private void stockHandle(Map<Long , Integer> iq_quantity_map , StockService.StockOperation stockOperation){
             int maxRetry = 5;
@@ -113,31 +146,4 @@ public class PaymentHookHandler {
 
     }
 
-    public void handle(UUID orderId , UUID paymentId , String transaction_id ,PaymentEvents event){
-        int maxRetry = 5;
-        int attempts = 0;
-        long delay = 200;
-        while(attempts < maxRetry){
-            attempts++;
-                try{
-                    if(event == PaymentEvents.PAID_SUCCESSFULLY){
-                        handler.paidSuccessfullyHandle(orderId,paymentId,transaction_id);
-                        break;
-                    }
-                    else if (event == PaymentEvents.SESSION_EXPIRED){
-                        handler.sessionExpireHandle(orderId,paymentId);
-                        break;
-                    }
-                    break;
-                } catch (RuntimeException e) {
-                    if(attempts > maxRetry-1)
-                        throw  e;
-                    try{
-                        Thread.sleep(delay, 0);
-                    } catch (InterruptedException ignored) {}
-                }
-        }
-
-
-    }
 }

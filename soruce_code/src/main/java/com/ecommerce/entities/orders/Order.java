@@ -52,8 +52,7 @@ public class Order {
     @NotEmpty
     private List<OrderItem> orderItems;
 
-    @OneToOne(mappedBy = "order"  , fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    @NotNull
+    @OneToOne(mappedBy = "order")
     private Payment payment;
     @Column(name = "cust_id")
     private Long customer_id;

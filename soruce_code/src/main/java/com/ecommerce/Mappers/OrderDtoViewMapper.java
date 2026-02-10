@@ -4,6 +4,7 @@ import com.ecommerce.DTO.AddressDto;
 import com.ecommerce.DTO.Money;
 import com.ecommerce.DTO.OrderDTOView;
 import com.ecommerce.DTO.ShippingDTO;
+import com.ecommerce.entities.Payments.Payment;
 import com.ecommerce.entities.Shiping.ShipingMethod;
 import com.ecommerce.entities.orders.Order;
 import lombok.AllArgsConstructor;
@@ -13,7 +14,7 @@ import org.springframework.stereotype.Component;
 @AllArgsConstructor
 public class OrderDtoViewMapper {
     private final OrderItemDtoMapper orderItemDtoMapper;
-    public OrderDTOView from(Order order){
+    public OrderDTOView from(Order order ){
         var orderview = new OrderDTOView();
         orderview.setTotal(new Money(order.getSubTotal(),order.getCurrencyCode()));
         orderview.setOrder_id(order.getId());

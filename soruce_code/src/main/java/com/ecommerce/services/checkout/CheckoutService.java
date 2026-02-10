@@ -9,6 +9,7 @@ import com.ecommerce.Mappers.OrderDTOMapper;
 import com.ecommerce.Mappers.OrderMapper;
 import com.ecommerce.entities.Carts.Cart;
 import com.ecommerce.entities.Carts.CartItem;
+import com.ecommerce.entities.Payments.Payment;
 import com.ecommerce.entities.Payments.PaymentState;
 import com.ecommerce.entities.Products.Product;
 import com.ecommerce.entities.Products.ProductImages;
@@ -21,6 +22,7 @@ import com.ecommerce.repository.Product.ProductJpaRepo;
 import com.ecommerce.services.StockService.StockService;
 import com.ecommerce.services.interfaces.CartService;
 import com.ecommerce.services.interfaces.IPaymentGatewayService;
+import com.ecommerce.services.interfaces.IPaymentService;
 import com.ecommerce.services.interfaces.OrderService;
 import jakarta.persistence.OptimisticLockException;
 import lombok.AllArgsConstructor;
@@ -45,7 +47,7 @@ public class CheckoutService {
     private final CartService cartService;
     private final OrderService orderService;
     private final OrderMapper orderMapper;
-    private final PaymentJpaRepo paymentJpaRepo;
+    private final IPaymentService paymentService;
     private List<PaymentGatewayLineItem> toItemModel(List<OrderItem> orderItems,Map<Long , List<String>>productId_Images){
 
         return orderItems.stream().map(p ->{
@@ -62,15 +64,15 @@ public class CheckoutService {
         }).toList();
 
     }
-    private PaymentGatewayOrderModel createPaymentOrderModel(Order order , Map<Long , List<String>>productId_Images){
+    private PaymentGatewayOrderModel createPaymentOrderModel(Order order ,Payment payment,Map<Long , List<String>>productId_Images){
         PaymentGatewayOrderModel paymentOrder = new PaymentGatewayOrderModel();
         paymentOrder.setCustomer_id(order.getCustomer_id());
         paymentOrder.setItems(toItemModel(order.getOrderItems(),productId_Images));
-        paymentOrder.setPayment_id(order.getPayment().getId());
+        paymentOrder.setPayment_id(payment.getId());
         paymentOrder.setOrder_id(order.getId());
         return  paymentOrder;
     }
-    public PaymentSession checkout(CheckoutReq req , Long cust_id) throws ExecutionException, InterruptedException {
+    public PaymentSession checkout(CheckoutReq req , Long cust_id)  {
 
         Cart cart = cartService.getCartForCheckout(cust_id).orElseThrow(() -> new BadRequestException("Customer id doesn't exists"));
         if(cart.getCartItemSet().isEmpty())
@@ -84,25 +86,31 @@ public class CheckoutService {
         } catch (RuntimeException e) {
             throw new RuntimeException(e);
         }
-
+        Order order = null;
+        Payment payment = null;
+        PaymentSession paymentSession = null;
         try{
-            Order order = orderMapper.from(cart,req.shipping(),req.paymentMethod(),PaymentState.PENDING);
+            order = orderMapper.from(cart,req.shipping());
             order.setOrderState(OrderState.PENDING);
-            order.getPayment().setExpireAt(Duration.ofMinutes(40).toSeconds());
             order = orderService.createOrder(order);
-
+            payment = paymentService.create(order,req.paymentMethod());
             // create model
-            PaymentGatewayOrderModel paymentOrder = createPaymentOrderModel(order,productId_Images);
+            PaymentGatewayOrderModel paymentOrder = createPaymentOrderModel(order,payment,productId_Images);
 
-            SessionGenerationCommand command =  new SessionGenerationCommand(paymentOrder, Duration.ofMinutes(40),"https://www.google.com/","https://www.google.com/" ,order.getPayment().getPaymentMethod());
+            SessionGenerationCommand command =  new SessionGenerationCommand(paymentOrder, Duration.ofMinutes(40),"https://www.google.com/","https://www.google.com/" ,payment.getPaymentMethod());
 
-            PaymentSession paymentSession = paymentGatewayService.generateSessionUrl(command);
-            paymentJpaRepo.updateSessionId(order.getPayment().getId(),order.getPayment().getSession_id());
+            paymentSession = paymentGatewayService.generateSessionUrl(command);
+            payment.setExpireAt(paymentSession.getExpireAt().getEpochSecond());
+            payment.setSession_id(paymentSession.getSession_id());
+            paymentService.save(payment);
             return paymentSession;
         }
-        catch (Throwable e) {
+        catch (Exception e) {
             stockService.updatestock(id_quantityMap, StockService.StockOperation.RELEASE);
-
+            if(order != null)
+                orderService.deleteOrder(order.getId());
+            if(payment != null)
+                paymentService.deletePayment(payment.getId());
             throw e;
         }
 
