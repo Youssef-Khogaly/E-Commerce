@@ -128,7 +128,7 @@ CREATE TABLE IF NOT EXISTS CustomerOrder (
                                              city VARCHAR(64) not null ,
                                              street VARCHAR(63) not null ,
                                              building VARCHAR(63) not null ,
-                                             order_state ENUM('CANCELED','REFUNDED','PENDING','PAID','SHIPPING','DELIVERED') not null ,
+                                             order_state ENUM('CANCELED','REFUNDED','EXPIRED','PENDING','PROCESSING','SHIPPING','DELIVERED') not null ,
                                              currency_code varchar(4) not null,
                                              subTotal bigint ,
 
@@ -163,7 +163,7 @@ CREATE TABLE IF NOT EXISTS Payment (
                                        id bigint auto_increment primary key ,
                                        order_id  bigint auto_increment not null ,
                                        paymentState ENUM('FAILEd' ,'PAID' ,'REFUNDED') not null,
-                                       transaction_id varchar(255) not null,
+                                       transaction_id varchar(255) unique not null,
                                        amount bigint not null,
                                        currency varchar(4) not null,
                                        CONSTRAINT fk_payment_order FOREIGN KEY (order_id)
