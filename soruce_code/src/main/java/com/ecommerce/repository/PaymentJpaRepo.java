@@ -11,17 +11,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface PaymentJpaRepo extends JpaRepository<Payment, UUID> {
-
-    @Transactional
-    @Modifying
-    @Query("update Payment set session_id = :sessionId where id = :id")
-    void updateSessionId(UUID id , String sessionId);
-
-    @Modifying
-    @Query("update Payment set paymentState = :state where id = :id")
-    void updatePaymentState(UUID id , PaymentState state);
+public interface PaymentJpaRepo extends JpaRepository<Payment, Long> {
+    
 
     @Query("select p from Payment p where p.order.id = :orderId")
     Optional<Payment> findByOrderId(UUID orderId);
+
+
+    boolean existsByTransactionId(String transactionId);
 }

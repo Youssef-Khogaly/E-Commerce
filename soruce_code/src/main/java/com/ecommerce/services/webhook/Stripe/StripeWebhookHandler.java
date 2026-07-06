@@ -29,7 +29,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Currency;
 import java.util.Locale;
 import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -92,21 +91,27 @@ public class StripeWebhookHandler implements PaymentWebhookParser, PaymentWebhoo
 
     private void handlePaymentSuccess(PaymentWebhookEvent event)
     {
+        if(paymentJpaRepo.existsByTransactionId(event.getTransactionId()))
+            return; // duplicate webhook;
         Long orderId = Long.valueOf(event.getMetaData().get("OrderId"));
 
         Order order = orderJpaRepo.findByIdForPaymentEvent(orderId);
-//        if(order.getOrderState() != OrderState.CANCELED){
-//            log.error("Error stripe payment successfully order event with expired order , orderId:{} paymnetId:{} , transactionId : {}", orderId, payment.getId() ,event.getTransactionId());
-//        }
-//        if(payment.getPaymentState() == PaymentState.CONFIRMED) // duplicate stripe web event
-//            return;
-//        payment.setTransaction_id(event.getTransactionId());
-//        payment.setPaymentState(PaymentState.CONFIRMED);
-//        // order can't be deleted without payment
-//        order.setOrderState(OrderState.SHIPPING);
-//        // release stock
-//        Map<Long , Integer> iq_quantity_map = order.getOrderItems().stream().collect(Collectors.toMap(OrderItem::getProduct_id, OrderItem::getQuantity));
-//        stockService.updatestock(iq_quantity_map, StockService.StockOperation.COMMIT);
+
+        var payment  =  new Payment();
+        payment.setAmount(event.getTotalAmount().getPrice());
+        payment.setCurrency(event.getTotalAmount().getCurrency().getCurrencyCode());
+        payment.setOrder(order);
+        payment.setTransactionId(event.getTransactionId());
+        payment.setPaymentState(PaymentState.PAID);
+        order.getPaymentList().add(payment);
+
+        // processing should overwrite everything else expect cancelled!! since we need to issue a refund for this transaction
+        if(order.getOrderState() != OrderState.CANCELED){
+            order.setOrderState(OrderState.PROCESSING);
+            // commit stock
+            Map<Long , Integer> iq_quantity_map = order.getOrderItems().stream().collect(Collectors.toMap(OrderItem::getProduct_id, OrderItem::getQuantity));
+            stockService.updatestock(iq_quantity_map, StockService.StockOperation.COMMIT);
+        }
 
     }
 
@@ -114,19 +119,17 @@ public class StripeWebhookHandler implements PaymentWebhookParser, PaymentWebhoo
     {
         Long orderId = Long.valueOf(event.getMetaData().get("OrderId"));
         Order order = orderJpaRepo.findByIdForPaymentEvent(orderId);
-//        Payment payment = order.
-//        if(payment.getPaymentState() == PaymentState.CONFIRMED) // already paid , ignore
-//        {
-//            return;
-//        }
-//
-//        paymentService.updateState(payment,PaymentState.EXPIRED);
-//        order.setOrderState(OrderState.CANCELED);
-//        // release stock
-//        Map<Long , Integer> iq_quantity_map = order.getOrderItems().stream().collect(Collectors.toMap(OrderItem::getProduct_id , OrderItem::getQuantity));
-//
-//        stockHandle(iq_quantity_map, StockService.StockOperation.RELEASE);
-//        log.info("order:{} expired and handled", orderId);
+        if(order.getOrderState() != OrderState.PENDING) // paid or cancelled or refunded so ignore
+        {
+            // ignore
+            return;
+        }
+        order.setOrderState(OrderState.EXPIRED);
+        // release stock
+        Map<Long , Integer> iq_quantity_map = order.getOrderItems().stream().collect(Collectors.toMap(OrderItem::getProduct_id , OrderItem::getQuantity));
+
+        stockService.updatestock(iq_quantity_map, StockService.StockOperation.RELEASE);
+
     }
     @Override
     @Transactional(isolation = Isolation.READ_COMMITTED)
@@ -136,9 +139,11 @@ public class StripeWebhookHandler implements PaymentWebhookParser, PaymentWebhoo
             case SUCCESS -> {
                 handlePaymentSuccess(event) ;
                 log.info("order:{} paid successfully", event.getMetaData().get("OrderId"));
-                break;
             }
-            case SESSION_EXPIRED -> handleSessionExpire(event);
+            case SESSION_EXPIRED -> {
+                handleSessionExpire(event);
+                log.info("order:{} expired and handled", event.getMetaData().get("OrderId"));
+            }
         }
     }
 }

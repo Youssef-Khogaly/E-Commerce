@@ -1,5 +1,5 @@
 package com.ecommerce.entities.orders;
 
 public enum OrderState {
-    CANCELED , REFUNDED , PENDING , SHIPPING , DELIVERED
+    CANCELED , REFUNDED, EXPIRED , PENDING , PROCESSING,SHIPPING , DELIVERED
 }

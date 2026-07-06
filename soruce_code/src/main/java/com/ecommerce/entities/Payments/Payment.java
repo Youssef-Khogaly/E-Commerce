@@ -1,17 +1,13 @@
 package com.ecommerce.entities.Payments;
 
-import com.ecommerce.DTO.Money;
 import com.ecommerce.entities.orders.Order;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.SQLDelete;
 
 import java.util.Objects;
-import java.util.UUID;
 
 /*
 
@@ -47,7 +43,7 @@ public class Payment {
 
     private Long amount;
     private String currency;
-    private String transaction_id;
+    private String transactionId;
 
     @Override
     public boolean equals(Object o) {

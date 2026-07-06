@@ -14,7 +14,7 @@ public class PaymentMapper {
         payment.setPaymentState(paymentDTO.getPaymentState());
         payment.setCurrency(paymentDTO.getCurrency());
         payment.setAmount(paymentDTO.getAmount());
-        payment.setTransaction_id(paymentDTO.getTransaction_id());
+        payment.setTransactionId(paymentDTO.getTransaction_id());
         return payment;
     }
 }
