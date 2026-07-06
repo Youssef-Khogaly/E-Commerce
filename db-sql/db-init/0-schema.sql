@@ -120,7 +120,7 @@ CREATE TABLE IF NOT EXISTS cart_item (
     constraint fk_cart foreign key (cart_id) references cart(cart_id)
     );
 CREATE TABLE IF NOT EXISTS CustomerOrder (
-                                             order_id  binary(16) primary key,
+                                             id  bigint auto_increment primary key,
                                              cust_id  bigint  ,
                                              recipientName VARCHAR(63) not null ,
                                              recipientPhone VARCHAR(63) not null ,
@@ -129,8 +129,12 @@ CREATE TABLE IF NOT EXISTS CustomerOrder (
                                              street VARCHAR(63) not null ,
                                              building VARCHAR(63) not null ,
                                              order_state ENUM('CANCELED','REFUNDED','PENDING','PAID','SHIPPING','DELIVERED') not null ,
-                                             currency_code varchar(10) not null,
+                                             currency_code varchar(4) not null,
                                              subTotal bigint ,
+
+                                            session_id varchar(255) default null unique ,
+                                            expireAt bigint not null ,
+                                            paymentMethod enum('Stripe')
                                              CONSTRAINT fk_order_customer FOREIGN KEY (cust_id)
                                                  REFERENCES customer(cust_id)
                                                  ON DELETE RESTRICT
@@ -139,7 +143,7 @@ CREATE TABLE IF NOT EXISTS CustomerOrder (
 
 CREATE TABLE IF NOT EXISTS order_item (
                                           id bigint auto_increment primary key not null ,
-                                          order_id  binary(16) not null ,
+                                          order_id bigint auto_increment not null ,
                                           product_id bigint  ,
                                           name  varchar(64) ,
                                           description varchar(256),
@@ -147,7 +151,7 @@ CREATE TABLE IF NOT EXISTS order_item (
                                           unitPriceInCents bigint not null ,
                                           discountInCents bigint not null,
                                           subTotalInCents bigint  not null ,
-                                          currency_code varchar(10) not null,
+                                          currency_code varchar(4) not null,
                                           CONSTRAINT fk_orderitem_order FOREIGN KEY (order_id)
                                               REFERENCES CustomerOrder(order_id)
                                               ON UPDATE CASCADE
@@ -156,13 +160,12 @@ CREATE TABLE IF NOT EXISTS order_item (
 
 -- PAYMENTS
 CREATE TABLE IF NOT EXISTS Payment (
-                                       payment_id  binary(16) primary key ,
-                                       order_id  binary(16) not null ,
-                                       paymentState ENUM('canceled' ,'expired' ,'pending' ,'confirmed','refunded') DEFAULT 'pending' not null,
-                                       paymentMethod enum('Stripe'),
-                                       transaction_id varchar(255) default null,
-                                       session_id varchar(255) default null unique ,
-                                       expireAt bigint not null ,
+                                       id bigint auto_increment primary key ,
+                                       order_id  bigint auto_increment not null ,
+                                       paymentState ENUM('FAILEd' ,'PAID' ,'REFUNDED') not null,
+                                       transaction_id varchar(255) not null,
+                                       amount bigint not null,
+                                       currency varchar(4) not null,
                                        CONSTRAINT fk_payment_order FOREIGN KEY (order_id)
                                            REFERENCES CustomerOrder(order_id)
                                            ON UPDATE CASCADE
