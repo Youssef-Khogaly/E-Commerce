@@ -5,19 +5,4 @@
       <excludeFolder url="file://$MODULE_DIR$/src/test" />
     </content>
   </component>
-  <component name="FacetManager">
-    <facet type="jpa" name="JPA">
-      <configuration>
-        <setting name="validation-enabled" value="true" />
-        <setting name="provider-name" value="Hibernate" />
-        <datasource-mapping>
-          <factory-entry name="demo" value="2bd81d24-7a31-43ab-98c0-a59b33f2d36f" />
-          <factory-entry name="entityManagerFactory" value="2bd81d24-7a31-43ab-98c0-a59b33f2d36f" />
-        </datasource-mapping>
-        <naming-strategy-map>
-          <unit-entry name="entityManagerFactory" />
-        </naming-strategy-map>
-      </configuration>
-    </facet>
-  </component>
 </module>
