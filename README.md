@@ -52,7 +52,7 @@ apply to current authenticated user
   - `DELETE /api/me/cart/items` – Remove item  
   - `GET /api/me/cart` – View cart  
 - **Checkout**
-  - `POST /api/me/checkout` – Checkout via Stripe  
+  - `POST /api/me/checkout` – Checkout 
 - **Orders**
   - `GET /api/me/orders` – List orders  
   - `GET /api/me/orders/{id}` – Get order by ID  
@@ -70,13 +70,69 @@ apply to current authenticated user
 - [ ]  Implement product reviews and ratings  
 - [X]  Use docker and docker compose to simplify setup and deployment
 ## Running with Docker
+### Configuration
 
-This project uses Docker and Docker Compose to simplify setup and deployment.  
-All services (backend, database) run in isolated containers, so you don't need to install dependencies manually.
+1.  Clone the repository:
+    ```sh
+    git clone https://github.com/youssef-khogaly/E-learning-Platform.git
+    cd E-learning-Platform
+    ```
 
+2.  Create the backend environment file at `source_code/backend.env` with your credentials:
+    ```env
+    # Database Configuration
+    DB_IP=db-sql-service
+    DB_PORT=3306
+    DB_SchemaName=E_learning
+    DB_USER=your_db_user
+    DB_PASS=your_db_password
+
+    # Security
+    JWT_SECRET=your_super_secret_jwt_key_with_at_least_256_bits_of_entropy
+
+    # External Service API Keys
+    StripeApisec=sk_your_stripe_secret_key
+    StripeWhsec=whsec_your_stripe_webhook_secret
+    
+    # AWS
+    AWS_SECRET_ACCESS_KEY=
+    AWS_ACCESS_KEY_ID=
+    AWS_REGION=
+    cloud.aws.bucket.name=
+    ```
+
+3.  Create the database environment file at `DB-init/db-sql.env`:
+    ```env
+    MYSQL_ROOT_PASSWORD=your_root_password
+    MYSQL_DATABASE=E_learning
+    MYSQL_USER=your_db_user
+    MYSQL_PASSWORD=your_db_password
+
+    ### Running the Application
+
+4. Build the application's JAR file using Maven:
+    ```sh
+    cd source_code
+    ./mvnw clean package
+    ```
+
+5. Start the application and the MySQL database using Docker Compose:
+    ```sh
+    docker-compose up --build -d
+    ```
+
+6. Stripe webhook 
+   1. install Striple CLI https://docs.stripe.com/stripe-cli/install
+   2. login to stripe account and forward webhook
+       ```bash
+           stripe login
+           stripe listen --events checkout.session.completed,checkout.session.expired --forward-to localhost:8080/api/webhooks/stripe
+
+       ```
+  3. do not forget to set StripeWhsec enviroment variable to the webhook secret
 ## Tech Stack
-- **Backend:** Spring Boot, Spring JPA, Hibernate, Spring MVC  
-- **Security:** Spring Security, JWT  
+- **Backend:** JAVA 17 ,Spring Boot, Spring JPA, Hibernate, Spring MVC , Spring Security, JWT
 - **Database:** MySQL  
-- **Payment Gateway:** Stripe  
+- **Payment Gateway:** Stripe
+- - **Cloud storage:** Amazon s3
 - **Build Tool:** Maven  Docker Docker-compose

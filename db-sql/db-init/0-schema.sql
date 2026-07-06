@@ -134,7 +134,7 @@ CREATE TABLE IF NOT EXISTS CustomerOrder (
 
                                             session_id varchar(255) default null unique ,
                                             expireAt bigint not null ,
-                                            paymentMethod enum('Stripe')
+                                            paymentMethod enum('Stripe'),
                                              CONSTRAINT fk_order_customer FOREIGN KEY (cust_id)
                                                  REFERENCES customer(cust_id)
                                                  ON DELETE RESTRICT

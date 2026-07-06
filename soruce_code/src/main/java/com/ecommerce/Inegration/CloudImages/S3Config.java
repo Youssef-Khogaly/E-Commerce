@@ -16,7 +16,6 @@ public class S3Config {
     S3Client s3Client(@Value("${AWS_SECRET_ACCESS_KEY}") String secKey
             , @Value("${AWS_ACCESS_KEY_ID}") String accessKey , @Value("${AWS_REGION}") String region){
         var credentials = AwsBasicCredentials.create(accessKey,secKey);
-
         return S3Client
                 .builder().region(Region.of(region)).credentialsProvider(StaticCredentialsProvider.create(credentials))
                 .build();
