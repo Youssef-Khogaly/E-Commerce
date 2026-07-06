@@ -35,28 +35,19 @@ public class OrderController{
         return ResponseEntity.ok(orderListViews);
     }
     @GetMapping("/{id}")
-    ResponseEntity<?>getOrder(@PathVariable(required = true) @NotEmpty @NotNull String id,@AuthenticationPrincipal CustomUserDetails user){
-        UUID idUUID;
+    ResponseEntity<?>getOrder(@PathVariable(required = true) @NotEmpty @NotNull Long id,@AuthenticationPrincipal CustomUserDetails user){
         long cust_id = user.getId();
-        try{
-            idUUID= UUID.fromString(id);
-        } catch (RuntimeException e) {
-            throw new BadRequestException(e.getMessage());
-        }
-        OrderDTOView orderDTOView = orderService.getOrder(cust_id,idUUID);
+
+        OrderDTOView orderDTOView = orderService.getOrder(cust_id,id);
 
         return ResponseEntity.ok(orderDTOView);
     }
     @PostMapping("/{id}/cancel")
-    ResponseEntity<Void> cancelOrder(@PathVariable @NotEmpty @NotNull String id,@AuthenticationPrincipal CustomUserDetails user){
+    ResponseEntity<Void> cancelOrder(@PathVariable @NotEmpty @NotNull Long id,@AuthenticationPrincipal CustomUserDetails user){
         UUID idUUID;
         long cust_id = user.getId();
-        try{
-            idUUID= UUID.fromString(id);
-        } catch (RuntimeException e) {
-            throw new BadRequestException(e.getMessage());
-        }
-        orderService.cancelOrder(cust_id,idUUID);
+
+        orderService.cancelOrder(cust_id,id);
 
         return ResponseEntity.noContent().build();
     }

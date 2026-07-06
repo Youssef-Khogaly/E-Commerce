@@ -13,10 +13,9 @@ import java.util.UUID;
 @Setter
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class OrderDTOView {
-    private UUID order_id;
+    private Long order_id;
     private OrderState orderState;
     private PaymentMethod paymentMethod;
-    private String transactionId;
     private ShippingDTO shippingDTO;
     private Money total;
     private List<OrderItemDTO> orderItemDTOS;

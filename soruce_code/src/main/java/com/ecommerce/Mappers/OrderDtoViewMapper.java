@@ -4,7 +4,6 @@ import com.ecommerce.DTO.AddressDto;
 import com.ecommerce.DTO.Money;
 import com.ecommerce.DTO.OrderDTOView;
 import com.ecommerce.DTO.ShippingDTO;
-import com.ecommerce.entities.Payments.Payment;
 import com.ecommerce.entities.Shiping.ShipingMethod;
 import com.ecommerce.entities.orders.Order;
 import lombok.AllArgsConstructor;
@@ -19,8 +18,7 @@ public class OrderDtoViewMapper {
         orderview.setTotal(new Money(order.getSubTotal(),order.getCurrencyCode()));
         orderview.setOrder_id(order.getId());
         orderview.setOrderState(order.getOrderState());
-        orderview.setPaymentMethod(order.getPayment().getPaymentMethod());
-        orderview.setTransactionId(order.getPayment().getTransaction_id());
+        orderview.setPaymentMethod(order.getPaymentMethod());
         orderview.setOrderItemDTOS(order.getOrderItems().stream().map(orderItemDtoMapper::from).toList());
         var shippingDto = new ShippingDTO();
         shippingDto.setRecipientName(order.getRecipientName());

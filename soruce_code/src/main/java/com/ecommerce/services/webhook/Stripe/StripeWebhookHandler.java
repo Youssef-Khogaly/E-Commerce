@@ -92,29 +92,27 @@ public class StripeWebhookHandler implements PaymentWebhookParser, PaymentWebhoo
 
     private void handlePaymentSuccess(PaymentWebhookEvent event)
     {
-        UUID orderId = UUID.fromString(event.getMetaData().get("OrderId"));
+        Long orderId = Long.valueOf(event.getMetaData().get("OrderId"));
 
         Order order = orderJpaRepo.findByIdForPaymentEvent(orderId);
-        Payment payment = order.getPayment();
-        if(order.getOrderState() != OrderState.CANCELED && payment.getPaymentState() != PaymentState.EXPIRED){
-            log.error("Error stripe payment successfully order event with expired order , orderId:{} paymnetId:{} , transactionId : {}", orderId, payment.getId() ,event.getTransactionId());
-        }
-        if(payment.getPaymentState() == PaymentState.CONFIRMED) // duplicate stripe web event
-            return;
-        payment.setTransaction_id(event.getTransactionId());
-        payment.setPaymentState(PaymentState.CONFIRMED);
-        // order can't be deleted without payment
-        order.setOrderState(OrderState.SHIPPING);
-        // release stock
-        Map<Long , Integer> iq_quantity_map = order.getOrderItems().stream().collect(Collectors.toMap(OrderItem::getProduct_id, OrderItem::getQuantity));
-        stockService.updatestock(iq_quantity_map, StockService.StockOperation.COMMIT);
+//        if(order.getOrderState() != OrderState.CANCELED){
+//            log.error("Error stripe payment successfully order event with expired order , orderId:{} paymnetId:{} , transactionId : {}", orderId, payment.getId() ,event.getTransactionId());
+//        }
+//        if(payment.getPaymentState() == PaymentState.CONFIRMED) // duplicate stripe web event
+//            return;
+//        payment.setTransaction_id(event.getTransactionId());
+//        payment.setPaymentState(PaymentState.CONFIRMED);
+//        // order can't be deleted without payment
+//        order.setOrderState(OrderState.SHIPPING);
+//        // release stock
+//        Map<Long , Integer> iq_quantity_map = order.getOrderItems().stream().collect(Collectors.toMap(OrderItem::getProduct_id, OrderItem::getQuantity));
+//        stockService.updatestock(iq_quantity_map, StockService.StockOperation.COMMIT);
 
     }
 
     private void handleSessionExpire(PaymentWebhookEvent event)
     {
-        UUID paymentId = UUID.fromString(event.getMetaData().get("OrderPaymentId"));
-        UUID orderId = UUID.fromString(event.getMetaData().get("OrderId"));
+        Long orderId = Long.valueOf(event.getMetaData().get("OrderId"));
         Order order = orderJpaRepo.findByIdForPaymentEvent(orderId);
 //        Payment payment = order.
 //        if(payment.getPaymentState() == PaymentState.CONFIRMED) // already paid , ignore

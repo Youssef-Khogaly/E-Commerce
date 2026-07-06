@@ -1,9 +1,9 @@
 package com.ecommerce.entities.orders;
 
 import com.ecommerce.entities.Payments.Payment;
+import com.ecommerce.entities.Payments.PaymentMethod;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
@@ -15,9 +15,8 @@ import java.util.*;
 @Getter@Setter
 public class Order {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "order_id" , columnDefinition = "BINARY(16)")
-    private UUID id ;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id ;
     @Column(name = "recipientName")
     @NotEmpty(message = "recipient name is required")
     @Length(min = 1, max = 63 , message = "Recipient name length must be less that 63 char and not empty")
@@ -52,10 +51,15 @@ public class Order {
     @NotEmpty
     private List<OrderItem> orderItems;
 
-    @OneToOne(mappedBy = "order",cascade = {CascadeType.MERGE,CascadeType.PERSIST,CascadeType.REMOVE})
-    private Payment payment;
+    @OneToMany(mappedBy = "order",cascade = {CascadeType.MERGE,CascadeType.PERSIST,CascadeType.REMOVE})
+    private List<Payment> paymentList = new ArrayList<>();
     @Column(name = "cust_id")
     private Long customer_id;
+
+    @Enumerated(EnumType.STRING)
+    private PaymentMethod paymentMethod;
+    private String session_id;
+    private Long expireAt;
 
     public void addItem(OrderItem orderItem){
         orderItems.add(orderItem);

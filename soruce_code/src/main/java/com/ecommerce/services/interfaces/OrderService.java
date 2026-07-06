@@ -16,8 +16,8 @@ public interface OrderService {
      public Order createOrder(Order order);
      public CompletableFuture<Order> createOrderAsync(Order order);
      List<OrderDTOView> getOrders(Long cust_id);
-     OrderDTOView getOrder(Long customer_id , UUID orderId);
-     void cancelOrder(Long customer_id , UUID orderId);
-     void deleteOrder(UUID orderId);
+     OrderDTOView getOrder(Long customer_id , Long orderId);
+     void cancelOrder(Long customer_id , Long orderId);
+     void deleteOrder(Long orderId);
 
 }

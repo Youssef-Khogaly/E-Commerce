@@ -14,8 +14,10 @@ import com.ecommerce.repository.Order.OrderJpaRepo;
 import com.ecommerce.services.interfaces.IPaymentGatewayService;
 import com.ecommerce.services.interfaces.IPaymentService;
 import com.ecommerce.services.interfaces.OrderService;
+import jakarta.persistence.LockModeType;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
@@ -46,7 +48,6 @@ public class OrderServiceImpl implements OrderService {
         Order order = orderMapper.from(orderDTO);
 
         orderDTO.setOrder_id(order.getId());
-        orderDTO.getPaymentDTO().setId(order.getId());
         return order;
     }
 
@@ -76,7 +77,7 @@ public class OrderServiceImpl implements OrderService {
         List<Order> orders = orderJpaRepo.findAllByCustomerIdListView(cust_id);
         return orders.stream().map(orderDtoViewMapper::from).toList();
     }
-    public OrderDTOView getOrder(Long customer_id , UUID orderId){
+    public OrderDTOView getOrder(Long customer_id , Long orderId){
 
         Order order = orderJpaRepo.findByCustomerIdAndOrderId(orderId,customer_id);
         if(order == null)
@@ -87,18 +88,13 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional(isolation = Isolation.READ_COMMITTED)
-    public void cancelOrder(Long customer_id, UUID orderId) {
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    public void cancelOrder(Long customer_id, Long orderId) {
         Order order = orderJpaRepo.findWithAllByIdAndCustId(orderId,customer_id);
         if(order == null)
             throw new NotFoundException("order is not found or not attached to this customer");
         if(order.getOrderState() ==  OrderState.PENDING){
-            // cancel session
-            Payment payment = paymentService.findByOrderId(orderId).orElse(null);
-            if(payment == null){
-                log.error("unexpected !! Order without Payment , orderId: {}" , orderId);
-                return;
-            }
-            cancelSession(payment.getSession_id() , payment.getPaymentMethod());
+            cancelSession(order.getSession_id() , order.getPaymentMethod());
             // don't handle it stock un reservation logic here or update states
             // gateway gonna send webhook and event will be handled async
 
@@ -106,7 +102,7 @@ public class OrderServiceImpl implements OrderService {
         else if (order.getOrderState() == OrderState.SHIPPING || order.getOrderState() == OrderState.DELIVERED)
             throw new BadRequestException("can't cancel the order already paid");
         else if (OrderState.REFUNDED == order.getOrderState())
-            throw new BadRequestException("can't cancel refunded order");
+            throw new BadRequestException("can't cancel  order is already refunded");
         else {
             // already canceled or expired
             // nothing
@@ -115,7 +111,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public void deleteOrder(UUID orderId) {
+    public void deleteOrder(Long orderId) {
         orderJpaRepo.deleteById(orderId);
     }
 

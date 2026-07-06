@@ -14,9 +14,8 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 public class PaymentGatewayOrderModel {
-    private UUID order_id;
-    private  long customer_id;
-    private  UUID payment_id;
+    private Long order_id;
+    private  Long customer_id;
     private  List<PaymentGatewayLineItem> items;
 
 }

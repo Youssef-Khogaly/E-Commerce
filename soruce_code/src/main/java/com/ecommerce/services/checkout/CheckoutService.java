@@ -47,7 +47,6 @@ public class CheckoutService {
     private final CartService cartService;
     private final OrderService orderService;
     private final OrderMapper orderMapper;
-    private final IPaymentService paymentService;
     private List<PaymentGatewayLineItem> toItemModel(List<OrderItem> orderItems,Map<Long , List<String>>productId_Images){
 
         return orderItems.stream().map(p ->{
@@ -64,11 +63,10 @@ public class CheckoutService {
         }).toList();
 
     }
-    private PaymentGatewayOrderModel createPaymentOrderModel(Order order ,Payment payment,Map<Long , List<String>>productId_Images){
+    private PaymentGatewayOrderModel createPaymentOrderModel(Order order,Map<Long , List<String>>productId_Images){
         PaymentGatewayOrderModel paymentOrder = new PaymentGatewayOrderModel();
         paymentOrder.setCustomer_id(order.getCustomer_id());
         paymentOrder.setItems(toItemModel(order.getOrderItems(),productId_Images));
-        paymentOrder.setPayment_id(payment.getId());
         paymentOrder.setOrder_id(order.getId());
         return  paymentOrder;
     }
@@ -87,30 +85,27 @@ public class CheckoutService {
             throw new RuntimeException(e);
         }
         Order order = null;
-        Payment payment = null;
         PaymentSession paymentSession = null;
         try{
             order = orderMapper.from(cart,req.shipping());
             order.setOrderState(OrderState.PENDING);
+            order.setPaymentMethod(req.paymentMethod());
             order = orderService.createOrder(order);
-            payment = paymentService.create(order,req.paymentMethod());
-            // create model
-            PaymentGatewayOrderModel paymentOrder = createPaymentOrderModel(order,payment,productId_Images);
 
-            SessionGenerationCommand command =  new SessionGenerationCommand(paymentOrder, Duration.ofMinutes(40),"https://www.google.com/","https://www.google.com/" ,payment.getPaymentMethod());
+            // create model
+            PaymentGatewayOrderModel paymentOrder = createPaymentOrderModel(order,productId_Images);
+
+            SessionGenerationCommand command =  new SessionGenerationCommand(paymentOrder, Duration.ofMinutes(40),"https://www.google.com/","https://www.google.com/" ,order.getPaymentMethod());
 
             paymentSession = paymentGatewayService.generateSessionUrl(command);
-            payment.setExpireAt(paymentSession.getExpireAt().getEpochSecond());
-            payment.setSession_id(paymentSession.getSession_id());
-            paymentService.save(payment);
+            order.setSession_id(paymentSession.getSession_id());
+            order.setExpireAt(paymentSession.getExpireAt().toEpochMilli());
             return paymentSession;
         }
         catch (Exception e) {
             stockService.updatestock(id_quantityMap, StockService.StockOperation.RELEASE);
             if(order != null)
                 orderService.deleteOrder(order.getId());
-            if(payment != null)
-                paymentService.deletePayment(payment.getId());
             throw e;
         }
 

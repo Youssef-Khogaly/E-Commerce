@@ -12,9 +12,8 @@ public class PaymentMapper {
     public Payment from(PaymentDTO paymentDTO){
         var payment = new Payment();
         payment.setPaymentState(paymentDTO.getPaymentState());
-        payment.setPaymentMethod(paymentDTO.getPaymentMethod());
-        payment.setExpireAt(paymentDTO.getExpireAt());
-        payment.setSession_id(paymentDTO.getSession_id());
+        payment.setCurrency(paymentDTO.getCurrency());
+        payment.setAmount(paymentDTO.getAmount());
         payment.setTransaction_id(paymentDTO.getTransaction_id());
         return payment;
     }

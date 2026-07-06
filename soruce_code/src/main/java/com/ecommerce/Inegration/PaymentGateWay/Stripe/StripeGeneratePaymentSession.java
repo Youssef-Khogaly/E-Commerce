@@ -41,11 +41,9 @@ public class StripeGeneratePaymentSession implements GeneratePaymentSession {
                             .setSuccessUrl(command.getSuccessUrl())
                             .setCancelUrl(command.getFailUrl())
                             .putMetadata("OrderId",String.valueOf(command.getOrderModel().getOrder_id()))
-                            .putMetadata("OrderPaymentId" , command.getOrderModel().getPayment_id().toString())
                             .setPaymentIntentData(
                                     SessionCreateParams.PaymentIntentData.builder()
-                                            .putMetadata("OrderId",String.valueOf(command.getOrderModel().getOrder_id()))
-                                            .putMetadata("OrderPaymentId" , command.getOrderModel().getPayment_id().toString()).build()
+                                            .putMetadata("OrderId",String.valueOf(command.getOrderModel().getOrder_id())).build()
                             )
                             .build();
     }

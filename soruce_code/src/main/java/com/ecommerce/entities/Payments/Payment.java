@@ -1,5 +1,6 @@
 package com.ecommerce.entities.Payments;
 
+import com.ecommerce.DTO.Money;
 import com.ecommerce.entities.orders.Order;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -34,22 +35,20 @@ CREATE TABLE IF NOT EXISTS payment (
 @NoArgsConstructor
 public class Payment {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "payment_id" , columnDefinition = "BINARY(16)")
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    @OneToOne(fetch = FetchType.LAZY )
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id")
     private Order order;
 
     @Enumerated(EnumType.STRING)
     private PaymentState paymentState;
-    @Enumerated(EnumType.STRING)
-    private PaymentMethod paymentMethod;
 
+    private Long amount;
+    private String currency;
     private String transaction_id;
-    private String session_id;
-    private Long expireAt;
+
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
