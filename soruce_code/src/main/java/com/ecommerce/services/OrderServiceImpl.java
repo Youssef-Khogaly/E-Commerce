@@ -5,29 +5,23 @@ import com.ecommerce.Exception.BadRequestException;
 import com.ecommerce.Exception.NotFoundException;
 import com.ecommerce.Mappers.OrderDtoViewMapper;
 import com.ecommerce.Mappers.OrderMapper;
-import com.ecommerce.entities.Payments.Payment;
 import com.ecommerce.entities.Payments.PaymentMethod;
-import com.ecommerce.entities.Payments.PaymentState;
 import com.ecommerce.entities.orders.Order;
+import com.ecommerce.entities.orders.OrderItem;
 import com.ecommerce.entities.orders.OrderState;
 import com.ecommerce.repository.Order.OrderJpaRepo;
+import com.ecommerce.services.StockService.StockService;
 import com.ecommerce.services.interfaces.IPaymentGatewayService;
-import com.ecommerce.services.interfaces.IPaymentService;
 import com.ecommerce.services.interfaces.OrderService;
-import jakarta.persistence.LockModeType;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.jpa.repository.Lock;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.rmi.UnexpectedException;
 import java.util.List;
-import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 
 @Slf4j
@@ -39,7 +33,7 @@ public class OrderServiceImpl implements OrderService {
     private final IPaymentGatewayService paymentGatewayService;
     private final OrderMapper orderMapper;
     private final OrderDtoViewMapper orderDtoViewMapper;
-    private final IPaymentService paymentService;
+    private final StockService stockService;
     @Override
     public Order createOrder(OrderDTO orderDTO) {
         if(orderDTO.getOrderState() == null || orderDTO.getOrderState() != OrderState.PENDING)
@@ -88,24 +82,32 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional(isolation = Isolation.READ_COMMITTED)
-    @Lock(LockModeType.PESSIMISTIC_WRITE)
     public void cancelOrder(Long customer_id, Long orderId) {
         Order order = orderJpaRepo.findWithAllByIdAndCustId(orderId,customer_id);
         if(order == null)
             throw new NotFoundException("order is not found or not attached to this customer");
-        if(order.getOrderState() ==  OrderState.PENDING){
-            cancelSession(order.getSession_id() , order.getPaymentMethod());
-            // don't handle it stock un reservation logic here or update states
-            // gateway gonna send webhook and event will be handled async
 
-        }
-        else if (order.getOrderState() == OrderState.SHIPPING || order.getOrderState() == OrderState.DELIVERED)
-            throw new BadRequestException("can't cancel the order already paid");
-        else if (OrderState.REFUNDED == order.getOrderState())
-            throw new BadRequestException("can't cancel  order is already refunded");
-        else {
-            // already canceled or expired
-            // nothing
+
+        switch (order.getState())
+        {
+            case CANCELED,EXPIRED -> {
+                // ignore already cancelled
+                return ;
+            }
+            case REFUNDED -> throw new BadRequestException("can't cancel,  order is already refunded");
+            case SHIPPING -> throw new BadRequestException("can't cancel,  order is already shipped");
+            case DELIVERED -> throw new BadRequestException("can't cancel,  order is already delivered");
+            case PENDING -> {
+                order.setState(OrderState.CANCELED);
+                var idQuantityMap = order.getOrderItems().stream().collect(Collectors.toMap(OrderItem::getProduct_id, OrderItem::getQuantity));
+                stockService.updatestock(idQuantityMap, StockService.StockOperation.RELEASE);
+            }
+            case PROCESSING -> {
+                order.setState(OrderState.CANCELED);
+                var idQuantityMap = order.getOrderItems().stream().collect(Collectors.toMap(OrderItem::getProduct_id, OrderItem::getQuantity));
+                stockService.updatestock(idQuantityMap, StockService.StockOperation.RESTOCK);
+                // issue refund!! to do later
+            }
         }
 
     }

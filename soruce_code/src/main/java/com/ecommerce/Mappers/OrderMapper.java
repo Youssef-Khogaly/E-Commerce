@@ -5,9 +5,6 @@ import com.ecommerce.ApplicationConstants;
 import com.ecommerce.DTO.OrderDTO;
 import com.ecommerce.DTO.ShippingDTO;
 import com.ecommerce.entities.Carts.Cart;
-import com.ecommerce.entities.Payments.Payment;
-import com.ecommerce.entities.Payments.PaymentMethod;
-import com.ecommerce.entities.Payments.PaymentState;
 import com.ecommerce.entities.orders.Order;
 import com.ecommerce.entities.orders.OrderItem;
 import lombok.AllArgsConstructor;
@@ -21,7 +18,7 @@ public class OrderMapper {
     private final PaymentMapper paymentMapper;
     public Order from(OrderDTO orderDTO){
         var  order = new Order();
-        order.setOrderState(orderDTO.getOrderState());
+        order.setState(orderDTO.getOrderState());
         order.setOrderItems(orderItemMapper.from(orderDTO.getOrderItemDTOS()));
         // address
         order = setOrderShipping(order,orderDTO.getShippingDTO());

@@ -39,7 +39,7 @@ public class Order {
     private String building;
     @Column(name = "order_state")
     @Enumerated(EnumType.STRING)
-    private OrderState orderState;
+    private OrderState state;
 
 
     private Long subTotal;

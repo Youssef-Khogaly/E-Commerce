@@ -17,7 +17,7 @@ public class OrderDtoViewMapper {
         var orderview = new OrderDTOView();
         orderview.setTotal(new Money(order.getSubTotal(),order.getCurrencyCode()));
         orderview.setOrder_id(order.getId());
-        orderview.setOrderState(order.getOrderState());
+        orderview.setOrderState(order.getState());
         orderview.setPaymentMethod(order.getPaymentMethod());
         orderview.setOrderItemDTOS(order.getOrderItems().stream().map(orderItemDtoMapper::from).toList());
         var shippingDto = new ShippingDTO();

@@ -4,6 +4,7 @@ import com.ecommerce.entities.Carts.Cart;
 import com.ecommerce.entities.Products.ProductStock;
 import com.ecommerce.repository.StockJpaRepo;
 import lombok.AllArgsConstructor;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
@@ -21,18 +22,24 @@ public class StockService {
     public enum StockOperation {
         RESERVE,        // Temporarily reserve stock
         RELEASE,        // Release reserved stock (cancel)
-        COMMIT          // Decrement total stock after payment
+        COMMIT,          // Decrement total stock after payment
+        RESTOCK        // add to stock
+    }
+    private void addToStock(List<ProductStock> data , Map<Long,Integer> id_quantityMap)
+    {
+        for(ProductStock stock : data)
+        {
+            stock.setStock(stock.getStock() + id_quantityMap.get(stock.getProduct_id()));
+        }
     }
 
-
-
-    @Transactional(isolation = Isolation.READ_COMMITTED , propagation = Propagation.REQUIRES_NEW)
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     // ids should be valid
     public void updatestock(Map<Long,Integer> id_quantityMap , StockOperation operationEnum) {
         if(operationEnum == null || id_quantityMap == null)
                 throw new NullPointerException("null pointer passed to update stock");
-        List<Long>ids = id_quantityMap.keySet().stream().toList();
-        List<ProductStock> data = stockJpaRepo.findAllByIdForUpdate(ids);
+
+        List<ProductStock> data = stockJpaRepo.findAllByIdForUpdate(id_quantityMap.keySet());
         if(data.size() != id_quantityMap.size())
             throw new IllegalArgumentException("can't lock stock for non existing product id");
 
@@ -44,6 +51,9 @@ public class StockService {
         }
         else if(operationEnum  == StockOperation.COMMIT)
             totalStock(data,id_quantityMap);
+
+        else if (operationEnum == StockOperation.RESTOCK)
+            addToStock(data,id_quantityMap);
 
         return;
     }

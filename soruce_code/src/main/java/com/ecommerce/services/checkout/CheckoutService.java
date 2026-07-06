@@ -1,40 +1,24 @@
 package com.ecommerce.services.checkout;
 
-import com.ecommerce.DTO.*;
 import com.ecommerce.DTO.Requests.CheckoutReq;
 import com.ecommerce.Exception.BadRequestException;
-import com.ecommerce.Exception.ConflictException;
 import com.ecommerce.Inegration.PaymentGateWay.Model.*;
-import com.ecommerce.Mappers.OrderDTOMapper;
 import com.ecommerce.Mappers.OrderMapper;
 import com.ecommerce.entities.Carts.Cart;
 import com.ecommerce.entities.Carts.CartItem;
-import com.ecommerce.entities.Payments.Payment;
-import com.ecommerce.entities.Payments.PaymentState;
-import com.ecommerce.entities.Products.Product;
-import com.ecommerce.entities.Products.ProductImages;
 import com.ecommerce.entities.orders.Order;
 import com.ecommerce.entities.orders.OrderItem;
 import com.ecommerce.entities.orders.OrderState;
-import com.ecommerce.repository.CartJpaRepo;
-import com.ecommerce.repository.PaymentJpaRepo;
-import com.ecommerce.repository.Product.ProductJpaRepo;
 import com.ecommerce.services.StockService.StockService;
 import com.ecommerce.services.interfaces.CartService;
 import com.ecommerce.services.interfaces.IPaymentGatewayService;
-import com.ecommerce.services.interfaces.IPaymentService;
 import com.ecommerce.services.interfaces.OrderService;
-import jakarta.persistence.OptimisticLockException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 @Service
@@ -88,7 +72,7 @@ public class CheckoutService {
         PaymentSession paymentSession = null;
         try{
             order = orderMapper.from(cart,req.shipping());
-            order.setOrderState(OrderState.PENDING);
+            order.setState(OrderState.PENDING);
             order.setPaymentMethod(req.paymentMethod());
             order = orderService.createOrder(order);
 

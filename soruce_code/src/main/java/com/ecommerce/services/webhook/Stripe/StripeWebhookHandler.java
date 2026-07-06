@@ -106,8 +106,8 @@ public class StripeWebhookHandler implements PaymentWebhookParser, PaymentWebhoo
         order.getPaymentList().add(payment);
 
         // processing should overwrite everything else expect cancelled!! since we need to issue a refund for this transaction
-        if(order.getOrderState() != OrderState.CANCELED){
-            order.setOrderState(OrderState.PROCESSING);
+        if(order.getState() != OrderState.CANCELED){
+            order.setState(OrderState.PROCESSING);
             // commit stock
             Map<Long , Integer> iq_quantity_map = order.getOrderItems().stream().collect(Collectors.toMap(OrderItem::getProduct_id, OrderItem::getQuantity));
             stockService.updatestock(iq_quantity_map, StockService.StockOperation.COMMIT);
@@ -119,12 +119,12 @@ public class StripeWebhookHandler implements PaymentWebhookParser, PaymentWebhoo
     {
         Long orderId = Long.valueOf(event.getMetaData().get("OrderId"));
         Order order = orderJpaRepo.findByIdForPaymentEvent(orderId);
-        if(order.getOrderState() != OrderState.PENDING) // paid or cancelled or refunded so ignore
+        if(order.getState() != OrderState.PENDING) // paid or cancelled or refunded so ignore
         {
             // ignore
             return;
         }
-        order.setOrderState(OrderState.EXPIRED);
+        order.setState(OrderState.EXPIRED);
         // release stock
         Map<Long , Integer> iq_quantity_map = order.getOrderItems().stream().collect(Collectors.toMap(OrderItem::getProduct_id , OrderItem::getQuantity));
 
