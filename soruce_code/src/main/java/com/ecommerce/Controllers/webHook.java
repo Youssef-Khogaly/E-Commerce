@@ -44,10 +44,7 @@ public class webHook {
         UUID paymentId;
         switch (event.getType()){
             case "payment_intent.succeeded":
-                PaymentIntent paymentIntent = (PaymentIntent) event.getDataObjectDeserializer().getObject().orElseThrow(() -> new RuntimeException("stripe web hook failed parsing the payment intent"));
-                 orderId = UUID.fromString(paymentIntent.getMetadata().get("OrderId"));
-                 paymentId = UUID.fromString(paymentIntent.getMetadata().get("OrderPaymentId"));
-                String transactionId = paymentIntent.getLatestCharge();
+
                 paymentHookHandler.handle(orderId,paymentId,transactionId, PaymentHookHandler.PaymentEvents.PAID_SUCCESSFULLY);
                     ;
                 break;

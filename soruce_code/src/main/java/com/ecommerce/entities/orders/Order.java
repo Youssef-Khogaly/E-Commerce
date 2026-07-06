@@ -52,7 +52,7 @@ public class Order {
     @NotEmpty
     private List<OrderItem> orderItems;
 
-    @OneToOne(mappedBy = "order")
+    @OneToOne(mappedBy = "order",cascade = {CascadeType.MERGE,CascadeType.PERSIST,CascadeType.REMOVE})
     private Payment payment;
     @Column(name = "cust_id")
     private Long customer_id;

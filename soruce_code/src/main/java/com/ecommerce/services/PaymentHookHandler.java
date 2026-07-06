@@ -9,6 +9,7 @@ import com.ecommerce.repository.Order.OrderJpaRepo;
 import com.ecommerce.repository.PaymentJpaRepo;
 import com.ecommerce.services.StockService.StockService;
 import com.ecommerce.services.interfaces.IPaymentService;
+import com.ecommerce.services.webhook.PaymentEvents;
 import jakarta.persistence.LockModeType;
 import jakarta.persistence.OptimisticLockException;
 import lombok.AllArgsConstructor;
@@ -29,9 +30,6 @@ import java.util.stream.Collectors;
 public class PaymentHookHandler {
 
     private final Handler handler;
-    public static enum PaymentEvents{
-        PAID_SUCCESSFULLY , SESSION_EXPIRED
-    }
     public void handle(UUID orderId , UUID paymentId , String transaction_id ,PaymentEvents event){
         int maxRetry = 5;
         int attempts = 0;
@@ -39,7 +37,7 @@ public class PaymentHookHandler {
         while(attempts < maxRetry){
             attempts++;
                 try{
-                    if(event == PaymentEvents.PAID_SUCCESSFULLY){
+                    if(event == PaymentEvents.SUCCESS){
                         handler.paidSuccessfullyHandle(orderId,paymentId,transaction_id);
                         break;
                     }
