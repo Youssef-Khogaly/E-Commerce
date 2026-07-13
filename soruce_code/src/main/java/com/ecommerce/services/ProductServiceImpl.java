@@ -86,7 +86,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public boolean isProductExists(Long product_id) {
-        return !productJpaRepo.isExists(product_id);
+        return productJpaRepo.isExists(product_id);
     }
 
     @Override
@@ -99,7 +99,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public void deleteProduct(Long product_id) {
-        if(productJpaRepo.existsById(product_id))
+        if(!productJpaRepo.existsById(product_id))
             throw new NotFoundException("product with id:" +product_id +" doesn't exists");
 
         productJpaRepo.deleteById(product_id);
@@ -150,8 +150,8 @@ public class ProductServiceImpl implements ProductService {
         Set<Category> categories = categoryJpaRepo.findAllById(categoriesIds).stream().collect(Collectors.toUnmodifiableSet());
         if(categories.size() != categoriesIds.size()){
             Set<Integer>existsIds = categories.stream().map(Category::getCate_id).collect(Collectors.toSet());
-            categoriesIds.removeAll(existsIds);
-            throw new NotFoundException("bad categories id:" + categoriesIds + "doesn't exist");
+
+            throw new NotFoundException("bad categories id:" + categoriesIds.stream().filter(existsIds::contains).toList() + "doesn't exist");
         }
         product.setCategories(categories);
     }
