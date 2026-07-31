@@ -159,6 +159,9 @@ public class SecurityConfig {
         var reg = PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.POST,"/api/auth/register");
         var webhook = PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.POST,"/api/webhook/**");
         var categories = PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.GET , "/api/categories");
-        return List.of(products,login,reg,webhook,categories);
+        var swagger1 = PathPatternRequestMatcher.withDefaults().matcher("/v3/api-docs/**");
+        var swagger2 = PathPatternRequestMatcher.withDefaults().matcher("/swagger-ui/**");
+        var swagger3 = PathPatternRequestMatcher.withDefaults().matcher("/swagger-ui.html");
+        return List.of(products,login,reg,webhook,categories,swagger1,swagger2,swagger3);
     }
 }
