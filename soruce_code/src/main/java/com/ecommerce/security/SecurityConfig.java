@@ -109,6 +109,9 @@ public class SecurityConfig {
                                     .requestMatchers(HttpMethod.POST, "/api/me/orders/**").hasRole(UserRoles.CUSTOMER.toString())
                                     // web hook config
                                     .requestMatchers(HttpMethod.POST,"/api/webhook/**").not().authenticated()
+
+                                    // allow swagger ui end point
+                                    .requestMatchers("/v3/api-docs/**","/swagger-ui/**","/swagger-ui.html").permitAll()
                 );
         // disable session creation
         http.sessionManagement(s ->{
