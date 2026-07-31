@@ -29,6 +29,8 @@
 	<properties>
 		<java.version>17</java.version>
 		<aws.java.sdk.version>2.40.16</aws.java.sdk.version>
+
+		<start-class>com.ecommerce.Application</start-class>
 	</properties>
 	<dependencyManagement>
 		<dependencies>
