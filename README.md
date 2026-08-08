@@ -23,16 +23,17 @@ Supports product management, categories, cart, orders, checkout with Stripe paym
 ![alt text](https://github.com/Youssef-Khogaly/E-Commerce/blob/main/E_Commerce_DBSCHEM_DEMOV2.png?raw=true)
 
 
---
-API Documentation — Swagger UI
+--------
+## API Documentation — Swagger UI
 
 The API is documented using OpenAPI 3 and can be explored  through Swagger UI.
 After running the application, visit:
     http://localhost:8080/swagger-ui/index.html
 
 The generated OpenAPI specification is also available at:
+    http://localhost:8080/v3/api-docs
 
-http://localhost:8080/v3/api-docs
+
 ---
 ## To Do / Future Improvements
 - [X]  Implement product images end points and integrate with amazon s3 cloud storage
