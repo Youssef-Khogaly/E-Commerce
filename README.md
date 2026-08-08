@@ -24,40 +24,15 @@ Supports product management, categories, cart, orders, checkout with Stripe paym
 
 
 --
-## API Endpoints
+API Documentation — Swagger UI
 
-### Public
-- `POST /api/auth/register` – Register user  
-- `POST /api/auth/login` – Login & receive JWT  
-- `GET /api/products` – Search products (pagination, filter, sort)  
-- `GET /api/products/{id}` – Get product details
-- `GET /api/products/{id}/images` – get all product images
-- `POST /api/webhook/stripe` – handle Stripe webhook events  
+The API is documented using OpenAPI 3 and can be explored  through Swagger UI.
+After running the application, visit:
+    http://localhost:8080/swagger-ui/index.html
 
-### Admin
-- `POST /api/products` – Create product  
-- `PUT /api/products/{id}` – Update product  
-- `POST /api/categories?name=` – Create category  
-- `DELETE /api/categories/{id}` – Delete category  
-- `GET   /api/images/{id}`     – get image public url
-- `POST /api/images`     – upload and save images
-- `PUT /api/products/{id}/images/?imagesIds=` – attach these images to this product
-- `PUT /api/products/{id}/images/?mainId=`     – set main image for product
-- 
-### Authenticated User (/me)
-apply to current authenticated user
-- **Cart**
-  - `POST /api/me/cart/items` – Add item  
-  - `PUT /api/me/cart/items` – Update quantity  
-  - `DELETE /api/me/cart/items` – Remove item  
-  - `GET /api/me/cart` – View cart  
-- **Checkout**
-  - `POST /api/me/checkout` – Checkout 
-- **Orders**
-  - `GET /api/me/orders` – List orders  
-  - `GET /api/me/orders/{id}` – Get order by ID  
-  - `POST /api/me/orders/{id}/cancel` – Cancel order  
+The generated OpenAPI specification is also available at:
 
+http://localhost:8080/v3/api-docs
 ---
 ## To Do / Future Improvements
 - [X]  Implement product images end points and integrate with amazon s3 cloud storage
@@ -93,7 +68,7 @@ apply to current authenticated user
     # External Service API Keys
     StripeApisec=sk_your_stripe_secret_key
     StripeWhsec=whsec_your_stripe_webhook_secret
-    
+            
     # AWS
     AWS_SECRET_ACCESS_KEY=
     AWS_ACCESS_KEY_ID=
