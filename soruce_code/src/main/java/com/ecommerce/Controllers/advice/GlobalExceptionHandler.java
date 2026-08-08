@@ -6,6 +6,7 @@ import com.ecommerce.Exception.ConflictException;
 import com.ecommerce.Exception.InvalidImageException;
 import com.ecommerce.Exception.NotFoundException;
 import com.ecommerce.services.StockService.OutOfStock;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.ValidationException;
@@ -26,9 +27,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler({MethodArgumentNotValidException.class,})
     public ResponseEntity<ErrorResponse>handleConstrain(MethodArgumentNotValidException exception , HttpServletRequest req){
 
-        List<String> messages = exception.getBindingResult().getFieldErrors().stream().map(e -> {
-            return e.getField() + ":"+ e.getDefaultMessage();
-        }).toList();
+        List<String> messages = exception.getBindingResult().getFieldErrors().stream().map(e -> e.getField() + ":"+ e.getDefaultMessage()).toList();
 
         ErrorResponse ret = new ErrorResponse(HttpStatus.BAD_REQUEST,messages,req.getRequestURI(), Instant.now());
         return ResponseEntity.badRequest().body(ret);
@@ -46,8 +45,8 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(ret);
     }
 
-    @ExceptionHandler({NotFoundException.class})
-    public ResponseEntity<ErrorResponse>handleResourcesNotFound(NotFoundException exception , HttpServletRequest req){
+    @ExceptionHandler({NotFoundException.class, EntityNotFoundException.class})
+    public ResponseEntity<ErrorResponse>handleResourcesNotFound(Exception exception , HttpServletRequest req){
 
         ErrorResponse ret = new ErrorResponse(HttpStatus.NOT_FOUND,List.of(exception.getMessage()),req.getRequestURI(), Instant.now());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ret);

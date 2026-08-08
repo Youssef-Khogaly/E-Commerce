@@ -1,6 +1,12 @@
 package com.ecommerce.DTO;
 
 import com.ecommerce.entities.Products.Product;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.annotation.Nullable;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,12 +20,22 @@ import java.util.Objects;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ProductDTO{
+    @Schema(name = "Product id", example = "1")
+    @Positive
     long id;
+    @Schema(example = "laptop")
+    @NotNull
+    @NotBlank
     String name ;
+    @Nullable
     String description ;
+    @NotNull
     Money price;
+    @Nullable
     DiscountDTO discount;
+    @PositiveOrZero
     int availableStock ;
+    @Nullable
     List<ImageDTO> imagesUrl;
 
 

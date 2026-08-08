@@ -1,6 +1,7 @@
 package com.ecommerce.Controllers;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import org.hibernate.validator.constraints.Range;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/reviews")
+@Hidden
 public class ReviewController {
 
 

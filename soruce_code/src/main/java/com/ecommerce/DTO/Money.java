@@ -1,6 +1,7 @@
 package com.ecommerce.DTO;
 
 import com.ecommerce.ApplicationConstants;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,6 +13,7 @@ import java.util.Currency;
 @Getter
 @AllArgsConstructor
 public class Money {
+    @Schema(description = "money in smallest unit", example = "100")
     private final long price;
     private final Currency currency;
 

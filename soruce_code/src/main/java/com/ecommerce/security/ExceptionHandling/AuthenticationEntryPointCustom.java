@@ -20,7 +20,7 @@ public class AuthenticationEntryPointCustom implements AuthenticationEntryPoint 
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
         response.setContentType("application/json;charset=UTF-8");
-        var error = new ErrorResponse(HttpStatus.valueOf(response.getStatus()), List.of(authException.getMessage()),request.getRequestURI(), Date.from(Instant.now()));
+        var error = new ErrorResponse(HttpStatus.valueOf(HttpStatus.UNAUTHORIZED.value()), List.of(authException.getMessage()),request.getRequestURI(), Date.from(Instant.now()));
         response.setStatus(HttpStatus.UNAUTHORIZED.value());
         ObjectMapper mapper = new ObjectMapper();
         mapper.writeValue(response.getWriter(),error);

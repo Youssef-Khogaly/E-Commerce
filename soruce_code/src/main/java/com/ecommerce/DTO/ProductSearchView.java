@@ -1,5 +1,8 @@
 package com.ecommerce.DTO;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.annotation.Nullable;
+import jakarta.validation.constraints.*;
 import lombok.Getter;
 
 import java.sql.Timestamp;
@@ -12,12 +15,24 @@ import java.time.Instant;
  */
 @Getter
 public class ProductSearchView {
+
+    @Schema(name = "Product id", example = "1")
+    @Positive
     private final long id;
+    @Schema(example = "laptop")
+    @NotBlank
     private final String title;
+    @Schema(example = "5")
+    @PositiveOrZero
     private final int availableStock;
+    @NotNull
     private final Money priceInCents;
+    @Nullable
     private final DiscountDTO discount;
+    @Schema(example = "wwww.s3.amazon.com/image3")
+    @Nullable
     private final String mainImgUrl;
+    @NotNull
     private final Instant addedAt;
 
     public ProductSearchView(Long id, String title, Integer availableStock, Long priceInCents, String mainImgUrl, Timestamp addedAt ) {

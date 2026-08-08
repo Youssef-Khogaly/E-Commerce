@@ -3,6 +3,7 @@ package com.ecommerce.Controllers;
 import com.ecommerce.services.webhook.Interfaces.PaymentWebhookParser;
 import com.ecommerce.services.webhook.Interfaces.PaymentWebhookPublisher;
 import com.ecommerce.services.webhook.Interfaces.PaymentWebhookValidator;
+import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
@@ -16,6 +17,7 @@ import java.util.concurrent.RejectedExecutionException;
 @RestController
 @RequestMapping("/api/webhook/stripe")
 @AllArgsConstructor
+@Hidden
 public class webHook {
     private final PaymentWebhookPublisher paymentWebhookPublisher;
     private final PaymentWebhookParser paymentWebhookParser;
@@ -24,7 +26,7 @@ public class webHook {
 
 
     @PostMapping
-    public ResponseEntity<?> hook(@RequestBody @NotBlank String rawBody , HttpServletRequest request
+    public ResponseEntity<Void> hook(@RequestBody @NotBlank String rawBody , HttpServletRequest request
     ) {
         try{
             paymentWebhookValidator.validate(request,rawBody);

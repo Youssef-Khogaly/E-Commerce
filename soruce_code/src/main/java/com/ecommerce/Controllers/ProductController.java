@@ -1,22 +1,32 @@
 package com.ecommerce.Controllers;
 
 
+import com.ecommerce.DTO.ErrorResponse;
 import com.ecommerce.DTO.ProductDTO;
 import com.ecommerce.DTO.ProductImageResponseDto;
 import com.ecommerce.DTO.ProductSearchView;
 import com.ecommerce.DTO.Requests.AddProductRequest;
 import com.ecommerce.DTO.Requests.PutProductRequest;
 
+import com.ecommerce.docs.RequireAuthDocs;
+import com.ecommerce.docs.CommonErrorDocs;
 import com.ecommerce.entities.Categories.Category;
 import com.ecommerce.Exception.BadRequestException;
 import com.ecommerce.services.interfaces.ProductService;
 import com.ecommerce.services.ProductSortByOptions;
 import com.ecommerce.services.ProductSortDirection;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.headers.Header;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import org.hibernate.validator.constraints.Length;
 import org.springframework.data.domain.Page;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -34,6 +44,16 @@ public class ProductController {
     private ProductService productService;
 
 
+
+    @Operation(summary = "product search and filtration")
+    @ApiResponses(
+            {
+                    @ApiResponse(responseCode = "200",content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,schema = @Schema(implementation = ProductSearchView.class)) ),
+                    @ApiResponse(responseCode = "400",description = "constrain violation",content = @Content(schema = @Schema(implementation = ErrorResponse.class),mediaType = MediaType.APPLICATION_JSON_VALUE)),
+                    @ApiResponse(responseCode = "500",description = "internal error",content = @Content(schema = @Schema(implementation = ErrorResponse.class),mediaType = MediaType.APPLICATION_JSON_VALUE))
+            }
+
+    )
     @GetMapping
     public ResponseEntity<Page<ProductSearchView>> getProducts(
             @RequestParam(name = "page",defaultValue = "0") @PositiveOrZero int page
@@ -54,6 +74,15 @@ public class ProductController {
         var result = productService.getProductSearchView(query);
         return ResponseEntity.ok(result);
     }
+
+    @Operation(summary = "get product")
+    @ApiResponses(
+            {
+                    @ApiResponse(responseCode = "200", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,schema = @Schema(implementation = ProductDTO.class)) ),
+            }
+
+    )
+    @CommonErrorDocs
     @GetMapping("/{id}")
     public ResponseEntity<ProductDTO>getProduct(@PathVariable @Positive long id){
 
@@ -62,20 +91,47 @@ public class ProductController {
         var p = productService.getProduct(id);
         return ResponseEntity.ok(p);
     }
+
+    @Operation(summary = "create new product" , description = "Required Role: Admin")
+    @ApiResponses(
+            {
+                    @ApiResponse(responseCode = "201",headers = {@Header(name = "Location",description = "api/products/1",example = "api/products/1")}),
+            }
+    )
+    @RequireAuthDocs
+    @CommonErrorDocs
     @PostMapping
-    public ResponseEntity<?> addNewProduct(@Valid @RequestBody AddProductRequest req){
+    public ResponseEntity<Void> addNewProduct(@Valid @RequestBody AddProductRequest req){
         ProductService.PostProductCommand command = new ProductService.PostProductCommand(
                 req.title(), req.description(),req.priceInCents(),req.stock());
         long id = productService.addProduct(command).getId();
         return ResponseEntity.created(URI.create("api/products/"+id)).build();
     }
+
+    @Operation(summary = "delete product" , description = "Required Role: Admin")
+    @ApiResponses(
+            {
+                    @ApiResponse(responseCode = "200"),
+            }
+    )
+    @RequireAuthDocs
+    @CommonErrorDocs
     @DeleteMapping("/{id}")
-    public  ResponseEntity<?> deleteProduct(@PathVariable  @Positive long id){
+    public  ResponseEntity<Void> deleteProduct(@PathVariable  @Positive long id){
         productService.deleteProduct(id);
         return ResponseEntity.ok().build();
     }
+
+    @Operation(summary = "update product", description = "Required Role: Admin")
+    @ApiResponses(
+            {
+                    @ApiResponse(responseCode = "200"),
+            }
+    )
+    @RequireAuthDocs
+    @CommonErrorDocs
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateProduct(@RequestBody @Valid PutProductRequest putProductRequest, @PathVariable @Valid @NotNull @Positive Long id){
+    public ResponseEntity<Void> updateProduct(@RequestBody @Valid PutProductRequest putProductRequest, @PathVariable @Valid @NotNull @Positive Long id){
 
         productService.updateProduct(
                 new ProductService.UpdateProductCommand(id,putProductRequest.title() , putProductRequest.description() ,putProductRequest.priceInCents(),putProductRequest.stock())
@@ -85,12 +141,28 @@ public class ProductController {
     }
 
     //////////////////// product category
+    @Operation(summary = "attach categories to product" , description = "Required Role: Admin")
+    @ApiResponses(
+            {
+                    @ApiResponse(responseCode = "200"),
+            }
+
+    )
+    @RequireAuthDocs
+    @CommonErrorDocs
     @PutMapping("/{id}/categories")
-    public ResponseEntity<?>putCategoryToProduct(@PathVariable @Valid @NotNull@Positive Long id ,@RequestBody @NotNull Set<@NotNull @Positive Integer> categoriesIds ){
+    public ResponseEntity<Void>putCategoryToProduct(@PathVariable @Valid @NotNull@Positive Long id ,@RequestBody @NotNull Set<@NotNull @Positive Integer> categoriesIds ){
 
         productService.putProductCategories(id,categoriesIds);
         return ResponseEntity.ok().build();
     }
+    @Operation(summary = "get product categories")
+    @ApiResponses(
+            {
+                    @ApiResponse(responseCode = "200",useReturnTypeSchema = true),
+            }
+    )
+    @CommonErrorDocs
     @GetMapping("/{id}/categories")
     public ResponseEntity<Collection<Category>>getProductCategory(@PathVariable @Valid @NotNull@Positive Long id ){
 
@@ -99,6 +171,14 @@ public class ProductController {
     }
     /// //////////////////
     /// / product images
+
+    @Operation(summary = "get product images")
+    @ApiResponses(
+            {
+                    @ApiResponse(responseCode = "200",useReturnTypeSchema = true ),
+            }
+    )
+    @CommonErrorDocs
     @GetMapping("/{id}/images")
     public ResponseEntity<List<ProductImageResponseDto>> getProductImages(@PathVariable  @NotNull  @Positive Long id){
 
@@ -106,11 +186,29 @@ public class ProductController {
         return ResponseEntity.ok(productImageResponseDtoList);
     }
 
+
+    @Operation(summary = "put images to product, it replace product images" , description = "Required Role: Admin")
+    @ApiResponses(
+            {
+                    @ApiResponse(responseCode = "200")
+            }
+    )
+    @CommonErrorDocs
+    @RequireAuthDocs
     @PutMapping("/{id}/images/")
     public ResponseEntity<Void> addProductImages(@PathVariable @NotNull @Positive Long id , @RequestParam Set<@Positive @NotNull Long> imagesIds){
         productService.putProductImages(id,imagesIds);
         return  ResponseEntity.ok().build();
     }
+
+    @Operation(summary = "set product main image" , description = "Required Role: Admin")
+    @ApiResponses(
+            {
+                    @ApiResponse(responseCode = "200")
+            }
+    )
+    @CommonErrorDocs
+    @RequireAuthDocs
     @PutMapping(value = "/{id}/images/" ,params = "mainId")
     public ResponseEntity<Void> setProductMainImage(@PathVariable @NotNull @Positive Long id , @RequestParam @NotNull @Positive Long mainId){
         productService.setProductMainImage(id,mainId);

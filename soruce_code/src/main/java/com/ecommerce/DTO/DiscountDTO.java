@@ -1,6 +1,7 @@
 package com.ecommerce.DTO;
 
 import com.ecommerce.ApplicationConstants;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,6 +14,7 @@ import java.util.Currency;
 @NoArgsConstructor
 @Getter@Setter
 public class DiscountDTO {
+    @Schema(description = "net discount")
     private Money money;
 
 
