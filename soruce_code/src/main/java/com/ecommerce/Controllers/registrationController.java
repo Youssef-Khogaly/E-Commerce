@@ -6,6 +6,7 @@ import com.ecommerce.Exception.ConflictException;
 import com.ecommerce.docs.CommonErrorDocs;
 import com.ecommerce.entities.user.Customer;
 import com.ecommerce.repository.UsersRepo.CustomerJpaRepo;
+import com.ecommerce.services.AuthenticationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -29,9 +30,7 @@ import java.util.List;
 @Validated
 public class registrationController {
 
-    private final PasswordEncoder passwordEncoder;
-    private final CustomerJpaRepo customerJpaRepo;
-
+    private final AuthenticationService authenticationService;
 
     @Operation(description = "Not authenticated required")
     @ApiResponses(
@@ -44,15 +43,7 @@ public class registrationController {
     @PostMapping
     public ResponseEntity<Void> registerCustomer(@RequestBody @Valid RegistrationRequest req){
 
-        if(customerJpaRepo.existsByNameOrEmail(req.name(),req.email()))
-        {
-            throw new ConflictException("Email or User name exists");
-        }
-        Customer customer = new Customer();
-        customer.setName(req.name());
-        customer.setEmail(req.email());
-        customer.setPass(passwordEncoder.encode(req.password()));
-        customer = customerJpaRepo.save(customer);
+        authenticationService.signup(req.name(), req.email(), req.password());
 
         return ResponseEntity.ok().build();
     }

@@ -4,6 +4,7 @@ import com.ecommerce.ApplicationConstants;
 import com.ecommerce.DTO.ErrorResponse;
 import com.ecommerce.security.JwtService;
 import com.ecommerce.security.User.CustomUserDetails;
+import com.ecommerce.services.AuthenticationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.headers.Header;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -33,8 +34,7 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class LoginController {
 
-    private final AuthenticationManager manager;
-    private final JwtService jwtService;
+    private final AuthenticationService authService;
     public record LoginRequest( @NotBlank String email ,  @NotBlank String password){
 
     }
@@ -56,19 +56,8 @@ public class LoginController {
     @PostMapping
     public ResponseEntity<LoginResponse> login(@RequestBody @Valid LoginRequest request){
 
-        Authentication authenticaion = new UsernamePasswordAuthenticationToken(request.email(),request.password);
-        authenticaion = manager.authenticate(authenticaion);
-        if(authenticaion.isAuthenticated()){
-            String authorities = authenticaion.getAuthorities().stream().map(s -> "ROLE_"+s.toString()).collect(Collectors.joining(","));
-            String id = String.valueOf(((CustomUserDetails)authenticaion.getPrincipal()).getId());
-            Map<String,String> claimsMap = new HashMap<>(2);
-            claimsMap.put("id",id);
-            claimsMap.put("authorities",authorities);
-            String token = jwtService.generateNewToken(claimsMap, Duration.ofMinutes(30));
-            return ResponseEntity.ok().header(ApplicationConstants.JWT_HEADER_NAME,token).body(new LoginResponse("Login success",token));
-        }
+        String token = authService.login(request.email(),request.password());
 
-        // we will never reach here
-        return ResponseEntity.internalServerError().build();
+        return ResponseEntity.ok().header(ApplicationConstants.JWT_HEADER_NAME,token).body(new LoginResponse("Login success",token));
     }
 }
