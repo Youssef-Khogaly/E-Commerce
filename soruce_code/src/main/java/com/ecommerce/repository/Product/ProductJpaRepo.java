@@ -73,4 +73,5 @@ public interface ProductJpaRepo extends JpaRepository<Product, Long> , ProductQu
     @Query("select p from Product p where p.id = :product_id")
     Optional<Product> findByIdWithImagesOnly(long product_id);
 
+    Product id(long id);
 }

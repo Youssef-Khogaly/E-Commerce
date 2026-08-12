@@ -10,7 +10,6 @@ import com.ecommerce.entities.Carts.CartItemId;
 import com.ecommerce.repository.Cart.CartItemRepo;
 import com.ecommerce.repository.CartJpaRepo;
 import com.ecommerce.Exception.NotFoundException;
-import com.ecommerce.repository.Product.ProductJpaRepo;
 import com.ecommerce.services.interfaces.CartService;
 import com.ecommerce.services.interfaces.ProductService;
 import lombok.AllArgsConstructor;
@@ -26,7 +25,6 @@ public class CartServiceImpl implements CartService {
     private final CartJpaRepo cartJpaRepo;
     private  final CartItemRepo cartItemRepo;
     private final ProductService productService;
-    private final ProductJpaRepo productJpaRepo;
     private CartItemsDtoMapper cartItemsDtoMapper;
     @Override
     @Transactional
@@ -43,7 +41,7 @@ public class CartServiceImpl implements CartService {
         {
             var cartItem = new CartItem();
             cartItem.setCart(cartJpaRepo.getReferenceById(cust_id));
-            cartItem.setProduct(productJpaRepo.getReferenceById(product_id));
+            cartItem.setProduct(productService.getReferenceById(product_id));
             cartItem.setQuantity(quantity);
             cartItemRepo.save(cartItem);
         }
@@ -79,7 +77,7 @@ public class CartServiceImpl implements CartService {
         }else {
             var cartItem = new CartItem();
             cartItem.setCart(cartJpaRepo.getReferenceById(cust_id));
-            cartItem.setProduct(productJpaRepo.getReferenceById(product_id));
+            cartItem.setProduct(productService.getReferenceById(product_id));
             cartItem.setQuantity(quantity);
             cartItemRepo.save(cartItem);
         }

@@ -44,12 +44,12 @@ public interface ProductService  {
         ){}
 
     public Page<ProductSearchView> getProductSearchView(QueryProduct queryProduct);
-    public ProductDTO getProduct(Long product_id);
+    public Product getProductById(Long product_id);
     public boolean isProductExists(Long product_id);
 
     Collection<Category> getProductCategory(Long product_id);
     // real deletion are not allowed
-    public void deleteProduct(Long product_id) throws NotFoundException;
+    public void deleteProduct(Long product_id) ;
 
     public Product addProduct(PostProductCommand command);
 
@@ -62,5 +62,9 @@ public interface ProductService  {
     public void putProductImages(Long productId,Set<Long> imageIds);
     public List<ProductImageResponseDto> getProductImages(Long ProductId);
     public void setProductMainImage(Long productId , Long mainImageId);
+
+    public Product getReferenceById(Long id);
+
+    public Product save(Product product);
 }
 

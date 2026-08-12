@@ -75,15 +75,22 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ProductDTO getProduct(Long product_id) {
+    public Product getProductById(Long product_id) {
 
-        Product product = productJpaRepo.findById(product_id).orElseThrow(
+        return productJpaRepo.findById(product_id).orElseThrow(
                 ()-> new NotFoundException("product with id:" +product_id +" doesn't exists")
         );
-        return ProductDTO.fromProduct(product);
     }
 
+    public Product getReferenceById(Long id)
+    {
+        return productJpaRepo.getReferenceById(id);
+    }
 
+    public Product save(Product product)
+    {
+        return productJpaRepo.save(product);
+    }
     @Override
     public boolean isProductExists(Long product_id) {
         return productJpaRepo.isExists(product_id);
@@ -107,7 +114,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public Product addProduct(PostProductCommand command) throws BadRequestException {
+    public Product addProduct(PostProductCommand command) {
         Product product = new Product();
 
         product.setTitle(command.title());
@@ -167,7 +174,6 @@ public class ProductServiceImpl implements ProductService {
     public void putProductImages(Long productId, Set<Long> imageIds) {
 
 
-//        Product product  = productJpaRepo.findByIdWithImagesOnly(productId).orElseThrow(() ->  new NotFoundException("Product id:" +productId +" doesn't exist"));
         if(!productJpaRepo.isExists(productId))
             throw new NotFoundException("Product id:" +productId +" doesn't exist");
         if(imageIds.isEmpty()){

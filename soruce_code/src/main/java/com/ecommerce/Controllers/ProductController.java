@@ -86,10 +86,9 @@ public class ProductController {
     @GetMapping("/{id}")
     public ResponseEntity<ProductDTO>getProduct(@PathVariable @Positive long id){
 
-        // handle not found exception later
 
-        var p = productService.getProduct(id);
-        return ResponseEntity.ok(p);
+        var p = productService.getProductById(id);
+        return ResponseEntity.ok(ProductDTO.fromProduct(p));
     }
 
     @Operation(summary = "create new product" , description = "Required Role: Admin")
