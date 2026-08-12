@@ -108,7 +108,7 @@ public class SecurityConfig {
                                     .requestMatchers(HttpMethod.GET, "/api/me/orders/**").hasRole(UserRoles.CUSTOMER.toString())
                                     .requestMatchers(HttpMethod.POST, "/api/me/orders/**").hasRole(UserRoles.CUSTOMER.toString())
                                     // web hook config
-                                    .requestMatchers(HttpMethod.POST,"/api/webhook/**").not().authenticated()
+                                    .requestMatchers(HttpMethod.POST,"/api/webhooks/**").not().authenticated()
 
                                     // allow swagger ui end point
                                     .requestMatchers("/v3/api-docs/**","/swagger-ui/**","/swagger-ui.html").permitAll()
@@ -157,7 +157,7 @@ public class SecurityConfig {
         var products = PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.GET,"/api/products/**");
         var login = PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.POST,"/api/auth/login");
         var reg = PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.POST,"/api/auth/register");
-        var webhook = PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.POST,"/api/webhook/**");
+        var webhook = PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.POST,"/api/webhooks/**");
         var categories = PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.GET , "/api/categories");
         var swagger1 = PathPatternRequestMatcher.withDefaults().matcher("/v3/api-docs/**");
         var swagger2 = PathPatternRequestMatcher.withDefaults().matcher("/swagger-ui/**");

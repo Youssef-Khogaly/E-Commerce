@@ -103,8 +103,8 @@ public class StripeWebhookHandler implements PaymentWebhookParser, PaymentWebhoo
         payment.setOrder(order);
         payment.setTransactionId(event.getTransactionId());
         payment.setPaymentState(PaymentState.PAID);
-        order.getPaymentList().add(payment);
-
+        payment.setOrder(order);
+        payment = paymentJpaRepo.save(payment);
         // processing should overwrite everything else expect cancelled!! since we need to issue a refund for this transaction
         if(order.getState() != OrderState.CANCELED){
             order.setState(OrderState.PROCESSING);

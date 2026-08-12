@@ -14,6 +14,5 @@ public interface CartService {
     public void putToCart(Long cust_id , Long product_id , Integer quantity);
     public void deleteFromCart(Long cust_id , Long product_id);
 
-    public Optional<Cart> getCartForCheckout(Long cust_id);
 
 }

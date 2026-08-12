@@ -7,6 +7,7 @@ import lombok.Getter;
 
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.Objects;
 
 
 /*
@@ -54,4 +55,15 @@ public class ProductSearchView {
 //        this.discountInCents = 0;
 //    }
 
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof ProductSearchView that)) return false;
+        return getId() == that.getId();
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(getId());
+    }
 }

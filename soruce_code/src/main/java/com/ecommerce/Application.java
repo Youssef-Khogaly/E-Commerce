@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.data.redis.repository.configuration.EnableRedisRepositories;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 
 
@@ -14,6 +15,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 @SpringBootApplication
 @EntityScan(basePackages = "com.ecommerce.entities")
 @EnableWebSecurity(debug = true)
+@EnableRedisRepositories
 public class Application {
 
 	public static void main(String[] args) {

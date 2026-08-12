@@ -2,6 +2,7 @@ package com.ecommerce.entities.orders;
 
 import com.ecommerce.entities.Payments.Payment;
 import com.ecommerce.entities.Payments.PaymentMethod;
+import com.ecommerce.entities.user.Customer;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.Getter;
@@ -49,12 +50,13 @@ public class Order {
     private String currencyCode;
     @OneToMany(mappedBy = "order" ,cascade = CascadeType.ALL,fetch = FetchType.EAGER)
     @NotEmpty
-    private List<OrderItem> orderItems;
+    private List<OrderItem> orderItems = new ArrayList<>();
 
     @OneToMany(mappedBy = "order",cascade = {CascadeType.MERGE,CascadeType.PERSIST,CascadeType.REMOVE})
     private List<Payment> paymentList = new ArrayList<>();
-    @Column(name = "cust_id")
-    private Long customer_id;
+    @JoinColumn(name = "cust_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Customer customer;
 
     @Enumerated(EnumType.STRING)
     private PaymentMethod paymentMethod;

@@ -60,6 +60,8 @@ CALL populate_product_stock();
 -- add electronics category
 insert into category(cate_id,name) values(1,'electronics');
 
+
+DROP PROCEDURE IF EXISTS addCategoryToAllProducts$$
 DELIMITER $$
 
 CREATE PROCEDURE addCategoryToAllProducts()

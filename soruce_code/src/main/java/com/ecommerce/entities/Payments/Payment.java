@@ -43,6 +43,7 @@ public class Payment {
 
     private Long amount;
     private String currency;
+    @Column(name = "transaction_id")
     private String transactionId;
 
     @Override

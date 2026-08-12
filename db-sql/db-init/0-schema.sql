@@ -54,7 +54,7 @@ create table if not exists product_stock(
     availableStock int  generated always as (stock-reservedStock)virtual,
     constraint frg_p foreign key (product_id) references product(product_id)
 );
-create table image
+create table if not exists image
 (
     image_id        bigint auto_increment
         primary key,
@@ -64,7 +64,7 @@ create table image
     region          varchar(64)            default null      null
 );
 
-create table ProductImages
+create table if NOT EXISTS ProductImages
 (
     product_id bigint               not null,
     image_id   bigint               not null,
@@ -101,24 +101,6 @@ CREATE TABLE IF NOT EXISTS product_category (
     ON UPDATE CASCADE
     );
 
--- CART
-
-create table if not exists cart(
-        cart_id bigint not null primary key ,
-       subTotalInCents bigint not null ,
-        constraint fk_cart_customer foreign key (cart_id) references customer(cust_id)
-                               on update cascade
-                               on delete restrict
-);
-
-CREATE TABLE IF NOT EXISTS cart_item (
-                                         prod_id  bigint NOT NULL,
-                                         cart_id bigint not null ,
-                                         quantity INT NOT NULL CHECK (quantity > 0),
-    PRIMARY KEY (cart_id,prod_id),
-    constraint fk_2product foreign key(prod_id) references product(product_id),
-    constraint fk_cart foreign key (cart_id) references cart(cart_id)
-    );
 CREATE TABLE IF NOT EXISTS CustomerOrder (
                                              id  bigint auto_increment primary key,
                                              cust_id  bigint  ,
@@ -143,7 +125,7 @@ CREATE TABLE IF NOT EXISTS CustomerOrder (
 
 CREATE TABLE IF NOT EXISTS order_item (
                                           id bigint auto_increment primary key not null ,
-                                          order_id bigint auto_increment not null ,
+                                          order_id bigint not null ,
                                           product_id bigint  ,
                                           name  varchar(64) ,
                                           description varchar(256),
@@ -153,7 +135,7 @@ CREATE TABLE IF NOT EXISTS order_item (
                                           subTotalInCents bigint  not null ,
                                           currency_code varchar(4) not null,
                                           CONSTRAINT fk_orderitem_order FOREIGN KEY (order_id)
-                                              REFERENCES CustomerOrder(order_id)
+                                              REFERENCES CustomerOrder(id)
                                               ON UPDATE CASCADE
                                               ON DELETE RESTRICT
 );
@@ -161,13 +143,13 @@ CREATE TABLE IF NOT EXISTS order_item (
 -- PAYMENTS
 CREATE TABLE IF NOT EXISTS Payment (
                                        id bigint auto_increment primary key ,
-                                       order_id  bigint auto_increment not null ,
+                                       order_id  bigint not null ,
                                        paymentState ENUM('FAILEd' ,'PAID' ,'REFUNDED') not null,
                                        transaction_id varchar(255) unique not null,
                                        amount bigint not null,
                                        currency varchar(4) not null,
                                        CONSTRAINT fk_payment_order FOREIGN KEY (order_id)
-                                           REFERENCES CustomerOrder(order_id)
+                                           REFERENCES CustomerOrder(id)
                                            ON UPDATE CASCADE
                                            ON DELETE RESTRICT
 );
@@ -192,13 +174,3 @@ CREATE TABLE IF NOT EXISTS review (
                                            ON UPDATE CASCADE
     ) DEFAULT CHARSET=utf8mb4;
 
--- cart add trigger
-
-DELIMITER $$
-
-create trigger afterUserInsert after insert on customer
-    for each row
-    begin
-        insert into cart(cart_id , subTotalInCents)values (NEW.cust_id,0);
-    END $$
-DELIMITER ;

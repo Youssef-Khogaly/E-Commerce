@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.concurrent.RejectedExecutionException;
 
 @RestController
-@RequestMapping("/api/webhook/stripe")
+@RequestMapping("/api/webhooks/stripe")
 @AllArgsConstructor
 @Hidden
 public class webHook {
