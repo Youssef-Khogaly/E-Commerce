@@ -61,7 +61,9 @@ CALL populate_product_stock();
 insert into category(cate_id,name) values(1,'electronics');
 
 
-DROP PROCEDURE IF EXISTS addCategoryToAllProducts$$
+DROP PROCEDURE IF EXISTS addCategoryToAllProducts;
+
+
 DELIMITER $$
 
 CREATE PROCEDURE addCategoryToAllProducts()
