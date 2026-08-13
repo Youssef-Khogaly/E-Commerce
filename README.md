@@ -13,7 +13,7 @@ Supports product management, categories, cart, orders, checkout with Stripe paym
 - **Image Management(Admin):**
   - Admin: upload and delete images to amazon s3 storage ,  attach images , set main image for a product   
 - **Category Management (Admin):** CRUD operations  
-- **Cart Management (/me):** Add, update, remove items, view cart  
+- **Cart Management (/me):** Add, update, remove items, view cart  using redis for fast read/write
 - **Checkout (/me):** Stripe payment integration  
 - **Order Management (/me):** View orders, get order details, cancel orders  
 - **Security:** JWT-secured endpoints; admin-only access where applicable  
@@ -75,6 +75,12 @@ The generated OpenAPI specification is also available at:
     AWS_ACCESS_KEY_ID=
     AWS_REGION=
     cloud.aws.bucket.name=
+    
+    #Redis
+    
+    REDIS_HOST=cache
+    REDIS_PORT:
+    REDIS_PASSWORD=
     ```
 
 3.  Create the database environment file at `DB-init/db-sql.env`:
