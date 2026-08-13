@@ -8,13 +8,18 @@ import org.springframework.data.jpa.repository.Query;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 public interface StockJpaRepo extends JpaRepository<ProductStock,Long> {
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select s from ProductStock s where s.product.id in :ids")
-    List<ProductStock> findAllByIdForUpdate(Collection<Long> ids);
+    Set<ProductStock> findAllByIdForUpdate(Collection<Long> ids);
 
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select s from ProductStock s where s.product_id = :id")
+    Optional<ProductStock> findByIdForUpdate(Long id);
 
 
 }

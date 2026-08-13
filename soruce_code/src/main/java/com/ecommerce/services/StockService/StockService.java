@@ -1,97 +1,141 @@
 package com.ecommerce.services.StockService;
 
-import com.ecommerce.entities.Carts.Cart;
+import com.ecommerce.Exception.NotFoundException;
 import com.ecommerce.entities.Products.ProductStock;
 import com.ecommerce.repository.StockJpaRepo;
 import lombok.AllArgsConstructor;
-import org.springframework.data.jpa.repository.Lock;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
-public class StockService {
+public class StockService implements IStockService {
 
     private StockJpaRepo stockJpaRepo;
-
-    public enum StockOperation {
-        RESERVE,        // Temporarily reserve stock
-        RELEASE,        // Release reserved stock (cancel)
-        COMMIT,          // Decrement total stock after payment
-        RESTOCK        // add to stock
-    }
-    private void addToStock(List<ProductStock> data , Map<Long,Integer> id_quantityMap)
+    @Transactional(isolation = Isolation.READ_COMMITTED)
+    public void add(Map<Long,Integer> id_quantityMap)
     {
-        for(ProductStock stock : data)
+        var entities = findAllByIdForUpdate(id_quantityMap.keySet());
+
+        for(ProductStock stock : entities)
         {
-            stock.setStock(stock.getStock() + id_quantityMap.get(stock.getProduct_id()));
+            stock.add(id_quantityMap.get(stock.getProduct_id()));
         }
+    }
+    @Transactional(isolation = Isolation.READ_COMMITTED)
+    public void remove(Map<Long,Integer> id_quantityMap)
+    {
+        var entities = findAllByIdForUpdate(id_quantityMap.keySet());
+
+        int toRemove;
+        for(ProductStock stock : entities)
+        {
+            toRemove =  id_quantityMap.get(stock.getProduct_id());
+            stock.remove(toRemove);
+        }
+    }
+    @Transactional(isolation = Isolation.READ_COMMITTED)
+    public Set<ProductStock> findAllByIdForUpdate(Set<Long> ids)
+    {
+        if(ids == null)
+            throw new NullPointerException("null pointer passed to update stock");
+        if(ids.isEmpty())
+            return Collections.emptySet();
+
+        final Set<ProductStock> data = stockJpaRepo.findAllByIdForUpdate(ids);
+        if(data.size() != ids.size())
+        {
+            final var existingIds = data.stream().map(ProductStock::getProduct_id).collect(Collectors.toUnmodifiableSet());
+            throw new NotFoundException("can't update stock for non existing product ids: " + ids.stream().filter(existingIds::contains).toList());
+        }
+
+        return data;
+    }
+
+    @Override
+    @Transactional(isolation = Isolation.READ_COMMITTED)
+    public ProductStock findByIdForUpdate(Long id) {
+        return stockJpaRepo.findByIdForUpdate(id).orElseThrow(() -> new NotFoundException("Stock not found, id:" + id));
+    }
+
+    @Override
+    @Transactional(isolation = Isolation.READ_COMMITTED,readOnly = true)
+    public ProductStock findByIdReadOnly(Long id) {
+        return stockJpaRepo.findById(id).orElseThrow(() -> new NotFoundException("Stock not found, id:" + id));
+    }
+
+    @Override
+    @Transactional(isolation = Isolation.READ_COMMITTED)
+    public void add(Long id, int quantity) {
+
+        var entity = findByIdForUpdate(id);
+        entity.add(quantity);
+
+    }
+    @Transactional(isolation = Isolation.READ_COMMITTED)
+    @Override
+    public void remove(Long id, int quantity) {
+        var entity = findByIdForUpdate(id);
+        entity.remove(quantity);
+    }
+    @Transactional(isolation = Isolation.READ_COMMITTED)
+    @Override
+    public void reserve(Long id, int quantity) {
+        var entity = findByIdForUpdate(id);
+        entity.reserve(quantity);
+    }
+    @Transactional(isolation = Isolation.READ_COMMITTED)
+    @Override
+    public void release(Long id, int quantity) {
+        var entity = findByIdForUpdate(id);
+        entity.reserve(quantity);
+    }
+    @Transactional(isolation = Isolation.READ_COMMITTED)
+    @Override
+    public void commit(Long id, int quantity) {
+        var entity = findByIdForUpdate(id);
+        entity.release(quantity);
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED)
-    // ids should be valid
-    public void updatestock(Map<Long,Integer> id_quantityMap , StockOperation operationEnum) {
-        if(operationEnum == null || id_quantityMap == null)
-                throw new NullPointerException("null pointer passed to update stock");
+    public void reserve(Map<Long,Integer> id_quantityMap ){
 
-        List<ProductStock> data = stockJpaRepo.findAllByIdForUpdate(id_quantityMap.keySet());
-        if(data.size() != id_quantityMap.size())
-            throw new IllegalArgumentException("can't lock stock for non existing product id");
-
-        if(operationEnum  == StockOperation.RESERVE){
-            reserveStock(data,id_quantityMap);
-        }
-        else if (operationEnum  == StockOperation.RELEASE){
-            unReserveStock(data,id_quantityMap);
-        }
-        else if(operationEnum  == StockOperation.COMMIT)
-            totalStock(data,id_quantityMap);
-
-        else if (operationEnum == StockOperation.RESTOCK)
-            addToStock(data,id_quantityMap);
-
-        return;
-    }
-    private void reserveStock(List<ProductStock> entities ,Map<Long,Integer> id_quantityMap ){
+        var entities = findAllByIdForUpdate(id_quantityMap.keySet());
         entities.forEach(
                 stock ->{
                     long productId = stock.getProduct().getId();
                     int quantityNeeded = id_quantityMap.get(productId);
-                    if(stock.getAvailableStock() >= quantityNeeded){
-                        stock.setReservedStock(stock.getReservedStock()+quantityNeeded);
-                    }else
-                        throw new OutOfStock("not enough stock for product:"+stock.getProduct().getId() + "available stock:" + stock.getAvailableStock());
+                    stock.reserve(quantityNeeded);
                 }
         );
     }
-    private void unReserveStock(List<ProductStock> entities ,Map<Long,Integer> id_quantityMap ){
+    @Transactional(isolation = Isolation.READ_COMMITTED)
+    public void release(Map<Long,Integer> id_quantityMap ){
+
+        var entities = findAllByIdForUpdate(id_quantityMap.keySet());
+
         entities.forEach(
                 stock ->{
                     long productId = stock.getProduct().getId();
                     int quantityNeeded = id_quantityMap.get(productId);
-                    if(quantityNeeded > stock.getReservedStock())
-                        throw  new IllegalArgumentException("can't unReserve stock , reserved will be negative!! , pid: " + productId + " quantity to unreserve:" +quantityNeeded);
-                    stock.setReservedStock(stock.getReservedStock()-quantityNeeded);
+                    stock.release(quantityNeeded);
                 }
         );
     }
+    @Transactional(isolation = Isolation.READ_COMMITTED)
+    public void commit(Map<Long,Integer> id_quantityMap ){
+        var entities = findAllByIdForUpdate(id_quantityMap.keySet());
 
-    private void totalStock(List<ProductStock> entities ,Map<Long,Integer> id_quantityMap ){
+
         entities.forEach(
                 stock ->{
                     long productId = stock.getProduct().getId();
                     int quantityNeeded = id_quantityMap.get(productId);
-                    if(quantityNeeded > stock.getReservedStock())
-                        throw  new IllegalArgumentException("can't unreserve stock , reserved will be negative!! , pid: " + productId + "quantity to Unreserve:" +quantityNeeded);
-                    if(quantityNeeded > stock.getStock())
-                        throw  new IllegalArgumentException("can't update stock , stock will be negative!! , pid: " + productId + "quantity to Unreserve:" +quantityNeeded);
-                    stock.setReservedStock(stock.getReservedStock()-quantityNeeded);
-                    stock.setStock(stock.getStock()-quantityNeeded);
+                    stock.commit(quantityNeeded);
                 }
         );
     }

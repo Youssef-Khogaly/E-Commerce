@@ -100,12 +100,12 @@ public class OrderServiceImpl implements OrderService {
             case PENDING -> {
                 order.setState(OrderState.CANCELED);
                 var idQuantityMap = order.getOrderItems().stream().collect(Collectors.toMap(OrderItem::getProduct_id, OrderItem::getQuantity));
-                stockService.updatestock(idQuantityMap, StockService.StockOperation.RELEASE);
+                stockService.release(idQuantityMap);
             }
             case PROCESSING -> {
                 order.setState(OrderState.CANCELED);
                 var idQuantityMap = order.getOrderItems().stream().collect(Collectors.toMap(OrderItem::getProduct_id, OrderItem::getQuantity));
-                stockService.updatestock(idQuantityMap, StockService.StockOperation.RESTOCK);
+                stockService.add(idQuantityMap);
                 // issue refund!! to do later
             }
         }

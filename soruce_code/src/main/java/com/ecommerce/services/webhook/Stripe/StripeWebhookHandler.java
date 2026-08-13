@@ -110,7 +110,7 @@ public class StripeWebhookHandler implements PaymentWebhookParser, PaymentWebhoo
             order.setState(OrderState.PROCESSING);
             // commit stock
             Map<Long , Integer> iq_quantity_map = order.getOrderItems().stream().collect(Collectors.toMap(OrderItem::getProduct_id, OrderItem::getQuantity));
-            stockService.updatestock(iq_quantity_map, StockService.StockOperation.COMMIT);
+            stockService.commit(iq_quantity_map);
         }
 
     }
@@ -128,7 +128,7 @@ public class StripeWebhookHandler implements PaymentWebhookParser, PaymentWebhoo
         // release stock
         Map<Long , Integer> iq_quantity_map = order.getOrderItems().stream().collect(Collectors.toMap(OrderItem::getProduct_id , OrderItem::getQuantity));
 
-        stockService.updatestock(iq_quantity_map, StockService.StockOperation.RELEASE);
+        stockService.release(iq_quantity_map);
 
     }
     @Override

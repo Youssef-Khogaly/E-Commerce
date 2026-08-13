@@ -97,7 +97,7 @@ public class CheckoutService {
             order.setExpireAt(checkoutSessionTimeOut.toSeconds());
             final Order finalOrder = order;
             order =  orderCheckOutTransactionTemplate.execute((status) ->{
-                stockService.updatestock(id_quantityMap, StockService.StockOperation.RESERVE);
+                stockService.reserve(id_quantityMap);
                 return  orderService.createOrder(finalOrder);
             });
 
@@ -119,7 +119,7 @@ public class CheckoutService {
 
                 final Order finalOrderDelete = order;
                 orderCheckOutTransactionTemplate.executeWithoutResult((status) ->{
-                    stockService.updatestock(id_quantityMap, StockService.StockOperation.RELEASE);
+                    stockService.release(id_quantityMap);
                     orderService.deleteOrder(finalOrderDelete.getId());
                 });
                 throw new RuntimeException(e.getCause());
