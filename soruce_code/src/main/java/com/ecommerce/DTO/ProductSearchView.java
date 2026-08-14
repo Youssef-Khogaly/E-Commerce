@@ -23,9 +23,6 @@ public class ProductSearchView {
     @Schema(example = "laptop")
     @NotBlank
     private final String title;
-    @Schema(example = "5")
-    @PositiveOrZero
-    private final int availableStock;
     @NotNull
     private final Money priceInCents;
     @Nullable
@@ -36,10 +33,9 @@ public class ProductSearchView {
     @NotNull
     private final Instant addedAt;
 
-    public ProductSearchView(Long id, String title, Integer availableStock, Long priceInCents, String mainImgUrl, Timestamp addedAt ) {
+    public ProductSearchView(Long id, String title, Long priceInCents, String mainImgUrl, Timestamp addedAt ) {
         this.id = id;
         this.title = title;
-        this.availableStock = availableStock;
         this.priceInCents = new Money(priceInCents);
         this.mainImgUrl = mainImgUrl;
         this.addedAt = addedAt.toInstant();

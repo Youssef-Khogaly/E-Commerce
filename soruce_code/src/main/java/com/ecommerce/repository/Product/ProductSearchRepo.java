@@ -72,15 +72,13 @@ public class ProductSearchRepo  implements IProductSearchRepo {
         CriteriaBuilder builder = em.getCriteriaBuilder();
         CriteriaQuery<ProductSearchView> query = builder.createQuery(ProductSearchView.class);
         Root<Product> productRoot = query.from(Product.class); // select p from product p
-        Join<Product,ProductStock> productStockJoin = productRoot.join("stock");
         /*product -> product Image join*/
         Join<Product, ProductImages> productProductImagesJoin = productRoot.join("imagesList",JoinType.LEFT);
         productProductImagesJoin.on(builder.isTrue(productProductImagesJoin.get("isMain")));
         /*product image -> image join to get the main image url*/
         Join<ProductImages, Image> productImagesImageJoin = productProductImagesJoin.join("image",JoinType.LEFT);
 
-        query.select(builder.construct(ProductSearchView.class,productRoot.get("id"),productRoot.get("title")
-                ,productStockJoin.get("availableStock"),productRoot.get("price"),productImagesImageJoin.get("imageUrl"),productRoot.get("addedAt")));
+        query.select(builder.construct(ProductSearchView.class,productRoot.get("id"),productRoot.get("title"),productRoot.get("price"),productImagesImageJoin.get("imageUrl"),productRoot.get("addedAt")));
         Sort sort = pageable.getSort();
         Predicate[] predicates = buildPredicates(categoryId,minPrice,maxPrice,productRoot,builder);
         query.where(builder.and(predicates));

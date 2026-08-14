@@ -31,8 +31,7 @@ public interface ProductService  {
                 Long product_id,
                                                 String title ,
                                                String description
-                                                , long price,
-                                               Integer stock
+                                                , long price
         ){ }
     public enum DeletedOptions{
         SOFT_DELETED_ONLY , INCLUDE_SOFT_DELETED , NON_DELETED

@@ -33,14 +33,12 @@ public class ProductDTO{
     Money price;
     @Nullable
     DiscountDTO discount;
-    @PositiveOrZero
-    int availableStock ;
     @Nullable
     List<ImageDTO> imagesUrl;
 
 
     public static ProductDTO fromProduct(Product product){
-        return new ProductDTO(product.getId(),product.getTitle(),product.getDescription(),product.getPriceMoney(),new DiscountDTO(0),product.getStock().getAvailableStock()
+        return new ProductDTO(product.getId(),product.getTitle(),product.getDescription(),product.getPriceMoney(),new DiscountDTO(0)
                 , product.getImagesList().stream().map(pi -> ImageDTO.fromImage(pi.getImage())).toList());
     }
     @Override

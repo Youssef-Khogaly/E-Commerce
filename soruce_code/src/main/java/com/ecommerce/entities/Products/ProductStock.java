@@ -6,7 +6,6 @@ import jakarta.validation.constraints.PositiveOrZero;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import java.util.Objects;
 
@@ -22,31 +21,30 @@ create table if not exists product_stock(
  */
 @Entity
 @Table(name = "product_stock")
-@AllArgsConstructor @NoArgsConstructor
+@NoArgsConstructor
 @Getter
 public class ProductStock {
 
     @Id
-    private long product_id;
+    @JoinColumn(name = "product_id")
+    private Long id;
 
-    @JoinColumn(name = "product_id",nullable = false,unique = true)
-    @MapsId
-    @OneToOne(fetch = FetchType.LAZY)
-    private Product product;
     @PositiveOrZero
-    private int stock;
+    private Integer stock;
     @PositiveOrZero
-    private int reservedStock;
+    private Integer reservedStock;
     @Column(insertable = false ,updatable = false)
-    private int availableStock;
+    private Integer availableStock;
 
-
-    public void setProduct_id(long product_id) {
-        this.product_id = product_id;
+    public ProductStock(Long id, Integer stock) {
+        if(stock < 0)
+            throw new IllegalArgumentException("cannot create stock with negative quantity!!");
+        setId(id);
+        setStock(stock);
     }
 
-    public void setProduct(Product product) {
-        this.product = product;
+    public void setId(long product_id) {
+        this.id = product_id;
     }
 
     private void setStock(int stock) {
@@ -71,7 +69,7 @@ public class ProductStock {
         if(quantity == 0)
             return;
         if(availableStock < quantity)
-            throw  new OutOfStock("can't remove from stock , available stock will be negative!! , pid: " + getProduct_id());
+            throw  new OutOfStock("can't remove from stock , available stock will be negative!! , pid: " + getId());
         setStock(getStock()-quantity);
 
     }
@@ -83,7 +81,7 @@ public class ProductStock {
         if(quantity == 0)
             return;
         if(getAvailableStock() < quantity)
-            throw new OutOfStock("not enough stock for product:"+getProduct_id() + "available stock:" + getAvailableStock());
+            throw new OutOfStock("not enough stock for product:"+ getId() + "available stock:" + getAvailableStock());
 
         setReservedStock(getReservedStock()+quantity);
 
@@ -96,7 +94,7 @@ public class ProductStock {
             return;
 
         if(quantity > getReservedStock())
-            throw  new OutOfStock("can't release stock , reserved will be negative!! , pid: " + getProduct_id() + " quantity to release:" +quantity);
+            throw  new OutOfStock("can't release stock , reserved will be negative!! , pid: " + getId() + " quantity to release:" +quantity);
 
         setReservedStock(getReservedStock()-quantity);
 
@@ -110,9 +108,9 @@ public class ProductStock {
             return;
 
         if(quantity > getReservedStock())
-            throw  new OutOfStock("can't commit stock , reserved will be negative!! , pid: " + getProduct_id() + "quantity to commit:" +quantity);
+            throw  new OutOfStock("can't commit stock , reserved will be negative!! , pid: " + getId() + "quantity to commit:" +quantity);
         if(quantity > getStock())
-            throw  new OutOfStock("can't commit stock , stock will be negative!! , pid: " + getProduct_id() + "quantity to commit:" +quantity);
+            throw  new OutOfStock("can't commit stock , stock will be negative!! , pid: " + getId() + "quantity to commit:" +quantity);
 
         setReservedStock(getReservedStock()-quantity);
         setStock(getStock()-quantity);
@@ -140,11 +138,11 @@ public class ProductStock {
     @Override
     public boolean equals(Object o) {
         if (!(o instanceof ProductStock that)) return false;
-        return getProduct_id() == that.getProduct_id();
+        return getId() == that.getId();
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(getProduct_id());
+        return Objects.hashCode(getId());
     }
 }

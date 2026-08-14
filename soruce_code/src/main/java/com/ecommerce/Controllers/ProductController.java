@@ -133,7 +133,7 @@ public class ProductController {
     public ResponseEntity<Void> updateProduct(@RequestBody @Valid PutProductRequest putProductRequest, @PathVariable @Valid @NotNull @Positive Long id){
 
         productService.updateProduct(
-                new ProductService.UpdateProductCommand(id,putProductRequest.title() , putProductRequest.description() ,putProductRequest.priceInCents(),putProductRequest.stock())
+                new ProductService.UpdateProductCommand(id,putProductRequest.title() , putProductRequest.description() ,putProductRequest.priceInCents())
         );
 
         return ResponseEntity.ok().build();

@@ -17,6 +17,7 @@ import com.ecommerce.repository.Product.ProductJpaRepo;
 import com.ecommerce.Exception.BadRequestException;
 import com.ecommerce.Exception.NotFoundException;
 import com.ecommerce.repository.ProductImageRepo;
+import com.ecommerce.services.StockService.IStockService;
 import com.ecommerce.services.interfaces.ProductService;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -40,6 +41,7 @@ public class ProductServiceImpl implements ProductService {
     private final CategoryJpaRepo categoryJpaRepo;
     private final ProductImageRepo productImageRepo;
     private final ImagesJpaRepo imageRepo;
+    private final IStockService stockService;
     private String normalizeSearchQuery(String name){
         if(name == null || name.isBlank())
                 return null;
@@ -114,17 +116,16 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Transactional
     public Product addProduct(PostProductCommand command) {
         Product product = new Product();
 
         product.setTitle(command.title());
         product.setPrice(command.price());
         product.setDescription(command.description());
-        var st = new ProductStock();
-        st.setProduct(product);
-        st.setStock(command.stock());
-        product.setStock(st);
         product =  productJpaRepo.save(product);
+
+        stockService.create(product.getId(),command.stock());
 
         return product;
     }
@@ -135,12 +136,9 @@ public class ProductServiceImpl implements ProductService {
 
         Product product= productJpaRepo.findByIdForUpdate(command.product_id()).orElseThrow(
                 () -> new NotFoundException("product with id:" + command.product_id()+" doesn't exists"));
-        if(product.getStock().getReservedStock() > command.stock())
-            throw new ConflictException("Can't update product stock with stock less than reserved , productId:" + command.product_id() + "Stock:" +product.getStock());
         product.setTitle(command.title());
         product.setDescription(command.description());
         product.setPrice(command.price());
-        product.getStock().setStock(command.stock());
     }
 
     @Override

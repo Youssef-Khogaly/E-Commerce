@@ -1,8 +1,11 @@
 package com.ecommerce.services.StockService;
 
+import com.ecommerce.Exception.BadRequestException;
+import com.ecommerce.Exception.ConflictException;
 import com.ecommerce.Exception.NotFoundException;
 import com.ecommerce.entities.Products.ProductStock;
 import com.ecommerce.repository.StockJpaRepo;
+import com.ecommerce.services.interfaces.ProductService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
@@ -23,7 +26,7 @@ public class StockService implements IStockService {
 
         for(ProductStock stock : entities)
         {
-            stock.add(id_quantityMap.get(stock.getProduct_id()));
+            stock.add(id_quantityMap.get(stock.getId()));
         }
     }
     @Transactional(isolation = Isolation.READ_COMMITTED)
@@ -34,7 +37,7 @@ public class StockService implements IStockService {
         int toRemove;
         for(ProductStock stock : entities)
         {
-            toRemove =  id_quantityMap.get(stock.getProduct_id());
+            toRemove =  id_quantityMap.get(stock.getId());
             stock.remove(toRemove);
         }
     }
@@ -49,7 +52,7 @@ public class StockService implements IStockService {
         final Set<ProductStock> data = stockJpaRepo.findAllByIdForUpdate(ids);
         if(data.size() != ids.size())
         {
-            final var existingIds = data.stream().map(ProductStock::getProduct_id).collect(Collectors.toUnmodifiableSet());
+            final var existingIds = data.stream().map(ProductStock::getId).collect(Collectors.toUnmodifiableSet());
             throw new NotFoundException("can't update stock for non existing product ids: " + ids.stream().filter(existingIds::contains).toList());
         }
 
@@ -101,13 +104,34 @@ public class StockService implements IStockService {
         entity.release(quantity);
     }
 
+    @Override
+    public ProductStock create(Long productId) {
+        if(stockJpaRepo.existsById(productId))
+            throw new BadRequestException("Stock already exists, id:" + productId);
+
+        var st = new ProductStock(productId,0);
+
+
+        return stockJpaRepo.save(st);
+    }
+    @Override
+    public ProductStock create(Long productId, int quantity)
+    {
+        if(quantity < 0)
+            throw new IllegalArgumentException("Cannot create new stock with negative quantity");
+        if(stockJpaRepo.existsById(productId))
+            throw new BadRequestException("Stock already exists, id:" + productId);
+
+        var st = new ProductStock(productId,quantity);
+        return stockJpaRepo.save(st);
+    }
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public void reserve(Map<Long,Integer> id_quantityMap ){
 
         var entities = findAllByIdForUpdate(id_quantityMap.keySet());
         entities.forEach(
                 stock ->{
-                    long productId = stock.getProduct().getId();
+                    long productId = stock.getId();
                     int quantityNeeded = id_quantityMap.get(productId);
                     stock.reserve(quantityNeeded);
                 }
@@ -120,7 +144,7 @@ public class StockService implements IStockService {
 
         entities.forEach(
                 stock ->{
-                    long productId = stock.getProduct().getId();
+                    long productId = stock.getId();
                     int quantityNeeded = id_quantityMap.get(productId);
                     stock.release(quantityNeeded);
                 }
@@ -133,7 +157,7 @@ public class StockService implements IStockService {
 
         entities.forEach(
                 stock ->{
-                    long productId = stock.getProduct().getId();
+                    long productId = stock.getId();
                     int quantityNeeded = id_quantityMap.get(productId);
                     stock.commit(quantityNeeded);
                 }

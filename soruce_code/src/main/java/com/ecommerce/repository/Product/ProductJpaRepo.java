@@ -23,21 +23,21 @@ public interface ProductJpaRepo extends JpaRepository<Product, Long> , ProductQu
     boolean isExists(Long id);
 
     @EntityGraph(
-            attributePaths = {"stock","imagesList","imagesList.image"},
+            attributePaths = {"imagesList","imagesList.image"},
             type = EntityGraph.EntityGraphType.FETCH
     )
     @Override
     Optional<Product> findById(Long id);
 
     @Query("""
-            select new  com.ecommerce.DTO.ProductSearchView(p.id , p.title , s.availableStock , p.price  , i.imageUrl , p.addedAt)  from Product p inner join ProductStock s on p.id= s.product_id 
-            left join ProductImages  pi on p.id=pi.productImageId.product_id and pi.isMain = true  left join Image i  on pi.image.id = i.id 
+            select new  com.ecommerce.DTO.ProductSearchView(p.id , p.title  , p.price  , i.imageUrl , p.addedAt)  from Product p
+            left join ProductImages  pi on p.id=pi.productImageId.product_id and pi.isMain = true  left join Image i  on pi.image.id = i.id  
             where p.id in :ids 
                         """ )
     List<ProductSearchView>findAllByidsForProductSearchView(Collection<Long> ids);
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @EntityGraph(
-            attributePaths = {"stock"},
+            attributePaths = {},
             type = EntityGraph.EntityGraphType.FETCH
     )
     @Query("select p from Product p where p.id = :id")
@@ -55,7 +55,7 @@ public interface ProductJpaRepo extends JpaRepository<Product, Long> , ProductQu
 
 
     @EntityGraph(
-            attributePaths = {"imagesList","categories","stock"},
+            attributePaths = {"imagesList","categories"},
             type = EntityGraph.EntityGraphType.FETCH
     )
     @Query(

@@ -22,7 +22,6 @@ import java.time.Instant;
         columns = {
                 @ColumnResult(name = "id", type = Long.class),
                 @ColumnResult(name = "title", type = String.class),
-                @ColumnResult(name = "stock", type = Integer.class),
                 @ColumnResult(name = "price", type = Long.class),
                 @ColumnResult(name = "imgUrl" , type = String.class),
                 @ColumnResult(name = "date", type = Timestamp.class)
@@ -54,8 +53,8 @@ public interface ProductSearchNative extends Repository<Product, Long> {
             (
                     value = """
 
-                            select p.product_id as id, p.title as title,s.availableStock as stock,p.price as price , i.image_url as imgUrl,p.addedAt as date from product p inner join product_category c on p.product_id = c.product_id
-                                                and c.category_id = :categoryId inner join product_stock s on p.product_id = s.product_id
+                            select p.product_id as id, p.title as title,p.price as price , i.image_url as imgUrl,p.addedAt as date from product p inner join product_category c on p.product_id = c.product_id
+                                                and c.category_id = :categoryId
                                                 left join ProductImages pi on p.product_id = pi.product_id and pi.isMain = true
                                                 left join image i on pi.image_id = i.image_id                                                                                                                       
                                                 where p.price between :minPrice and :maxPrice
@@ -77,8 +76,7 @@ public interface ProductSearchNative extends Repository<Product, Long> {
             (
                     value = """
 
-                            select p.product_id as id, p.title as title,s.availableStock as stock,p.price as price,i.image_url as imgUrl ,p.addedAt as date from product p 
-                                                        inner join product_stock s on p.product_id = s.product_id
+                            select p.product_id as id, p.title as title,p.price as price,i.image_url as imgUrl ,p.addedAt as date from product p 
                                                         left join ProductImages pi on p.product_id = pi.product_id and pi.isMain = true
                                                         left join image i on pi.image_id = i.image_id                                                                                                      
                                                         where p.price between :minPrice and :maxPrice 

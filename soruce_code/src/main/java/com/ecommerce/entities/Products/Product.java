@@ -44,9 +44,6 @@ public class Product{
     private Set<Category> categories;
     @Column(updatable = false,insertable = false,nullable = false)
     private Timestamp addedAt;
-    @OneToOne(mappedBy = "product" , fetch = FetchType.EAGER , optional = false , cascade = CascadeType.PERSIST)
-    private ProductStock stock;
-
 
 
     @OneToMany(mappedBy = "product",cascade = CascadeType.ALL,orphanRemoval = true)

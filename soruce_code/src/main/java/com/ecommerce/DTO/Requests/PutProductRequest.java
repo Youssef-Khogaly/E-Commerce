@@ -7,7 +7,6 @@ import java.math.BigDecimal;
 public record PutProductRequest(
         @NotNull @NotBlank String title ,
         @NotNull @NotBlank String description ,
-        @NotNull @Positive Long priceInCents ,
-        @NotNull@PositiveOrZero Integer stock
+        @NotNull @Positive Long priceInCents
 ){
 }

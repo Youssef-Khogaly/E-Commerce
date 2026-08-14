@@ -24,4 +24,7 @@ public interface IStockService {
     public void release(Long id, int quantity);
     public void commit(Long id, int quantity);
 
+
+    public ProductStock create(Long productId);
+    public ProductStock create(Long productId, int quantity);
 }

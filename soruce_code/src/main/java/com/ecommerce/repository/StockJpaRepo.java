@@ -14,11 +14,11 @@ import java.util.Set;
 public interface StockJpaRepo extends JpaRepository<ProductStock,Long> {
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("select s from ProductStock s where s.product.id in :ids")
+    @Query("select s from ProductStock s where s.id in :ids")
     Set<ProductStock> findAllByIdForUpdate(Collection<Long> ids);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("select s from ProductStock s where s.product_id = :id")
+    @Query("select s from ProductStock s where s.id = :id")
     Optional<ProductStock> findByIdForUpdate(Long id);
 
 
