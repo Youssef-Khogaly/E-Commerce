@@ -21,5 +21,7 @@ public interface StockJpaRepo extends JpaRepository<ProductStock,Long> {
     @Query("select s from ProductStock s where s.id = :id")
     Optional<ProductStock> findByIdForUpdate(Long id);
 
+    @Query("select s from ProductStock s where s.id in :ids")
+    Set<ProductStock> findAllByIdReadOnly(Collection<Long> ids);
 
 }

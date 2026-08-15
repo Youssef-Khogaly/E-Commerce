@@ -1,11 +1,9 @@
 package com.ecommerce.services.StockService;
 
 import com.ecommerce.Exception.BadRequestException;
-import com.ecommerce.Exception.ConflictException;
 import com.ecommerce.Exception.NotFoundException;
 import com.ecommerce.entities.Products.ProductStock;
 import com.ecommerce.repository.StockJpaRepo;
-import com.ecommerce.services.interfaces.ProductService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
@@ -20,7 +18,7 @@ public class StockService implements IStockService {
 
     private StockJpaRepo stockJpaRepo;
     @Transactional(isolation = Isolation.READ_COMMITTED)
-    public void add(Map<Long,Integer> id_quantityMap)
+    public Set<ProductStock> add(Map<Long,Integer> id_quantityMap)
     {
         var entities = findAllByIdForUpdate(id_quantityMap.keySet());
 
@@ -28,9 +26,10 @@ public class StockService implements IStockService {
         {
             stock.add(id_quantityMap.get(stock.getId()));
         }
+        return entities;
     }
     @Transactional(isolation = Isolation.READ_COMMITTED)
-    public void remove(Map<Long,Integer> id_quantityMap)
+    public Set<ProductStock> remove(Map<Long,Integer> id_quantityMap)
     {
         var entities = findAllByIdForUpdate(id_quantityMap.keySet());
 
@@ -40,6 +39,7 @@ public class StockService implements IStockService {
             toRemove =  id_quantityMap.get(stock.getId());
             stock.remove(toRemove);
         }
+        return entities;
     }
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public Set<ProductStock> findAllByIdForUpdate(Set<Long> ids)
@@ -72,36 +72,59 @@ public class StockService implements IStockService {
     }
 
     @Override
+    @Transactional(isolation = Isolation.READ_COMMITTED,readOnly = true)
+    public Set<ProductStock> findAllByIdReadOnly(Set<Long> ids) {
+        if(ids == null)
+            throw new NullPointerException("null pointer passed to update stock");
+        if(ids.isEmpty())
+            return Collections.emptySet();
+
+        final Set<ProductStock> data = stockJpaRepo.findAllByIdReadOnly(ids);
+        if(data.size() != ids.size())
+        {
+            final var existingIds = data.stream().map(ProductStock::getId).collect(Collectors.toUnmodifiableSet());
+            throw new NotFoundException("stock ids does not exists: " + ids.stream().filter(existingIds::contains).toList());
+        }
+
+        return data;
+    }
+
+    @Override
     @Transactional(isolation = Isolation.READ_COMMITTED)
-    public void add(Long id, int quantity) {
+    public ProductStock add(Long id, int quantity) {
 
         var entity = findByIdForUpdate(id);
         entity.add(quantity);
+        return entity;
 
     }
     @Transactional(isolation = Isolation.READ_COMMITTED)
     @Override
-    public void remove(Long id, int quantity) {
+    public ProductStock remove(Long id, int quantity) {
         var entity = findByIdForUpdate(id);
         entity.remove(quantity);
+        return entity;
     }
     @Transactional(isolation = Isolation.READ_COMMITTED)
     @Override
-    public void reserve(Long id, int quantity) {
+    public ProductStock reserve(Long id, int quantity) {
         var entity = findByIdForUpdate(id);
         entity.reserve(quantity);
+        return entity;
     }
     @Transactional(isolation = Isolation.READ_COMMITTED)
     @Override
-    public void release(Long id, int quantity) {
+    public ProductStock release(Long id, int quantity) {
         var entity = findByIdForUpdate(id);
         entity.reserve(quantity);
+        return entity;
     }
     @Transactional(isolation = Isolation.READ_COMMITTED)
     @Override
-    public void commit(Long id, int quantity) {
+    public ProductStock commit(Long id, int quantity) {
         var entity = findByIdForUpdate(id);
         entity.release(quantity);
+        return entity;
     }
 
     @Override
@@ -125,8 +148,9 @@ public class StockService implements IStockService {
         var st = new ProductStock(productId,quantity);
         return stockJpaRepo.save(st);
     }
+    @Override
     @Transactional(isolation = Isolation.READ_COMMITTED)
-    public void reserve(Map<Long,Integer> id_quantityMap ){
+    public Set<ProductStock> reserve(Map<Long,Integer> id_quantityMap ){
 
         var entities = findAllByIdForUpdate(id_quantityMap.keySet());
         entities.forEach(
@@ -136,9 +160,12 @@ public class StockService implements IStockService {
                     stock.reserve(quantityNeeded);
                 }
         );
+
+        return entities;
     }
+    @Override
     @Transactional(isolation = Isolation.READ_COMMITTED)
-    public void release(Map<Long,Integer> id_quantityMap ){
+    public Set<ProductStock> release(Map<Long,Integer> id_quantityMap ){
 
         var entities = findAllByIdForUpdate(id_quantityMap.keySet());
 
@@ -149,9 +176,11 @@ public class StockService implements IStockService {
                     stock.release(quantityNeeded);
                 }
         );
+        return entities;
     }
+    @Override
     @Transactional(isolation = Isolation.READ_COMMITTED)
-    public void commit(Map<Long,Integer> id_quantityMap ){
+    public Set<ProductStock> commit(Map<Long,Integer> id_quantityMap ){
         var entities = findAllByIdForUpdate(id_quantityMap.keySet());
 
 
@@ -162,5 +191,6 @@ public class StockService implements IStockService {
                     stock.commit(quantityNeeded);
                 }
         );
+        return entities;
     }
 }
