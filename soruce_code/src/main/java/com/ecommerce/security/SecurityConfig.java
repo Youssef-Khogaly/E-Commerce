@@ -109,6 +109,9 @@ public class SecurityConfig {
                                     .requestMatchers(HttpMethod.POST, "/api/me/orders/**").hasRole(UserRoles.CUSTOMER.toString())
                                     // web hook config
                                     .requestMatchers(HttpMethod.POST,"/api/webhooks/**").not().authenticated()
+                                    // stocks
+                                    .requestMatchers(HttpMethod.GET,"/stocks/**").permitAll()
+                                    .requestMatchers(HttpMethod.POST,"/stocks/**").hasAnyRole(UserRoles.ADMIN.toString())
 
                                     // allow swagger ui end point
                                     .requestMatchers("/v3/api-docs/**","/swagger-ui/**","/swagger-ui.html").permitAll()
@@ -162,6 +165,7 @@ public class SecurityConfig {
         var swagger1 = PathPatternRequestMatcher.withDefaults().matcher("/v3/api-docs/**");
         var swagger2 = PathPatternRequestMatcher.withDefaults().matcher("/swagger-ui/**");
         var swagger3 = PathPatternRequestMatcher.withDefaults().matcher("/swagger-ui.html");
-        return List.of(products,login,reg,webhook,categories,swagger1,swagger2,swagger3);
+        var stocks = PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.GET,"/stocks/**");
+        return List.of(products,login,reg,webhook,categories,swagger1,swagger2,swagger3,stocks);
     }
 }
