@@ -13,9 +13,12 @@ Supports product management, categories, cart, orders, checkout with Stripe paym
 - **Image Management(Admin):**
   - Admin: upload and delete images to amazon s3 storage ,  attach images , set main image for a product   
 - **Category Management (Admin):** CRUD operations  
-- **Cart Management (/me):** Add, update, remove items, view cart  
-- **Checkout (/me):** Stripe payment integration  
-- **Order Management (/me):** View orders, get order details, cancel orders  
+- **Inventory & Stock Management:**
+  - Dedicated endpoints to re-stock, adjust inventory
+  - public endpoint to check available stock
+- **In-Memory Cart Management:** Fast, low-latency cart operations stored in Redis, bypassing database load until checkout.
+- **Checkout :** Stripe payment integration  
+- **Order Management:** View orders, get order details, cancel orders  
 - **Security:** JWT-secured endpoints; admin-only access where applicable  
 
 ---
@@ -37,7 +40,7 @@ The generated OpenAPI specification is also available at:
 ---
 ## To Do / Future Improvements
 - [X]  Implement product images end points and integrate with amazon s3 cloud storage
-- [ ]  Implement caching for product search to improve performance
+- [X]  Implement caching for product search to improve performance
 - [ ]  Use multithreading to improve API performance
 - [ ]  implement email verification feature 
 - [ ]  Add email notifications for order creation, shipment, and cancellation
@@ -54,28 +57,35 @@ The generated OpenAPI specification is also available at:
     cd E-learning-Platform
     ```
 
-2.  Create the backend environment file at `source_code/backend.env` with your credentials:
-    ```env
-    # Database Configuration
-    DB_IP=db-sql-service
-    DB_PORT=3306
-    DB_SchemaName=E_learning
-    DB_USER=your_db_user
-    DB_PASS=your_db_password
+   2.  Create the backend environment file at `source_code/backend.env` with your credentials:
+       ```env
+       # Database Configuration
+       DB_IP=db-sql-service
+       DB_PORT=3306
+       DB_SchemaName=E_learning
+       DB_USER=your_db_user
+       DB_PASS=your_db_password
 
-    # Security
-    JWT_SECRET=your_super_secret_jwt_key_with_at_least_256_bits_of_entropy
+       # Security
+       JWT_SECRET=your_super_secret_jwt_key_with_at_least_256_bits_of_entropy
 
-    # External Service API Keys
-    StripeApisec=sk_your_stripe_secret_key
-    StripeWhsec=whsec_your_stripe_webhook_secret
+       # External Service API Keys
+       StripeApisec=sk_your_stripe_secret_key
+       StripeWhsec=whsec_your_stripe_webhook_secret
             
-    # AWS
-    AWS_SECRET_ACCESS_KEY=
-    AWS_ACCESS_KEY_ID=
-    AWS_REGION=
-    cloud.aws.bucket.name=
-    ```
+       # AWS
+       AWS_SECRET_ACCESS_KEY=
+       AWS_ACCESS_KEY_ID=
+       AWS_REGION=
+       cloud.aws.bucket.name=
+    
+       # Redis
+    
+       REDIS_HOST=
+       REDIS_PORT=
+       REDIS_PASSWORD=
+    
+       ```
 
 3.  Create the database environment file at `DB-init/db-sql.env`:
     ```env
@@ -108,7 +118,8 @@ The generated OpenAPI specification is also available at:
   3. do not forget to set StripeWhsec enviroment variable to the webhook secret
 ## Tech Stack
 - **Backend:** JAVA 17 ,Spring Boot, Spring JPA, Hibernate, Spring MVC , Spring Security, JWT
-- **Database:** MySQL  
+- **Database:** MySQL
+- **Caching & In-Memory Store:** Redis, Spring Data Redis
 - **Payment Gateway:** Stripe
-- - **Cloud storage:** Amazon s3
+- **Cloud storage:** Amazon s3
 - **Build Tool:** Maven  Docker Docker-compose
