@@ -26,7 +26,7 @@ create table if not exists product_stock(
 public class ProductStock {
 
     @Id
-    @JoinColumn(name = "product_id")
+    @Column(name = "product_id")
     private Long id;
 
     @PositiveOrZero
