@@ -22,7 +22,6 @@ create table if not exists product_stock(
 @Entity
 @Table(name = "product_stock")
 @NoArgsConstructor
-@Getter
 public class ProductStock {
 
     @Id
@@ -35,6 +34,23 @@ public class ProductStock {
     private Integer reservedStock;
     @Column(insertable = false ,updatable = false)
     private Integer availableStock;
+
+
+    public Long getId() {
+        return id;
+    }
+
+    public Integer getStock() {
+        return stock;
+    }
+
+    public Integer getReservedStock() {
+        return reservedStock;
+    }
+
+    public Integer getAvailableStock() {
+        return getStock() - getReservedStock();
+    }
 
     public ProductStock(Long id, Integer stock) {
         if(stock < 0)
