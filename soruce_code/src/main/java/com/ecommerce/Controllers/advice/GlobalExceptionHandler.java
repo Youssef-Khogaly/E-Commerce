@@ -12,6 +12,7 @@ import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.ValidationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -62,6 +63,13 @@ public class GlobalExceptionHandler {
 
         ErrorResponse ret = new ErrorResponse(HttpStatus.CONFLICT,List.of(exception.getMessage()),req.getRequestURI(), Instant.now());
         return ResponseEntity.status(HttpStatus.CONFLICT).body(ret);
+    }
+
+    @ExceptionHandler({BadCredentialsException.class})
+    public ResponseEntity<ErrorResponse>handleoutOfStock(BadRequestException exception , HttpServletRequest req){
+
+        ErrorResponse ret = new ErrorResponse(HttpStatus.UNAUTHORIZED,List.of(exception.getMessage()),req.getRequestURI(), Instant.now());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ret);
     }
     @ExceptionHandler({Exception.class})
     public ResponseEntity<ErrorResponse>handleUnExpectedException(Exception exception , HttpServletRequest req){
