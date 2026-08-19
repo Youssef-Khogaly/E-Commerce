@@ -1,4 +1,4 @@
-package com.ecommerce.Category;
+package com.ecommerce.Category.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
@@ -27,11 +27,11 @@ public class Category {
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         Category category = (Category) o;
-        return getCate_id() == category.getCate_id() && Objects.equals(getName(), category.getName());
+        return getCate_id() == category.getCate_id();
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getCate_id(), getName());
+        return Objects.hash(getCate_id());
     }
 }

@@ -13,7 +13,7 @@ import com.ecommerce.Images.resposes.ProductImageResponseDto;
 
 import com.ecommerce.docs.RequireAuthDocs;
 import com.ecommerce.docs.CommonErrorDocs;
-import com.ecommerce.Category.Category;
+import com.ecommerce.Category.entity.Category;
 import com.ecommerce.Exception.BadRequestException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.headers.Header;

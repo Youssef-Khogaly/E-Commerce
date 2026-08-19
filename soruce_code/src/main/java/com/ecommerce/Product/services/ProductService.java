@@ -1,7 +1,7 @@
 package com.ecommerce.Product.services;
 
 import com.ecommerce.Images.resposes.ProductImageResponseDto;
-import com.ecommerce.Category.Category;
+import com.ecommerce.Category.entity.Category;
 
 import com.ecommerce.Product.entity.Product;
 import com.ecommerce.Product.entity.ProductSortByOptions;

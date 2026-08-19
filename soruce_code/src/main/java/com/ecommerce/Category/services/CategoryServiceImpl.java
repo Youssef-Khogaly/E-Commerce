@@ -1,6 +1,6 @@
 package com.ecommerce.Category.services;
 
-import com.ecommerce.Category.Category;
+import com.ecommerce.Category.entity.Category;
 import com.ecommerce.Category.repos.CategoryJpaRepo;
 import com.ecommerce.Exception.ConflictException;
 import com.ecommerce.Exception.NotFoundException;
@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -49,5 +51,17 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public void deleteCategory(Integer id) {
         categoryJpaRepo.deleteById(id);
+    }
+
+    @Override
+    public Set<Category> findAllById(Set<Integer> ids) {
+        Set<Category> categories = categoryJpaRepo.findAllById(ids).stream().collect(Collectors.toUnmodifiableSet());
+        if(categories.size() != ids.size()){
+            Set<Integer>existsIds = categories.stream().map(Category::getCate_id).collect(Collectors.toSet());
+
+            throw new NotFoundException("bad categories id:" + ids.stream().filter(c -> !existsIds.contains(c)).toList() + "doesn't exist");
+        }
+
+        return categories;
     }
 }

@@ -2,7 +2,7 @@ package com.ecommerce.Product.entity;
 
 import com.ecommerce.ApplicationConstants;
 import com.ecommerce.util.Money;
-import com.ecommerce.Category.Category;
+import com.ecommerce.Category.entity.Category;
 import com.ecommerce.Images.entity.ProductImages;
 import jakarta.persistence.*;
 import lombok.Getter;

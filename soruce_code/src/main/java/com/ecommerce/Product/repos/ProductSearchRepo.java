@@ -1,6 +1,6 @@
 package com.ecommerce.Product.repos;
 
-import com.ecommerce.Category.Category;
+import com.ecommerce.Category.entity.Category;
 import com.ecommerce.Images.entity.ProductImages;
 import com.ecommerce.Images.entity.Image;
 import com.ecommerce.Product.entity.ProductSortByOptions;

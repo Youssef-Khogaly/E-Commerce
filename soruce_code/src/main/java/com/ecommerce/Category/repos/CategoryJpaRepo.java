@@ -1,6 +1,6 @@
 package com.ecommerce.Category.repos;
 
-import com.ecommerce.Category.Category;
+import com.ecommerce.Category.entity.Category;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 

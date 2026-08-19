@@ -1,5 +1,6 @@
 package com.ecommerce.Category;
 
+import com.ecommerce.Category.entity.Category;
 import com.ecommerce.Category.services.CategoryService;
 import com.ecommerce.util.ErrorResponse;
 import com.ecommerce.docs.RequireAuthDocs;
