@@ -111,7 +111,7 @@ public class SecurityConfig {
                                     .requestMatchers(HttpMethod.POST,"/api/webhooks/**").not().authenticated()
                                     // stocks
                                     .requestMatchers(HttpMethod.GET,"/stocks/**").permitAll()
-                                    .requestMatchers(HttpMethod.POST,"/stocks/**").hasAnyRole(UserRoles.ADMIN.toString())
+                                    .requestMatchers(HttpMethod.POST,"/stocks/**").hasRole(UserRoles.ADMIN.toString())
 
                                     // allow swagger ui end point
                                     .requestMatchers("/v3/api-docs/**","/swagger-ui/**","/swagger-ui.html").permitAll()
