@@ -20,6 +20,9 @@ import com.ecommerce.repository.ProductImageRepo;
 import com.ecommerce.services.StockService.IStockService;
 import com.ecommerce.services.interfaces.ProductService;
 import lombok.AllArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -77,6 +80,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Cacheable(value = "products",key = "#product_id")
     public Product getProductById(Long product_id) {
 
         return productJpaRepo.findById(product_id).orElseThrow(
@@ -88,7 +92,15 @@ public class ProductServiceImpl implements ProductService {
     {
         return productJpaRepo.getReferenceById(id);
     }
+    @Caching(
+            evict = {
+                    @CacheEvict(value = "products",key = "#product.id"),
+                    @CacheEvict(value = "productImages",key = "#product.id"),
+                    @CacheEvict(value = "productsCategories",key = "#product.id")
+            }
 
+
+    )
     public Product save(Product product)
     {
         return productJpaRepo.save(product);
@@ -99,14 +111,24 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Cacheable(value = "productsCategories",key = "#product_id")
     public Collection<Category> getProductCategory(Long product_id) {
-        if(isProductExists(product_id))
+        if(!isProductExists(product_id))
             throw new NotFoundException("product with id:" +product_id +" doesn't exists");
 
         return productJpaRepo.findCategoriesById(product_id);
     }
 
     @Override
+    @Caching(
+            evict = {
+                    @CacheEvict(value = "products",key = "#product.id"),
+                    @CacheEvict(value = "productImages",key = "#product.id"),
+                    @CacheEvict(value = "productsCategories",key = "#product.id")
+            }
+
+
+    )
     public void deleteProduct(Long product_id) {
         if(!productJpaRepo.existsById(product_id))
             throw new NotFoundException("product with id:" +product_id +" doesn't exists");
@@ -131,6 +153,7 @@ public class ProductServiceImpl implements ProductService {
     }
     @Override
     @Transactional(isolation = Isolation.READ_COMMITTED)
+    @CacheEvict(value = "products",key = "#command.product_id")
     public void updateProduct(UpdateProductCommand command){
 
 
@@ -142,8 +165,14 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Caching(
+            evict = {
+                    @CacheEvict(value = "products",key = "#product_id"),
+                    @CacheEvict(value = "productsCategories",key = "#product_id")
+            }
+    )
     public void putProductCategories(Long product_id,Set<Integer> categoriesIds) {
-        if(isProductExists(product_id)){
+        if(!isProductExists(product_id)){
             throw new NotFoundException("product with id:" + product_id +"doesn't exists or soft deleted");
         }
             Product product = productJpaRepo.getReferenceById(product_id);
@@ -169,6 +198,12 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional
+    @Caching(
+            evict = {
+                    @CacheEvict(value = "products",key = "#productId"),
+                    @CacheEvict(value = "productImages",key = "#productId")
+            }
+    )
     public void putProductImages(Long productId, Set<Long> imageIds) {
 
 
@@ -199,6 +234,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Cacheable(value = "productImages",key = "#productId")
     public List<ProductImageResponseDto> getProductImages(Long productId) {
         return productImageRepo.findAllByProduct_Id(productId).stream()
                 .map(img -> new ProductImageResponseDto(img.getProductImageId().getImage_id(),img.getImage().getImageUrl(), img.isMain()))
@@ -207,6 +243,15 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional
+    @Caching(
+            evict = {
+                    @CacheEvict(value = "products",key = "#productId"),
+                    @CacheEvict(value = "productImages",key = "#productId")
+            }
+
+
+    )
+
     public void setProductMainImage(Long productId, Long mainImageId) {
         if(!imageRepo.existsById(mainImageId)){
             throw new BadRequestException("image with id:" + mainImageId + " doesn't exists");
