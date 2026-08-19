@@ -24,29 +24,20 @@ create table if not exists product_stock(
 @NoArgsConstructor
 public class ProductStock {
 
+    @Getter
     @Id
     @Column(name = "product_id")
     private Long id;
 
+    @Getter
     @PositiveOrZero
     private Integer stock;
+    @Getter
     @PositiveOrZero
     private Integer reservedStock;
     @Column(insertable = false ,updatable = false)
     private Integer availableStock;
 
-
-    public Long getId() {
-        return id;
-    }
-
-    public Integer getStock() {
-        return stock;
-    }
-
-    public Integer getReservedStock() {
-        return reservedStock;
-    }
 
     public Integer getAvailableStock() {
         return getStock() - getReservedStock();
