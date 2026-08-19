@@ -2,7 +2,7 @@ package com.ecommerce.Inegration.PaymentGateWay;
 
 import com.ecommerce.Inegration.PaymentGateWay.Interfaces.CancelSession;
 import com.ecommerce.Inegration.PaymentGateWay.Stripe.StripeCancelSession;
-import com.ecommerce.entities.Payments.PaymentMethod;
+import com.ecommerce.Payment.entity.PaymentMethod;
 import lombok.AllArgsConstructor;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;

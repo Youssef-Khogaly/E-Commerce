@@ -1,6 +1,6 @@
 package com.ecommerce.Inegration.CloudImages;
 
-import com.ecommerce.entities.images.StorageProvider;
+import com.ecommerce.Images.StorageProvider;
 
 import java.net.MalformedURLException;
 import java.net.URL;

@@ -1,11 +1,7 @@
 package com.ecommerce.security;
 
-import com.ecommerce.ApplicationConstants;
-import com.ecommerce.entities.user.UserRoles;
-import com.ecommerce.security.ExceptionHandling.AuthenticationEntryPointCustom;
+import com.ecommerce.User.UserRoles;
 import com.ecommerce.security.filters.JwtAuthenticationFilter;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -19,14 +15,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
-import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
-import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.time.Duration;
 import java.util.List;
 
 

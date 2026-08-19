@@ -1,14 +1,13 @@
 package com.ecommerce.security.User;
 
-import com.ecommerce.entities.user.User;
-import com.ecommerce.repository.UsersRepo.UserCrudRepo;
+import com.ecommerce.User.User;
+import com.ecommerce.User.UsersRepo.UserCrudRepo;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 
 import java.util.List;
 
