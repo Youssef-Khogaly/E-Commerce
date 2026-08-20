@@ -7,7 +7,6 @@ import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
-import java.util.List;
 import java.util.Set;
 
 public interface ProductCategoryRepo extends JpaRepository<ProductCategory, ProductCategoryId> {
@@ -24,7 +23,7 @@ public interface ProductCategoryRepo extends JpaRepository<ProductCategory, Prod
     @Query("select pc from ProductCategory pc where pc in :productIds")
     Set<ProductCategory> findAllByProductIds(Set<Long> productIds);
 
-    void deleteAllByProductId(Long productId);
+    void deleteAllByProduct_Id(Long productId);
 
 
 }

@@ -12,5 +12,7 @@ public interface ImagesJpaRepo extends JpaRepository<Image,Long> {
     @Query("select i.id from Image i where i.id in :ids")
     Set<Long> findExistingIds(Collection<Long>ids);
 
+    @Query("select i from Image i where i.id in :ids")
+    Set<Image>findAllByIds(Collection<Long>ids);
 
 }

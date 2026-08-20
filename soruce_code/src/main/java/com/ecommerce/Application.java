@@ -10,7 +10,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 
 
 @SpringBootApplication
-@EntityScan(basePackages = "com.ecommerce.entities")
+@EntityScan(basePackages = "com.ecommerce.*")
 @EnableWebSecurity(debug = true)
 @EnableRedisRepositories
 @EnableCaching

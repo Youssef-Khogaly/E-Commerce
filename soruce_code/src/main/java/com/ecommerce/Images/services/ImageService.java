@@ -1,6 +1,7 @@
 package com.ecommerce.Images.services;
 
 import com.ecommerce.Exception.InvalidImageException;
+import com.ecommerce.Exception.NotFoundException;
 import com.ecommerce.Images.entity.Image;
 import com.ecommerce.Images.StorageProvider;
 import com.ecommerce.Images.repos.ImagesJpaRepo;
@@ -65,6 +66,21 @@ public class ImageService implements IImageService {
         deleteImageFromCloud(image.getStorage_key());
         imagesJpaRepo.deleteById(image.getId());
 
+    }
+
+    @Override
+    public Set<Image> findAllByIds(Set<Long> ids) {
+        if(ids == null || ids.isEmpty())
+            return Set.of();
+        Set<Image> images = imagesJpaRepo.findAllByIds(ids);
+        if(images.size() != ids.size())
+        {
+            Set<Long>existingIds = images.stream().map(Image::getId).collect(Collectors.toUnmodifiableSet());
+            List<Long>notExistingIds = ids.stream().filter(i -> !existingIds.contains(i)).toList();
+            throw new NotFoundException("image ids: " + notExistingIds +" does not exists");
+        }
+
+        return images;
     }
 
     public Map<Long , String> saveImages(List<ImageWrapper> imageWrapperList) {

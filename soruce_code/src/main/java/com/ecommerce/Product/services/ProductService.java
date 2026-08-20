@@ -42,8 +42,9 @@ public interface ProductService  {
     public Page<ProductSearchView> getProductSearchView(QueryProduct queryProduct);
     public Product getProductById(Long product_id);
     public boolean isProductExists(Long product_id);
+    public void existsById(Long productId);
+    public void existsByIds(Set<Long>productIds);
 
-    Collection<Category> getProductCategory(Long product_id);
     // real deletion are not allowed
     public void deleteProduct(Long product_id) ;
 
@@ -51,13 +52,9 @@ public interface ProductService  {
 
     public void updateProduct(UpdateProductCommand commands);
 
-    public void putProductCategories(Long product_id,Set<Integer>categoriesIds);
 
     public Map<Long,ProductSearchView> getProductSearchView(Collection<Long> ids);
 
-    public void putProductImages(Long productId,Set<Long> imageIds);
-    public List<ProductImageResponseDto> getProductImages(Long ProductId);
-    public void setProductMainImage(Long productId , Long mainImageId);
 
     public Product getReferenceById(Long id);
 

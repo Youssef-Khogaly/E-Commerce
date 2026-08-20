@@ -1,6 +1,9 @@
 package com.ecommerce.Product;
 
 
+import com.ecommerce.Category.services.ProductCategoryService;
+import com.ecommerce.Images.dtos.ProductImageDto;
+import com.ecommerce.Images.services.ProductImagesService;
 import com.ecommerce.Product.dtos.ProductDTO;
 import com.ecommerce.Product.dtos.ProductSearchView;
 import com.ecommerce.Product.entity.ProductSortByOptions;
@@ -42,8 +45,8 @@ import java.util.Set;
 @Validated
 public class ProductController {
     private ProductService productService;
-
-
+    private ProductImagesService productImagesService;
+    private ProductCategoryService productCategoryService;
 
     @Operation(summary = "product search and filtration")
     @ApiResponses(
@@ -152,7 +155,7 @@ public class ProductController {
     @PutMapping("/{id}/categories")
     public ResponseEntity<Void>putCategoryToProduct(@PathVariable @Valid @NotNull@Positive Long id ,@RequestBody @NotNull Set<@NotNull @Positive Integer> categoriesIds ){
 
-        productService.putProductCategories(id,categoriesIds);
+        productCategoryService.putProductCategories(id,categoriesIds);
         return ResponseEntity.ok().build();
     }
     @Operation(summary = "get product categories")
@@ -165,7 +168,7 @@ public class ProductController {
     @GetMapping("/{id}/categories")
     public ResponseEntity<Collection<Category>>getProductCategory(@PathVariable @Valid @NotNull@Positive Long id ){
 
-        Collection<Category> categories = productService.getProductCategory(id);
+        Collection<Category> categories = productCategoryService.getProductCategories(id);
         return ResponseEntity.ok().body(categories);
     }
     /// //////////////////
@@ -179,9 +182,9 @@ public class ProductController {
     )
     @CommonErrorDocs
     @GetMapping("/{id}/images")
-    public ResponseEntity<List<ProductImageResponseDto>> getProductImages(@PathVariable  @NotNull  @Positive Long id){
+    public ResponseEntity<List<ProductImageDto>> getProductImages(@PathVariable  @NotNull  @Positive Long id){
 
-        List<ProductImageResponseDto> productImageResponseDtoList = productService.getProductImages(id);
+        List<ProductImageDto> productImageResponseDtoList = productImagesService.getProductImages(id);
         return ResponseEntity.ok(productImageResponseDtoList);
     }
 
@@ -194,25 +197,11 @@ public class ProductController {
     )
     @CommonErrorDocs
     @RequireAuthDocs
-    @PutMapping("/{id}/images/")
-    public ResponseEntity<Void> addProductImages(@PathVariable @NotNull @Positive Long id , @RequestParam Set<@Positive @NotNull Long> imagesIds){
-        productService.putProductImages(id,imagesIds);
+    @PutMapping(path = "/{id}/images/",params = "mainId")
+    public ResponseEntity<Void> addProductImages(@PathVariable @NotNull @Positive Long id ,@RequestParam @NotNull @Positive Long mainId,
+                                                 @RequestBody Set<@Positive @NotNull Long> imagesIds){
+        productImagesService.putProductImages(id,imagesIds,mainId);
         return  ResponseEntity.ok().build();
     }
-
-    @Operation(summary = "set product main image" , description = "Required Role: Admin")
-    @ApiResponses(
-            {
-                    @ApiResponse(responseCode = "200")
-            }
-    )
-    @CommonErrorDocs
-    @RequireAuthDocs
-    @PutMapping(value = "/{id}/images/" ,params = "mainId")
-    public ResponseEntity<Void> setProductMainImage(@PathVariable @NotNull @Positive Long id , @RequestParam @NotNull @Positive Long mainId){
-        productService.setProductMainImage(id,mainId);
-        return  ResponseEntity.ok().build();
-    }
-
 
 }

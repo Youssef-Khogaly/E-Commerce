@@ -30,7 +30,7 @@ public interface ProductJpaRepo extends JpaRepository<Product, Long> , ProductQu
     Optional<Product> findById(Long id);
 
     @Query("""
-            select new  com.ecommerce.DTO.ProductSearchView(p.id , p.title  , p.price  , i.imageUrl , p.addedAt)  from Product p
+            select new  com.ecommerce.Product.dtos.ProductSearchView(p.id , p.title  , p.price  , i.imageUrl , p.addedAt)  from Product p
             left join ProductImages  pi on p.id=pi.productImageId.product_id and pi.isMain = true  left join Image i  on pi.image.id = i.id  
             where p.id in :ids 
                         """ )
@@ -43,13 +43,13 @@ public interface ProductJpaRepo extends JpaRepository<Product, Long> , ProductQu
     @Query("select p from Product p where p.id = :id")
     Optional<Product> findByIdForUpdate(Long id);
 
-    @Query("select  p.categories from Product p")
-    Set<Category> findCategoriesById(Long product_id);
 
-    @Query("select new com.ecommerce.DTO.productCategoryRow(p.id , c.cate_id , c.name)  from Product p  inner join  Category c on p.id = c.cate_id ")
-    List<productCategoryRow>findAllCategoriesById(Collection<Long>ids);
-
-
+    @Query(
+            """
+            select p.id from Product p where p.id in :ids
+            """
+    )
+    Set<Long> getExistingIds(Set<Long> ids);
 
 
 

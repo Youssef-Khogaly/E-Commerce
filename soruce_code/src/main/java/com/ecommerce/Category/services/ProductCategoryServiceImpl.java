@@ -2,7 +2,6 @@ package com.ecommerce.Category.services;
 
 import com.ecommerce.Category.entity.Category;
 import com.ecommerce.Category.entity.ProductCategory;
-import com.ecommerce.Category.repos.CategoryJpaRepo;
 import com.ecommerce.Category.repos.ProductCategoryRepo;
 import com.ecommerce.Exception.NotFoundException;
 import com.ecommerce.Product.entity.Product;
@@ -29,12 +28,12 @@ public class ProductCategoryServiceImpl implements ProductCategoryService{
         final Product product = productService.getReferenceById(productId);
 
         if(categoriesIds.isEmpty()){
-            productCategoryRepo.deleteAllByProductId(productId);
+            productCategoryRepo.deleteAllByProduct_Id(productId);
             return;
         }
         Set<Category> categories = categoryService.findAllById(categoriesIds);
 
-        productCategoryRepo.deleteAllByProductId(productId);
+        productCategoryRepo.deleteAllByProduct_Id(productId);
         productCategoryRepo.flush(); // to not throw db constrains we insert product category that was exists before
 
         List<ProductCategory> productCategoryList = categories.stream().map(c ->{
