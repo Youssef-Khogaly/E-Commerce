@@ -7,6 +7,8 @@ import com.ecommerce.Exception.NotFoundException;
 import com.ecommerce.Product.entity.Product;
 import com.ecommerce.Product.services.ProductService;
 import lombok.AllArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,6 +21,7 @@ public class ProductCategoryServiceImpl implements ProductCategoryService{
     private ProductService productService;
     private CategoryService categoryService;
     private ProductCategoryRepo productCategoryRepo;
+
     @Transactional
     @Override
     public void putProductCategories(final Long productId, final Set<Integer> categoriesIds) {
@@ -45,6 +48,7 @@ public class ProductCategoryServiceImpl implements ProductCategoryService{
 
         productCategoryRepo.saveAll(productCategoryList);
     }
+
 
     @Override
     @Transactional(readOnly = true)

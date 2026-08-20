@@ -92,8 +92,6 @@ public class ProductServiceImpl implements ProductService {
     @Caching(
             evict = {
                     @CacheEvict(value = "products",key = "#product.id"),
-                    @CacheEvict(value = "productImages",key = "#product.id"),
-                    @CacheEvict(value = "productsCategories",key = "#product.id")
             }
 
 
@@ -130,8 +128,6 @@ public class ProductServiceImpl implements ProductService {
     @Caching(
             evict = {
                     @CacheEvict(value = "products",key = "#product_id"),
-                    @CacheEvict(value = "productImages",key = "#product_id"),
-                    @CacheEvict(value = "productsCategories",key = "product_id")
             }
 
 
