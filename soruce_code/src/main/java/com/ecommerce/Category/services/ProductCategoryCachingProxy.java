@@ -1,6 +1,7 @@
 package com.ecommerce.Category.services;
 
 import com.ecommerce.Category.entity.Category;
+import com.ecommerce.Product.services.ProductServiceImpl;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -18,7 +19,7 @@ import static java.util.stream.Collectors.toList;
 @Primary
 public class ProductCategoryCachingProxy implements ProductCategoryService{
 
-    public static final String CACHE_NAME = "products:categories";
+    public static final String CACHE_NAME = ProductServiceImpl.CACHE_NAME + ":categories";
     private final ProductCategoryService productCategoryService;
     private final RedisTemplate<String,Object> redisTemplate;
     private final ObjectMapper objectMapper;
@@ -43,7 +44,7 @@ public class ProductCategoryCachingProxy implements ProductCategoryService{
     {
         return CACHE_NAME+"::"+productId;
     }
-    public static List<String> productIdsToRedisKey(Set<Long> productIds)
+    public static List<String> productIdsToRedisKey(Collection<Long> productIds)
     {
         return productIds.stream().map(ProductCategoryCachingProxy::productIdToRedisKey).collect(toList());
     }

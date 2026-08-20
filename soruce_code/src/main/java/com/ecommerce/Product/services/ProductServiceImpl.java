@@ -42,6 +42,7 @@ public class ProductServiceImpl implements ProductService {
     private final ProductImageRepo productImageRepo;
     private final ImagesJpaRepo imageRepo;
     private final IStockService stockService;
+    public static final String CACHE_NAME = "products";
     private String normalizeSearchQuery(String name){
         if(name == null || name.isBlank())
                 return null;
@@ -77,7 +78,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    @Cacheable(value = "products",key = "#product_id")
+    @Cacheable(value = CACHE_NAME,key = "#product_id")
     public Product getProductById(Long product_id) {
 
         return productJpaRepo.findById(product_id).orElseThrow(
@@ -91,7 +92,7 @@ public class ProductServiceImpl implements ProductService {
     }
     @Caching(
             evict = {
-                    @CacheEvict(value = "products",key = "#product.id"),
+                    @CacheEvict(value = CACHE_NAME,key = "#product.id"),
             }
 
 
@@ -127,7 +128,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Caching(
             evict = {
-                    @CacheEvict(value = "products",key = "#product_id"),
+                    @CacheEvict(value = CACHE_NAME,key = "#product_id"),
             }
 
 
@@ -156,7 +157,7 @@ public class ProductServiceImpl implements ProductService {
     }
     @Override
     @Transactional(isolation = Isolation.READ_COMMITTED)
-    @CacheEvict(value = "products",key = "#command.product_id")
+    @CacheEvict(value = CACHE_NAME,key = "#command.product_id")
     public void updateProduct(UpdateProductCommand command){
 
 
