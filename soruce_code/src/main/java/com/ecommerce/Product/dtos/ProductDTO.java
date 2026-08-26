@@ -1,5 +1,6 @@
 package com.ecommerce.Product.dtos;
 
+import com.ecommerce.Category.entity.Category;
 import com.ecommerce.Images.dtos.ImageDTO;
 import com.ecommerce.Product.entity.Product;
 import com.ecommerce.util.Money;
@@ -36,11 +37,17 @@ public class ProductDTO{
     DiscountDTO discount;
     @Nullable
     List<ImageDTO> imagesUrl;
+    @Nullable
+    List<Category> categories;
 
-
+    public static ProductDTO fromProduct(Product product,List<ImageDTO>images,List<Category> categories){
+        return new ProductDTO(product.getId(),product.getTitle(),product.getDescription(),product.getPriceMoney(),new DiscountDTO(0),images,categories);
+    }
+    public static ProductDTO fromProduct(Product product,List<ImageDTO>images){
+        return new ProductDTO(product.getId(),product.getTitle(),product.getDescription(),product.getPriceMoney(),new DiscountDTO(0),images,null);
+    }
     public static ProductDTO fromProduct(Product product){
-        return new ProductDTO(product.getId(),product.getTitle(),product.getDescription(),product.getPriceMoney(),new DiscountDTO(0)
-                , product.getImagesList().stream().map(pi -> ImageDTO.fromImage(pi.getImage())).toList());
+        return new ProductDTO(product.getId(),product.getTitle(),product.getDescription(),product.getPriceMoney(),new DiscountDTO(0),null,null);
     }
     @Override
     public boolean equals(Object o) {
