@@ -27,19 +27,10 @@ public class Product{
     private String title;
     private String description;
     private long price;
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-            name = "product_category",
-            joinColumns = @JoinColumn(name = "product_id" , nullable = false ),
-            inverseJoinColumns = @JoinColumn(name = "category_id" , nullable = false)
-    )
-    private Set<Category> categories;
-    @Column(updatable = false,insertable = false,nullable = false)
+
     private Timestamp addedAt;
 
 
-    @OneToMany(mappedBy = "product",cascade = CascadeType.ALL,orphanRemoval = true)
-    private List<ProductImages> imagesList = new ArrayList<>();
 
 
     public Money getMoneyPrice(){
