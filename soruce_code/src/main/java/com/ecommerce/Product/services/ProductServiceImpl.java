@@ -1,15 +1,7 @@
 package com.ecommerce.Product.services;
 
-import com.ecommerce.Images.resposes.ProductImageResponseDto;
-import com.ecommerce.Category.entity.Category;
-import com.ecommerce.Images.entity.ProductImageId;
-import com.ecommerce.Images.entity.ProductImages;
-import com.ecommerce.Images.entity.Image;
-import com.ecommerce.Category.repos.CategoryJpaRepo;
-import com.ecommerce.Images.repos.ImagesJpaRepo;
 import com.ecommerce.Exception.BadRequestException;
 import com.ecommerce.Exception.NotFoundException;
-import com.ecommerce.Images.repos.ProductImageRepo;
 import com.ecommerce.Product.entity.ProductSortDirection;
 import com.ecommerce.Product.dtos.ProductSearchView;
 import com.ecommerce.Product.entity.Product;
@@ -18,7 +10,6 @@ import com.ecommerce.Product.repos.ProductJpaRepo;
 import com.ecommerce.Stock.service.IStockService;
 import lombok.AllArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -29,7 +20,6 @@ import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 @Service
@@ -38,11 +28,8 @@ public class ProductServiceImpl implements ProductService {
 
     private final IProductSearchRepo productSearchRepo;
     private final ProductJpaRepo productJpaRepo;
-    private final CategoryJpaRepo categoryJpaRepo;
-    private final ProductImageRepo productImageRepo;
-    private final ImagesJpaRepo imageRepo;
     private final IStockService stockService;
-    public static final String CACHE_NAME = "products";
+
     private String normalizeSearchQuery(String name){
         if(name == null || name.isBlank())
                 return null;
@@ -78,7 +65,6 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    @Cacheable(value = CACHE_NAME,key = "#product_id")
     public Product getProductById(Long product_id) {
 
         return productJpaRepo.findById(product_id).orElseThrow(
@@ -90,13 +76,6 @@ public class ProductServiceImpl implements ProductService {
     {
         return productJpaRepo.getReferenceById(id);
     }
-    @Caching(
-            evict = {
-                    @CacheEvict(value = CACHE_NAME,key = "#product.id"),
-            }
-
-
-    )
     public Product save(Product product)
     {
         return productJpaRepo.save(product);
@@ -157,7 +136,6 @@ public class ProductServiceImpl implements ProductService {
     }
     @Override
     @Transactional(isolation = Isolation.READ_COMMITTED)
-    @CacheEvict(value = CACHE_NAME,key = "#command.product_id")
     public void updateProduct(UpdateProductCommand command){
 
 

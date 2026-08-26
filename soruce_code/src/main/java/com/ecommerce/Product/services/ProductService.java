@@ -14,6 +14,8 @@ import java.util.*;
 ;
 
 public interface ProductService  {
+
+    public static final String CACHE_NAME = "products";
     // fields that you don't want to update set it null
 
 
