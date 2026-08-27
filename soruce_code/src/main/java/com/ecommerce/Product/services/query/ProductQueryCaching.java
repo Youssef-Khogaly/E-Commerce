@@ -43,7 +43,7 @@ public class ProductQueryCaching implements ProductQueryService<Product>{
     }
 
     @Override
-    @Cacheable(value = CACHE_NAME,key = "#product_id")
+    @Cacheable(value = CACHE_NAME,key = "#productId")
     public Product findById(Long productId) {
         return productQueryService.findById(productId);
     }

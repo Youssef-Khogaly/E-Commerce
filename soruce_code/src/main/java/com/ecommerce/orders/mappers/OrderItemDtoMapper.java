@@ -12,11 +12,11 @@ public class OrderItemDtoMapper {
     public OrderItemDTO from(CartItemDTO cartItemDTO){
         var  dto = new OrderItemDTO();
         dto.setProduct_id(cartItemDTO.getProductDTO().getId());
-        dto.setName(cartItemDTO.getProductDTO().getTitle());
+        dto.setName(cartItemDTO.getProductDTO().getName());
         dto.setQuantity(cartItemDTO.getQuantity());
         dto.setSubtotal(cartItemDTO.getSubTotalInCents());
         dto.setFinalDiscount(cartItemDTO.getProductDTO().getDiscount().getMoney());
-        dto.setUnitPrice(cartItemDTO.getProductDTO().getPriceInCents());
+        dto.setUnitPrice(cartItemDTO.getProductDTO().getPrice());
         return dto;
     }
 

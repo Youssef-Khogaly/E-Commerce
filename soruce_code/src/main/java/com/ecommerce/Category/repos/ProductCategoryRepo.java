@@ -14,7 +14,7 @@ public interface ProductCategoryRepo extends JpaRepository<ProductCategory, Prod
 
     @Query(
             """
-            select c from ProductCategory pc inner join Category c on pc.product = :productId and pc.category.cate_id = c.cate_id
+            select c from ProductCategory pc inner join Category c on pc.product.id = :productId and pc.category.cate_id = c.cate_id
             """
     )
     Set<Category> findByProductId(Long productId);

@@ -22,10 +22,6 @@ public interface ProductJpaRepo extends JpaRepository<Product, Long> , ProductQu
     )
     boolean isExists(Long id);
 
-    @EntityGraph(
-            attributePaths = {"imagesList","imagesList.image"},
-            type = EntityGraph.EntityGraphType.FETCH
-    )
     @Override
     Optional<Product> findById(Long id);
 
@@ -62,10 +58,6 @@ public interface ProductJpaRepo extends JpaRepository<Product, Long> , ProductQu
     )
     List<Product>findAllByIdReadOnly(Collection<Long>ids);
 
-    @EntityGraph(
-            attributePaths = {"imagesList","imagesList.image"},
-            type = EntityGraph.EntityGraphType.FETCH
-    )
     @Query("select p from Product p where p.id = :product_id")
     Optional<Product> findByIdWithImagesOnly(long product_id);
 

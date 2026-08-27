@@ -1,9 +1,7 @@
 package com.ecommerce.Product.entity;
 
-import com.ecommerce.ApplicationConstants;
 import com.ecommerce.util.Money;
-import com.ecommerce.Category.entity.Category;
-import com.ecommerce.Images.entity.ProductImages;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -31,20 +29,18 @@ public class Product{
     private Timestamp addedAt;
 
 
-
-
-    public Money getMoneyPrice(){
-        return new Money(price, ApplicationConstants.defaultCurrency);
+    @JsonIgnore
+    public Money getPriceMoney(){
+        return new Money(getPrice());
     }
+
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         Product product = (Product) o;
         return Objects.equals(getId(), product.getId());
     }
-    public Money getPriceMoney(){
-        return new Money(getPrice());
-    }
+
     @Override
     public int hashCode() {
         return Objects.hashCode(getId());

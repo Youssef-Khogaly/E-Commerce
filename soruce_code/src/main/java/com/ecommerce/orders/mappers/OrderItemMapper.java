@@ -33,11 +33,11 @@ public class OrderItemMapper {
         OrderItem orderItem = new OrderItem();
         orderItem.setQuantity(cartItem.getQuantity());
         orderItem.setProduct_id(orderItem.getProduct_id());
-        orderItem.setName(cartItem.getProductDTO().getTitle());
-        orderItem.setCurrencyCode(cartItem.getProductDTO().getPriceInCents().getCurrency().getCurrencyCode());
-        orderItem.setUnitPriceInCents(cartItem.getProductDTO().getPriceInCents().getPrice());
+        orderItem.setName(cartItem.getProductDTO().getName());
+        orderItem.setCurrencyCode(cartItem.getProductDTO().getPrice().getCurrency().getCurrencyCode());
+        orderItem.setUnitPriceInCents(cartItem.getProductDTO().getPrice().getPrice());
         orderItem.setDiscountInCents(0L);
-        orderItem.setSubTotalInCents(cartItem.getProductDTO().getPriceInCents().multi(cartItem.getQuantity()).getPrice());
+        orderItem.setSubTotalInCents(cartItem.getProductDTO().getPrice().multi(cartItem.getQuantity()).getPrice());
         orderItem.setProduct_id(cartItem.getProductDTO().getId());
         return orderItem;
     }
