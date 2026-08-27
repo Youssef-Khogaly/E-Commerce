@@ -2,6 +2,7 @@ package com.ecommerce.Product.dtos;
 
 import com.ecommerce.Category.entity.Category;
 import com.ecommerce.Images.dtos.ImageDTO;
+import com.ecommerce.Images.dtos.ProductImageDto;
 import com.ecommerce.Product.entity.Product;
 import com.ecommerce.util.Money;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -14,6 +15,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
@@ -36,14 +38,14 @@ public class ProductDTO{
     @Nullable
     DiscountDTO discount;
     @Nullable
-    List<ImageDTO> imagesUrl;
+    Collection<ProductImageDto> imagesUrl;
     @Nullable
-    List<Category> categories;
+    Collection<Category> categories;
 
-    public static ProductDTO fromProduct(Product product,List<ImageDTO>images,List<Category> categories){
+    public static ProductDTO fromProduct(Product product, Collection<ProductImageDto>images, Collection<Category> categories){
         return new ProductDTO(product.getId(),product.getTitle(),product.getDescription(),product.getPriceMoney(),new DiscountDTO(0),images,categories);
     }
-    public static ProductDTO fromProduct(Product product,List<ImageDTO>images){
+    public static ProductDTO fromProduct(Product product,Collection<ProductImageDto>images){
         return new ProductDTO(product.getId(),product.getTitle(),product.getDescription(),product.getPriceMoney(),new DiscountDTO(0),images,null);
     }
     public static ProductDTO fromProduct(Product product){

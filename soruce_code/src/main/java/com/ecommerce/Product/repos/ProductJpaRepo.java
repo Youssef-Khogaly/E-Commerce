@@ -54,10 +54,6 @@ public interface ProductJpaRepo extends JpaRepository<Product, Long> , ProductQu
 
 
 
-    @EntityGraph(
-            attributePaths = {"imagesList","categories"},
-            type = EntityGraph.EntityGraphType.FETCH
-    )
     @Query(
             """
         select p from Product p

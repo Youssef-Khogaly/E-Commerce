@@ -7,7 +7,8 @@ import com.ecommerce.Cart.repos.CartJpaRepo;
 import com.ecommerce.Product.dtos.ProductSearchView;
 import com.ecommerce.Exception.BadRequestException;
 import com.ecommerce.Exception.NotFoundException;
-import com.ecommerce.Product.services.ProductService;
+import com.ecommerce.Product.services.crud.ProductCrudService;
+import com.ecommerce.Product.services.search.ProductSearchService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
@@ -19,7 +20,8 @@ import java.util.*;
 @AllArgsConstructor
 public class CartServiceImpl implements CartService {
     private final CartJpaRepo cartJpaRepo;
-    private final ProductService productService;
+    private final ProductCrudService productCrudService;
+    private final ProductSearchService productSearchService;
     private CartItemsDtoMapper cartItemsDtoMapper;
 
     public Cart findById(Long custId)
@@ -34,7 +36,7 @@ public class CartServiceImpl implements CartService {
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public void addToCart(Long cust_id, Long product_id, Integer quantity) {
 
-        if(!productService.isProductExists(product_id))
+        if(!productCrudService.isProductExists(product_id))
             throw new BadRequestException("product id doesnot exist + id:" + product_id);
 
         Cart cart = findById(cust_id);
@@ -51,7 +53,7 @@ public class CartServiceImpl implements CartService {
         cartDTO.setCartId(cust_id);
         Collection<Long> productIds = cart.getProductId_quantity_map().keySet();
 
-        Map<Long, ProductSearchView> productDTOMap = productService.getProductSearchView(productIds);
+        Map<Long, ProductSearchView> productDTOMap = productSearchService.getProductSearchView(productIds);
 
         cartDTO.setItems(cartItemsDtoMapper.from(productDTOMap,cart.getProductId_quantity_map()));
         return cartDTO;
@@ -63,7 +65,7 @@ public class CartServiceImpl implements CartService {
             deleteFromCart(cust_id,product_id);
             return;
         }
-        if(!productService.isProductExists(product_id))
+        if(!productCrudService.isProductExists(product_id))
             throw new BadRequestException("product id does not exist + id:" + product_id);
 
         Cart cart = findById(cust_id);

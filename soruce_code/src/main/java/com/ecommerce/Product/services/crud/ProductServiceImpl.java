@@ -1,20 +1,12 @@
-package com.ecommerce.Product.services;
+package com.ecommerce.Product.services.crud;
 
-import com.ecommerce.Exception.BadRequestException;
 import com.ecommerce.Exception.NotFoundException;
-import com.ecommerce.Product.entity.ProductSortDirection;
-import com.ecommerce.Product.dtos.ProductSearchView;
 import com.ecommerce.Product.entity.Product;
-import com.ecommerce.Product.repos.IProductSearchRepo;
 import com.ecommerce.Product.repos.ProductJpaRepo;
 import com.ecommerce.Stock.service.IStockService;
 import lombok.AllArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Caching;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,45 +16,11 @@ import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
-public class ProductServiceImpl implements ProductService {
+public class ProductServiceImpl implements ProductCrudService {
 
-    private final IProductSearchRepo productSearchRepo;
+
     private final ProductJpaRepo productJpaRepo;
     private final IStockService stockService;
-
-    private String normalizeSearchQuery(String name){
-        if(name == null || name.isBlank())
-                return null;
-        // build search query match
-        // allow only  chars and numbers and space
-        String normalizedTxt = name.trim().toLowerCase().replaceAll("[^a-z0-9\\s]" , "");
-        if(normalizedTxt.isBlank())
-            throw new BadRequestException("only English chars and number are allowed in search query");
-        String[] words = normalizedTxt.split("\\s+");
-        StringBuilder searchQuery = new StringBuilder(name.length());
-
-        for(String str : words)
-        {
-            if(!str.isBlank()){
-                searchQuery.append('+').append(str).append(' ');
-            }
-        }
-        return searchQuery.toString();
-    }
-    @Override
-    public Page<ProductSearchView> getProductSearchView(QueryProduct queryProduct) {
-        int pageNum = queryProduct.page();
-        int pageSize = queryProduct.pageSize();
-        Sort.Direction direction = (queryProduct.direction() == ProductSortDirection.ASC) ? Sort.Direction.ASC : Sort.Direction.DESC;
-
-        String sortby = queryProduct.sortBy().toProductField();
-        Sort sort = Sort.by(direction,sortby);
-
-        Pageable page = PageRequest.of(pageNum,pageSize,sort);
-        String searchQuery = normalizeSearchQuery(queryProduct.name());
-        Integer catId = queryProduct.category();
-        return productSearchRepo.searchForProducts(searchQuery, catId ,queryProduct.minPrice(),queryProduct.maxPrice(),page);
-    }
 
     @Override
     public Product getProductById(Long product_id) {
@@ -72,10 +30,30 @@ public class ProductServiceImpl implements ProductService {
         );
     }
 
+    @Override
+    public Map<Long, Product> getProductsByIds(Set<Long> ids) {
+        List<Product> products = productJpaRepo.findAllByIdReadOnly(ids);
+        if(ids.size() != products.size())
+        {
+            Set<Long> existingIds = products.stream().map(Product::getId).collect(Collectors.toSet());
+            List<Long> nonExisitng = ids.stream().filter(i -> !existingIds.contains(i)).toList();
+            throw new NotFoundException("product ids does not exists: " + nonExisitng);
+        }
+
+        return products.stream().collect(Collectors.toMap(Product::getId,product -> product));
+    }
+
     public Product getReferenceById(Long id)
     {
         return productJpaRepo.getReferenceById(id);
     }
+    @Caching(
+            evict = {
+                    @CacheEvict(value = CACHE_NAME,key = "#product.id"),
+            }
+
+
+    )
     public Product save(Product product)
     {
         return productJpaRepo.save(product);
@@ -136,6 +114,7 @@ public class ProductServiceImpl implements ProductService {
     }
     @Override
     @Transactional(isolation = Isolation.READ_COMMITTED)
+    @CacheEvict(value = CACHE_NAME,key = "#command.product_id")
     public void updateProduct(UpdateProductCommand command){
 
 
@@ -146,10 +125,6 @@ public class ProductServiceImpl implements ProductService {
         product.setPrice(command.price());
     }
 
-    @Override
-    public Map<Long,ProductSearchView> getProductSearchView(Collection<Long> ids) {
 
-        return productJpaRepo.findAllByidsForProductSearchView(ids).stream().collect(Collectors.toMap(ProductSearchView::getId,p -> p));
-    }
 
 }

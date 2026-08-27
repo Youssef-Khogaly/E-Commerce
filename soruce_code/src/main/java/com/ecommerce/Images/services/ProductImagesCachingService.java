@@ -1,13 +1,10 @@
 package com.ecommerce.Images.services;
 
-import com.ecommerce.Category.entity.Category;
-import com.ecommerce.Category.services.ProductCategoryService;
 import com.ecommerce.Images.dtos.ProductImageDto;
-import com.ecommerce.Product.services.ProductServiceImpl;
+import com.ecommerce.Product.services.crud.ProductCrudService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.cache.Cache;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.annotation.Primary;
@@ -23,9 +20,9 @@ public class ProductImagesCachingService implements ProductImagesService{
     private final ProductImagesService productImagesService;
     private final RedisTemplate<String,Object>redisTemplate;
     private final ObjectMapper objectMapper;
-    public static final String CACHE_NAME = ProductServiceImpl.CACHE_NAME+":images";
+    public static final String CACHE_NAME = ProductCrudService.CACHE_NAME+":images";
 
-    public ProductImagesCachingService(@Qualifier("productImageService") ProductImagesService productImagesService, RedisTemplate<String, Object> redisTemplate, ObjectMapper objectMapper) {
+    public ProductImagesCachingService(@Qualifier("productImageServiceImpl") ProductImagesService productImagesService, RedisTemplate<String, Object> redisTemplate, ObjectMapper objectMapper) {
         this.productImagesService = productImagesService;
         this.redisTemplate = redisTemplate;
         this.objectMapper = objectMapper;

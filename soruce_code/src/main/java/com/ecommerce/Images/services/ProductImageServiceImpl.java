@@ -7,29 +7,28 @@ import com.ecommerce.Images.entity.Image;
 import com.ecommerce.Images.entity.ProductImages;
 import com.ecommerce.Images.repos.ProductImageRepo;
 import com.ecommerce.Product.entity.Product;
-import com.ecommerce.Product.services.ProductService;
+import com.ecommerce.Product.services.crud.ProductCrudService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
-public class ProductImageService implements ProductImagesService{
+public class ProductImageServiceImpl implements ProductImagesService{
 
     private final ProductImageRepo productImageRepo;
-    private final ProductService productService;
+    private final ProductCrudService productCrudService;
     private final IImageService imageService;
     private final ProductImageDtoMapper productImageDtoMapper;
     @Override
     @Transactional(readOnly = true)
     public List<ProductImageDto> getProductImages(Long productId) {
-        productService.existsById(productId);
+        productCrudService.existsById(productId);
 
         return productImageRepo.findAllByProduct_Id(productId).stream().map(productImageDtoMapper::from).toList();
     }
@@ -40,7 +39,7 @@ public class ProductImageService implements ProductImagesService{
         if(productIds == null || productIds.isEmpty())
             return Map.of();
 
-        productService.existsByIds(productIds);
+        productCrudService.existsByIds(productIds);
         List<ProductImages> productImages = productImageRepo.findAllByProductIds(productIds);
 
         return productImages.stream()
@@ -51,7 +50,7 @@ public class ProductImageService implements ProductImagesService{
     @Override
     @Transactional
     public void putProductImages(Long productId, Set<Long> imagesIds, Long mainImageId) {
-        productService.existsById(productId);
+        productCrudService.existsById(productId);
         if(imagesIds == null || imagesIds.isEmpty())
         {
             productImageRepo.deleteAllByProduct_Id(productId);
@@ -64,7 +63,7 @@ public class ProductImageService implements ProductImagesService{
 
         Set<Image> images = imageService.findAllByIds(imagesIds);
 
-        final Product productRef = productService.getReferenceById(productId);
+        final Product productRef = productCrudService.getReferenceById(productId);
         productImageRepo.deleteAllByProduct_Id(productId);
         productImageRepo.flush();
 

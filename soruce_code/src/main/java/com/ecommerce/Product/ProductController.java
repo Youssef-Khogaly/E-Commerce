@@ -10,9 +10,10 @@ import com.ecommerce.Product.entity.ProductSortByOptions;
 import com.ecommerce.Product.entity.ProductSortDirection;
 import com.ecommerce.Product.requests.AddProductRequest;
 import com.ecommerce.Product.requests.PutProductRequest;
-import com.ecommerce.Product.services.ProductService;
+import com.ecommerce.Product.services.crud.ProductCrudService;
+import com.ecommerce.Product.services.query.ProductQueryService;
+import com.ecommerce.Product.services.search.ProductSearchService;
 import com.ecommerce.util.ErrorResponse;
-import com.ecommerce.Images.resposes.ProductImageResponseDto;
 
 import com.ecommerce.docs.RequireAuthDocs;
 import com.ecommerce.docs.CommonErrorDocs;
@@ -44,10 +45,11 @@ import java.util.Set;
 @AllArgsConstructor
 @Validated
 public class ProductController {
-    private ProductService productService;
+    private ProductCrudService productCrudService;
     private ProductImagesService productImagesService;
     private ProductCategoryService productCategoryService;
-
+    private ProductSearchService productSearchService;
+    private ProductQueryService<ProductDTO> productDTOQueryService;
     @Operation(summary = "product search and filtration")
     @ApiResponses(
             {
@@ -73,8 +75,8 @@ public class ProductController {
 
             throw new BadRequestException("max product price can't be less than min price in query product");
         }
-        var query = new ProductService.QueryProduct(page,pageSize,title,minPrice,maxPrice,category,sortBy,direction);
-        var result = productService.getProductSearchView(query);
+        var query = new ProductSearchService.QueryProduct(page,pageSize,title,minPrice,maxPrice,category,sortBy,direction);
+        var result = productSearchService.getProductSearchView(query);
         return ResponseEntity.ok(result);
     }
 
@@ -90,8 +92,8 @@ public class ProductController {
     public ResponseEntity<ProductDTO>getProduct(@PathVariable @Positive long id){
 
 
-        var p = productService.getProductById(id);
-        return ResponseEntity.ok(ProductDTO.fromProduct(p));
+        var p = productDTOQueryService.findById(id);
+        return ResponseEntity.ok(p);
     }
 
     @Operation(summary = "create new product" , description = "Required Role: Admin")
@@ -104,9 +106,9 @@ public class ProductController {
     @CommonErrorDocs
     @PostMapping
     public ResponseEntity<Void> addNewProduct(@Valid @RequestBody AddProductRequest req){
-        ProductService.PostProductCommand command = new ProductService.PostProductCommand(
+        ProductCrudService.PostProductCommand command = new ProductCrudService.PostProductCommand(
                 req.title(), req.description(),req.priceInCents(),req.stock());
-        long id = productService.addProduct(command).getId();
+        long id = productCrudService.addProduct(command).getId();
         return ResponseEntity.created(URI.create("api/products/"+id)).build();
     }
 
@@ -120,7 +122,7 @@ public class ProductController {
     @CommonErrorDocs
     @DeleteMapping("/{id}")
     public  ResponseEntity<Void> deleteProduct(@PathVariable  @Positive long id){
-        productService.deleteProduct(id);
+        productCrudService.deleteProduct(id);
         return ResponseEntity.ok().build();
     }
 
@@ -135,8 +137,8 @@ public class ProductController {
     @PutMapping("/{id}")
     public ResponseEntity<Void> updateProduct(@RequestBody @Valid PutProductRequest putProductRequest, @PathVariable @Valid @NotNull @Positive Long id){
 
-        productService.updateProduct(
-                new ProductService.UpdateProductCommand(id,putProductRequest.title() , putProductRequest.description() ,putProductRequest.priceInCents())
+        productCrudService.updateProduct(
+                new ProductCrudService.UpdateProductCommand(id,putProductRequest.title() , putProductRequest.description() ,putProductRequest.priceInCents())
         );
 
         return ResponseEntity.ok().build();

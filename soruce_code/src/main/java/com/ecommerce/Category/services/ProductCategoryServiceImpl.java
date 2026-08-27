@@ -5,10 +5,8 @@ import com.ecommerce.Category.entity.ProductCategory;
 import com.ecommerce.Category.repos.ProductCategoryRepo;
 import com.ecommerce.Exception.NotFoundException;
 import com.ecommerce.Product.entity.Product;
-import com.ecommerce.Product.services.ProductService;
+import com.ecommerce.Product.services.crud.ProductCrudService;
 import lombok.AllArgsConstructor;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,17 +16,17 @@ import java.util.stream.Collectors;
 @Service
 @AllArgsConstructor
 public class ProductCategoryServiceImpl implements ProductCategoryService{
-    private ProductService productService;
+    private ProductCrudService productCrudService;
     private CategoryService categoryService;
     private ProductCategoryRepo productCategoryRepo;
 
     @Transactional
     @Override
     public void putProductCategories(final Long productId, final Set<Integer> categoriesIds) {
-        if(!productService.isProductExists(productId)){
+        if(!productCrudService.isProductExists(productId)){
             throw new NotFoundException("product with id:" + productId +"doesn't exists or soft deleted");
         }
-        final Product product = productService.getReferenceById(productId);
+        final Product product = productCrudService.getReferenceById(productId);
 
         if(categoriesIds.isEmpty()){
             productCategoryRepo.deleteAllByProduct_Id(productId);

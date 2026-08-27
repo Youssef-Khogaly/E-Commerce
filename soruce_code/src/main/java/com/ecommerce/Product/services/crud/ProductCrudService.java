@@ -1,19 +1,12 @@
-package com.ecommerce.Product.services;
-
-import com.ecommerce.Images.resposes.ProductImageResponseDto;
-import com.ecommerce.Category.entity.Category;
+package com.ecommerce.Product.services.crud;
 
 import com.ecommerce.Product.entity.Product;
-import com.ecommerce.Product.entity.ProductSortByOptions;
-import com.ecommerce.Product.entity.ProductSortDirection;
-import com.ecommerce.Product.dtos.ProductSearchView;
-import org.springframework.data.domain.Page;
 
 import java.util.*;
 
 ;
 
-public interface ProductService  {
+public interface ProductCrudService {
 
     public static final String CACHE_NAME = "products";
     // fields that you don't want to update set it null
@@ -35,14 +28,11 @@ public interface ProductService  {
     public enum DeletedOptions{
         SOFT_DELETED_ONLY , INCLUDE_SOFT_DELETED , NON_DELETED
     }
-        public static record QueryProduct(int page, int pageSize
-                , String name , Long minPrice , Long maxPrice
-                , Integer category
-                , ProductSortByOptions sortBy, ProductSortDirection direction
-        ){}
 
-    public Page<ProductSearchView> getProductSearchView(QueryProduct queryProduct);
+
+
     public Product getProductById(Long product_id);
+    public Map<Long,Product>getProductsByIds(Set<Long>ids);
     public boolean isProductExists(Long product_id);
     public void existsById(Long productId);
     public void existsByIds(Set<Long>productIds);
@@ -55,7 +45,7 @@ public interface ProductService  {
     public void updateProduct(UpdateProductCommand commands);
 
 
-    public Map<Long,ProductSearchView> getProductSearchView(Collection<Long> ids);
+
 
 
     public Product getReferenceById(Long id);
