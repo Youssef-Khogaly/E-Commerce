@@ -11,6 +11,7 @@ import com.ecommerce.Product.entity.ProductSortDirection;
 import com.ecommerce.Product.requests.AddProductRequest;
 import com.ecommerce.Product.requests.PutProductRequest;
 import com.ecommerce.Product.services.crud.ProductCrudService;
+import com.ecommerce.Product.services.query.ProductDtoQueryService;
 import com.ecommerce.Product.services.query.ProductQueryService;
 import com.ecommerce.Product.services.search.ProductSearchService;
 import com.ecommerce.util.ErrorResponse;
@@ -49,7 +50,7 @@ public class ProductController {
     private ProductImagesService productImagesService;
     private ProductCategoryService productCategoryService;
     private ProductSearchService productSearchService;
-    private ProductQueryService<ProductDTO> productDTOQueryService;
+    private ProductDtoQueryService productDTOQueryService;
     @Operation(summary = "product search and filtration")
     @ApiResponses(
             {

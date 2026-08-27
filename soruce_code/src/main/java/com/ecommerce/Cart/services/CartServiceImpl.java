@@ -4,10 +4,12 @@ import com.ecommerce.Cart.Cart;
 import com.ecommerce.Cart.Dto.CartDTO;
 import com.ecommerce.Cart.mappers.CartItemsDtoMapper;
 import com.ecommerce.Cart.repos.CartJpaRepo;
+import com.ecommerce.Product.dtos.ProductDTO;
 import com.ecommerce.Product.dtos.ProductSearchView;
 import com.ecommerce.Exception.BadRequestException;
 import com.ecommerce.Exception.NotFoundException;
 import com.ecommerce.Product.services.crud.ProductCrudService;
+import com.ecommerce.Product.services.query.ProductDtoQueryService;
 import com.ecommerce.Product.services.search.ProductSearchService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -23,7 +25,7 @@ public class CartServiceImpl implements CartService {
     private final ProductCrudService productCrudService;
     private final ProductSearchService productSearchService;
     private CartItemsDtoMapper cartItemsDtoMapper;
-
+    private ProductDtoQueryService productDtoQueryService;
     public Cart findById(Long custId)
     {
         return cartJpaRepo.findById(custId).orElseGet(() -> {
@@ -51,9 +53,9 @@ public class CartServiceImpl implements CartService {
         Cart cart =  cartJpaRepo.findById(cust_id).orElseThrow(() -> new NotFoundException("Cart id doesn't exists:" + cust_id));
         CartDTO cartDTO = new CartDTO();
         cartDTO.setCartId(cust_id);
-        Collection<Long> productIds = cart.getProductId_quantity_map().keySet();
+        Set<Long> productIds = cart.getProductId_quantity_map().keySet();
 
-        Map<Long, ProductSearchView> productDTOMap = productSearchService.getProductSearchView(productIds);
+        Map<Long, ProductDTO> productDTOMap = productDtoQueryService.findAllByIds(productIds,EnumSet.of(ProductDtoQueryService.ProductDtoFields.IMAGES));
 
         cartDTO.setItems(cartItemsDtoMapper.from(productDTOMap,cart.getProductId_quantity_map()));
         return cartDTO;

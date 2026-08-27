@@ -1,5 +1,6 @@
 package com.ecommerce.Cart.Dto;
 
+import com.ecommerce.Product.dtos.ProductDTO;
 import com.ecommerce.util.Money;
 import com.ecommerce.Product.dtos.ProductSearchView;
 import lombok.AllArgsConstructor;
@@ -15,7 +16,7 @@ import java.util.Objects;
 @NoArgsConstructor
 public class CartItemDTO {
 
-    private ProductSearchView productDTO;
+    private ProductDTO productDTO;
     private int quantity;
     private Money subTotalInCents;
 

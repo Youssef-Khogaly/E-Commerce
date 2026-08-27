@@ -3,6 +3,7 @@ package com.ecommerce.checkout;
 import com.ecommerce.Cart.Dto.CartDTO;
 import com.ecommerce.Cart.Dto.CartItemDTO;
 import com.ecommerce.Exception.BadRequestException;
+import com.ecommerce.Images.dtos.ProductImageDto;
 import com.ecommerce.Inegration.PaymentGateWay.Model.*;
 import com.ecommerce.orders.mappers.OrderMapper;
 import com.ecommerce.orders.entity.Order;
@@ -35,7 +36,6 @@ public class CheckoutService {
     private final OrderJpaRepo orderJpaRepo;
     private final TransactionTemplate orderCheckOutTransactionTemplate;
     private final Duration checkoutSessionTimeOut = Duration.ofMinutes(40);
-    private final CustomerJpaRepo customerJpaRepo;
     public CheckoutService(StockService stockService, IPaymentGatewayService paymentGatewayService, CartService cartService, OrderService orderService, OrderMapper orderMapper, OrderJpaRepo orderJpaRepo, TransactionTemplate transactionTemplate, CustomerJpaRepo customerJpaRepo) {
         this.stockService = stockService;
         this.paymentGatewayService = paymentGatewayService;
@@ -44,7 +44,6 @@ public class CheckoutService {
         this.orderMapper = orderMapper;
         this.orderJpaRepo = orderJpaRepo;
         this.orderCheckOutTransactionTemplate = transactionTemplate;
-        this.customerJpaRepo = customerJpaRepo;
         transactionTemplate.setIsolationLevel(TransactionDefinition.ISOLATION_READ_COMMITTED);
     }
 
@@ -82,9 +81,9 @@ public class CheckoutService {
 
         final Map<Long , List<String>>productId_Images = cart.getItems().stream()
                 .collect(Collectors.toMap(i -> i.getProductDTO().getId(), i -> {
-                    if(i.getProductDTO().getMainImgUrl() == null)
+                    if(i.getProductDTO().getImagesUrl() == null)
                         return List.of();
-                    return  List.of(i.getProductDTO().getMainImgUrl());
+                    return  i.getProductDTO().getImagesUrl().stream().map(ProductImageDto::url).toList();
                 } ) );
 
         final Map<Long,Integer>id_quantityMap =  cart.getItems().stream().collect(Collectors.toUnmodifiableMap(i -> i.getProductDTO().getId() , CartItemDTO::getQuantity));
