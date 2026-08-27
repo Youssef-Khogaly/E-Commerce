@@ -10,7 +10,7 @@ import org.springframework.data.jpa.repository.*;
 
 import java.util.*;
 
-public interface ProductJpaRepo extends JpaRepository<Product, Long> , ProductQueryRepo  {
+public interface ProductJpaRepo extends JpaRepository<Product, Long>   {
 
     @Query(
             """

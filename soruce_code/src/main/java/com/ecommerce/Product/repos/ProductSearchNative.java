@@ -11,6 +11,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.Repository;
 
 import java.sql.Timestamp;
+import java.util.Set;
 
 
 @SqlResultSetMapping(
@@ -47,28 +48,70 @@ public interface ProductSearchNative extends Repository<Product, Long> {
 
     }
 
+
+
     @Query
             (
                     value = """
 
-                            select p.product_id as id, p.title as title,p.price as price , i.image_url as imgUrl,p.addedAt as date from product p inner join product_category c on p.product_id = c.product_id
-                                                and c.category_id = :categoryId
+                            select p.product_id as id, p.title as title,p.price as price , i.image_url as imgUrl,p.addedAt as date from product p
                                                 left join ProductImages pi on p.product_id = pi.product_id and pi.isMain = true
                                                 left join image i on pi.image_id = i.image_id                                                                                                                       
-                                                where p.price between :minPrice and :maxPrice
-                                                and  MATCH(p.title) AGAINST (:searchText IN BOOLEAN MODE )
-                                                order by :sort
+                                                where  p.price between :minPrice and :maxPrice
+                                                order by :sort          
                         """
                     ,
                     countQuery = """
-                        select count(p.product_id) from product p inner join product_category c on p.product_id = c.product_id
-                                                and c.category_id = :categoryId
+                        select count(p.product_id) from product p 
                                                 where p.price between :minPrice and :maxPrice
-                                                and  MATCH(p.title) AGAINST (:searchText IN BOOLEAN MODE )
                         """ ,nativeQuery = true
             )
 
-    Page<ProductSearchView> searchForProductsWithOrder(String searchText , Integer categoryId , Long minPrice , Long maxPrice , Pageable pageable, String sort);
+    Page<ProductSearchView> searchForProducts(Long minPrice , Long maxPrice , Pageable pageable, String sort);
+
+
+    @Query
+            (
+                    value = """
+
+                            select p.product_id as id, p.title as title,p.price as price , i.image_url as imgUrl,p.addedAt as date from product p
+                                                left join ProductImages pi on p.product_id = pi.product_id and pi.isMain = true
+                                                left join image i on pi.image_id = i.image_id                                                                                                                       
+                                                where  p.price between :minPrice and :maxPrice
+                                                             and exists(select 1 from product_category pc where pc.category_id in :categoriesIds and pc.product_id = p.product_id)
+                                                order by :sort          
+                        """
+                    ,
+                    countQuery = """
+                        select count(p.product_id) from product p 
+                                                where p.price between :minPrice and :maxPrice
+                                                and  exists(select 1 from product_category pc where pc.category_id in :categoriesIds and pc.product_id = p.product_id)
+                        """ ,nativeQuery = true
+            )
+
+    Page<ProductSearchView> searchForProducts(Set<Integer> categoriesIds , Long minPrice , Long maxPrice , Pageable pageable, String sort);
+    @Query
+            (
+                    value = """
+
+                            select p.product_id as id, p.title as title,p.price as price , i.image_url as imgUrl,p.addedAt as date from product p
+                                                left join ProductImages pi on p.product_id = pi.product_id and pi.isMain = true
+                                                left join image i on pi.image_id = i.image_id                                                                                                                       
+                                                where MATCH(p.title) AGAINST (:searchText IN BOOLEAN MODE ) 
+                                                                        and p.price between :minPrice and :maxPrice
+                                                                        and exists(select 1 from product_category pc where pc.category_id in :categoriesIds and pc.product_id = p.product_id)
+                                                order by :sort          
+                        """
+                    ,
+                    countQuery = """
+                        select count(p.product_id) from product p 
+                                                where p.price between :minPrice and :maxPrice
+                                                and  MATCH(p.title) AGAINST (:searchText IN BOOLEAN MODE )
+                                                and exists(select 1 from product_category pc where pc.category_id in :categoriesIds and pc.product_id = p.product_id)
+                        """ ,nativeQuery = true
+            )
+
+    Page<ProductSearchView> searchForProducts(String searchText , Set<Integer> categoriesIds , Long minPrice , Long maxPrice , Pageable pageable, String sort);
 
     @Query
             (
@@ -88,6 +131,6 @@ public interface ProductSearchNative extends Repository<Product, Long> {
                         """ ,nativeQuery = true
             )
 
-    Page<ProductSearchView> searchForProductsOrderByWithoutCategroy(String searchText,Long minPrice , Long maxPrice , Pageable pageable, String sort);
+    Page<ProductSearchView> searchForProducts(String searchText, Long minPrice , Long maxPrice , Pageable pageable, String sort);
 
 }

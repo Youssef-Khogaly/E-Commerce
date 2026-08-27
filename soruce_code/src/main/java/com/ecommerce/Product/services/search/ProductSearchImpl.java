@@ -2,26 +2,22 @@ package com.ecommerce.Product.services.search;
 
 import com.ecommerce.Exception.BadRequestException;
 import com.ecommerce.Product.dtos.ProductSearchView;
+import com.ecommerce.Product.entity.ProductSortByOptions;
 import com.ecommerce.Product.entity.ProductSortDirection;
-import com.ecommerce.Product.repos.IProductSearchRepo;
-import com.ecommerce.Product.repos.ProductJpaRepo;
+import com.ecommerce.Product.repos.ProductSearchNative;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.util.Collection;
-import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.Set;
 
 @Service
 public class ProductSearchImpl implements ProductSearchService{
-    private final IProductSearchRepo productSearchRepo;
-    private final ProductJpaRepo productJpaRepo;
-    public ProductSearchImpl(IProductSearchRepo productSearchRepo, ProductJpaRepo productJpaRepo) {
+    private final ProductSearchNative productSearchRepo;
+    public ProductSearchImpl(ProductSearchNative productSearchRepo) {
         this.productSearchRepo = productSearchRepo;
-        this.productJpaRepo = productJpaRepo;
     }
 
     private String normalizeSearchQuery(String name){
@@ -45,10 +41,6 @@ public class ProductSearchImpl implements ProductSearchService{
     }
 
 
-    @Override
-    public Map<Long, ProductSearchView> getProductSearchView(Collection<Long> ids) {
-        return Map.of();
-    }
 
     @Override
     public Page<ProductSearchView> getProductSearchView(QueryProduct queryProduct) {
@@ -61,7 +53,54 @@ public class ProductSearchImpl implements ProductSearchService{
 
         Pageable page = PageRequest.of(pageNum,pageSize,sort);
         String searchQuery = normalizeSearchQuery(queryProduct.name());
-        Integer catId = queryProduct.category();
-        return productSearchRepo.searchForProducts(searchQuery, catId ,queryProduct.minPrice(),queryProduct.maxPrice(),page);
+        Set<Integer> catIds = queryProduct.categoryids();
+        String sortString = buildSort(page.getSort());
+
+        if(catIds == null || catIds.isEmpty())
+        {
+            if(searchQuery != null && !searchQuery.isBlank())
+                return productSearchRepo.searchForProducts(searchQuery,queryProduct.minPrice(),queryProduct.maxPrice(),page,sortString);
+            else
+                return productSearchRepo.searchForProducts(queryProduct.minPrice(),queryProduct.maxPrice(),page,sortString);
+        }
+
+        if(searchQuery != null && !searchQuery.isBlank())
+            return productSearchRepo.searchForProducts(catIds ,queryProduct.minPrice(),queryProduct.maxPrice(),page,sortString);
+
+        return productSearchRepo.searchForProducts(searchQuery, catIds ,queryProduct.minPrice(),queryProduct.maxPrice(),page,sortString);
+    }
+
+
+    private String buildSort(Sort sort)
+    {
+        StringBuilder sortBuilder = new StringBuilder(10);
+        sort.get().forEach(
+                o ->{
+                    if(o.getProperty().equalsIgnoreCase(ProductSortByOptions.PRICE.toProductField()))
+                    {
+                        sortBuilder.append(ProductSearchNative.ProductNativeSortOptions.PRICE.toSql()).append(' ');
+                        if(o.isAscending()){
+                            sortBuilder.append(ProductSearchNative.ProductNativeSortOptions.ASC.toSql()).append(',');
+                        }
+                        else if (o.isDescending())
+                        {
+                            sortBuilder.append(ProductSearchNative.ProductNativeSortOptions.DESC.toSql()).append(',');
+                        }
+                    } else if (o.getProperty().equalsIgnoreCase(ProductSortByOptions.DATE.toProductField())) {
+                        sortBuilder.append(ProductSearchNative.ProductNativeSortOptions.DATE.toSql()).append(' ');
+                        if(o.isAscending()){
+                            sortBuilder.append(ProductSearchNative.ProductNativeSortOptions.ASC.toSql()).append(',');
+                        }
+                        else if (o.isDescending())
+                        {
+                            sortBuilder.append(ProductSearchNative.ProductNativeSortOptions.DESC.toSql()).append(',');
+                        }
+                    }
+
+                }
+        );
+        sortBuilder.deleteCharAt(sortBuilder.length()-1);
+
+        return sortBuilder.toString();
     }
 }

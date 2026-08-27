@@ -67,7 +67,7 @@ public class ProductController {
             @RequestParam(required = false,name = "s") @Length(max = 64 ,message = "title text query can't have length more than 64") String title ,
             @RequestParam( name = "minPrice" , defaultValue = "0")  @PositiveOrZero Long minPrice ,
             @RequestParam(name = "maxPrice" , defaultValue = "1000000000") @Positive Long maxPrice,
-            @RequestParam(required = false, name = "categoryId")  @Positive Integer category,
+            @RequestParam(required = false, name = "catIds")  Set<@Positive Integer> categoryids,
             @RequestParam(name = "sortBy" , defaultValue = "DATE") ProductSortByOptions sortBy,
             @RequestParam(name = "direction" , defaultValue = "DESC") ProductSortDirection direction
     )
@@ -76,7 +76,7 @@ public class ProductController {
 
             throw new BadRequestException("max product price can't be less than min price in query product");
         }
-        var query = new ProductSearchService.QueryProduct(page,pageSize,title,minPrice,maxPrice,category,sortBy,direction);
+        var query = new ProductSearchService.QueryProduct(page,pageSize,title,minPrice,maxPrice,categoryids ,sortBy,direction);
         var result = productSearchService.getProductSearchView(query);
         return ResponseEntity.ok(result);
     }

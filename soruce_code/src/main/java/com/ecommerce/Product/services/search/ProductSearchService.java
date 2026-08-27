@@ -7,15 +7,15 @@ import org.springframework.data.domain.Page;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
 
 public interface ProductSearchService {
 
     public static record QueryProduct(int page, int pageSize
             , String name , Long minPrice , Long maxPrice
-            , Integer category
+            , Set<Integer> categoryids
             , ProductSortByOptions sortBy, ProductSortDirection direction
     ){}
 
-    public Map<Long,ProductSearchView> getProductSearchView(Collection<Long> ids);
     public Page<ProductSearchView> getProductSearchView(QueryProduct queryProduct);
 }
