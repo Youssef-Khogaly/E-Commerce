@@ -6,13 +6,11 @@ import lombok.SneakyThrows;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
-import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.context.expression.MethodBasedEvaluationContext;
 import org.springframework.core.ParameterNameDiscoverer;
 import org.springframework.core.annotation.Order;
 import org.springframework.expression.EvaluationContext;
-import org.springframework.expression.Expression;
 import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.stereotype.Component;
@@ -46,7 +44,11 @@ public class RequestCollapsingAdvice {
             key.append(':').append(parser.parseExpression(k).getValue(evaluationContext));
         }
 
-        return requestCollapsingService.execute(key.toString(), joinPoint::proceed);
+        return requestCollapsingService.execute(key.toString(), () -> this.proceed(joinPoint));
     }
-
+    @SneakyThrows
+    private Object proceed(final ProceedingJoinPoint joinPoint)
+    {
+        return joinPoint.proceed();
+    }
 }
