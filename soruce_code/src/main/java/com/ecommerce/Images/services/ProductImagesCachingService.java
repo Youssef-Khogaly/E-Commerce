@@ -2,6 +2,7 @@ package com.ecommerce.Images.services;
 
 import com.ecommerce.Images.dtos.ProductImageDto;
 import com.ecommerce.Product.services.crud.ProductCrudService;
+import com.ecommerce.util.advices.ReqCollapsing;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -29,6 +30,7 @@ public class ProductImagesCachingService implements ProductImagesService{
     }
 
     @Override
+    @ReqCollapsing(keys = {"#productId"})
     @Cacheable(value = CACHE_NAME,key = "#productId",unless = "#result == null")
     public List<ProductImageDto> getProductImages(Long productId) {
         return productImagesService.getProductImages(productId);
@@ -54,6 +56,8 @@ public class ProductImagesCachingService implements ProductImagesService{
     {
         return productIds.stream().map(ProductImagesCachingService::toRedisKey).toList();
     }
+
+    @ReqCollapsing(keys = {"#productIds"})
     @Override
     public Map<Long, List<ProductImageDto>> getproductsImages(Set<Long> productIds) {
         Map<Long,List<ProductImageDto>> resultMap = new HashMap<>();
