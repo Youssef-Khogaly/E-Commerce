@@ -2,6 +2,7 @@ package com.ecommerce.Category.services;
 
 import com.ecommerce.Category.entity.Category;
 import com.ecommerce.Product.services.crud.ProductCrudService;
+import com.ecommerce.util.advices.ReqCollapsing;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -33,6 +34,8 @@ public class ProductCategoryCachingProxy implements ProductCategoryService{
     public void putProductCategories(Long productId, Set<Integer> categoriesIds) {
         productCategoryService.putProductCategories(productId,categoriesIds);
     }
+
+    @ReqCollapsing(keys = {"#productId"})
     @Cacheable(value = CACHE_NAME,key = "#productId")
     @Override
     public Set<Category> getProductCategories(Long productId) {
@@ -53,6 +56,8 @@ public class ProductCategoryCachingProxy implements ProductCategoryService{
         int lastIdx = key.lastIndexOf(":");
         return Long.parseLong(key.substring(lastIdx+1));
     }
+
+    @ReqCollapsing(keys = {"#productIds"})
     @Override
     public Map<Long, Set<Category>> getProductsCategories(Set<Long> productIds) {
 
