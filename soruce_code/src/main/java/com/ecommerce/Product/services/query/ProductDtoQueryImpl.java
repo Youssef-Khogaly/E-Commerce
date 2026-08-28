@@ -8,6 +8,7 @@ import com.ecommerce.Images.services.ProductImagesCachingService;
 import com.ecommerce.Images.services.ProductImagesService;
 import com.ecommerce.Product.dtos.ProductDTO;
 import com.ecommerce.Product.entity.Product;
+import com.ecommerce.util.advices.ReqCollapsing;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -79,6 +80,7 @@ public class ProductDtoQueryImpl implements ProductDtoQueryService {
         return  categoryList;
     }
     @Override
+    @ReqCollapsing(keys = {"#productId"})
     public ProductDTO findById(Long productId) {
         Product product = null;
         List<ProductImageDto>productImageDtoList = null;
@@ -128,6 +130,7 @@ public class ProductDtoQueryImpl implements ProductDtoQueryService {
     }
 
     @Override
+    @ReqCollapsing(keys = {"#ids"})
     public Map<Long, ProductDTO> findAllByIds(Set<Long> ids) {
 
         var imagesFuture = CompletableFuture.supplyAsync(() -> productImagesService.getproductsImages(ids));
@@ -166,6 +169,7 @@ public class ProductDtoQueryImpl implements ProductDtoQueryService {
     }
 
     @Override
+    @ReqCollapsing(keys = {"#productId","#includes"})
     public ProductDTO findById(final Long productId, final EnumSet<ProductDtoFields> includes) {
         Product product = null;
         List<ProductImageDto>productImageDtoList = null;
@@ -240,6 +244,7 @@ public class ProductDtoQueryImpl implements ProductDtoQueryService {
     }
 
     @Override
+    @ReqCollapsing(keys = {"#ids","#includes"})
     public Map<Long, ProductDTO> findAllByIds(Set<Long> ids, EnumSet<ProductDtoFields> includes) {
 
         boolean fetchCategories = includes.contains(ProductDtoFields.CATEGORY);
