@@ -2,6 +2,7 @@ package com.ecommerce.Product.services.query;
 
 import com.ecommerce.Images.dtos.ProductImageDto;
 import com.ecommerce.Product.entity.Product;
+import com.ecommerce.util.advices.ReqCollapsing;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -43,12 +44,14 @@ public class ProductQueryCaching implements ProductQueryService<Product>{
     }
 
     @Override
+    @ReqCollapsing(keys = {"#productId"})
     @Cacheable(value = CACHE_NAME,key = "#productId")
     public Product findById(Long productId) {
         return productQueryService.findById(productId);
     }
 
     @Override
+    @ReqCollapsing(keys = {"#ids"})
     public Map<Long, Product> findAllByIds(Set<Long> ids) {
         Map<Long, Product> resultMap = new HashMap<>();
         List<String>redisKeys = toRedisKeys(ids);
