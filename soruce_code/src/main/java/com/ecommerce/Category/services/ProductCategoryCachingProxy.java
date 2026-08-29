@@ -38,7 +38,7 @@ public class ProductCategoryCachingProxy implements ProductCategoryService{
     @ReqCollapsing(keys = {"#productId"})
     @Cacheable(value = CACHE_NAME,key = "#productId")
     @Override
-    public Set<Category> getProductCategories(Long productId) {
+    public Collection<Category> getProductCategories(Long productId) {
 
         return productCategoryService.getProductCategories(productId);
     }
@@ -59,9 +59,9 @@ public class ProductCategoryCachingProxy implements ProductCategoryService{
 
     @ReqCollapsing(keys = {"#productIds"})
     @Override
-    public Map<Long, Set<Category>> getProductsCategories(Set<Long> productIds) {
+    public Map<Long, Collection<Category>> getProductsCategories(Set<Long> productIds) {
 
-        Map<Long,Set<Category>> resultMap = new HashMap<>();
+        Map<Long,Collection<Category>> resultMap = new HashMap<>();
         List<String>redisKeys = productIdsToRedisKey(productIds);
         List<Object> objectList =  redisTemplate.opsForValue().multiGet(redisKeys);
         if(objectList == null)
@@ -97,7 +97,7 @@ public class ProductCategoryCachingProxy implements ProductCategoryService{
             resultMap.putAll(fromDbResult);
 
             // convert map to redis key and value
-            Map<String,Set<Category>>redisMap = new HashMap<>(fromDbResult.size());
+            Map<String,Collection<Category>>redisMap = new HashMap<>(fromDbResult.size());
             for(var entry : fromDbResult.entrySet())
             {
                 redisMap.put(productIdToRedisKey(entry.getKey()),entry.getValue());

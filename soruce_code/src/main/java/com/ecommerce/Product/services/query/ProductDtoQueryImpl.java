@@ -138,7 +138,7 @@ public class ProductDtoQueryImpl implements ProductDtoQueryService {
 
          Map<Long,Product> productMap = null;
          Map<Long,List<ProductImageDto>> imagesMap = null;
-         Map<Long,Set<Category>>categoriesMap = null;
+         Map<Long, Collection<Category>> categoriesMap = null;
 
         final Map<Long ,ProductDTO> ret = new HashMap<>(ids.size(),1);
 
@@ -256,8 +256,8 @@ public class ProductDtoQueryImpl implements ProductDtoQueryService {
 
         Map<Long,Product> productMap = null;
         Map<Long,List<ProductImageDto>> imagesMap = null;
-        Map<Long,Set<Category>>categoriesMap = null;
-        CompletableFuture<Map<Long,Set<Category>>> categoriesFuture = null;
+        Map<Long, Collection<Category>> categoriesMap = null;
+        CompletableFuture<Map<Long, Collection<Category>>> categoriesFuture = null;
         CompletableFuture<Map<Long,List<ProductImageDto>>> imagesFuture = null;
 
         if(fetchImages)
@@ -287,7 +287,7 @@ public class ProductDtoQueryImpl implements ProductDtoQueryService {
 
         ProductDTO productDTO = null;
         List<ProductImageDto> productImageDtoList = null;
-        Set<Category> categorySet = null;
+        Collection<Category> categorySet = null;
         for(var entry : productMap.entrySet())
         {
             if(fetchImages)

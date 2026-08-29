@@ -8,6 +8,7 @@ import lombok.Setter;
 import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.validator.constraints.Length;
 
+import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.*;
 
@@ -15,7 +16,7 @@ import java.util.*;
 @Entity
 @Table(name = "product")
 @Getter@Setter
-public class Product{
+public class Product implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

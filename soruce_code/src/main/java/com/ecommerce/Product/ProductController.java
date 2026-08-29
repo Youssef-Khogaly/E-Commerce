@@ -20,6 +20,8 @@ import com.ecommerce.docs.RequireAuthDocs;
 import com.ecommerce.docs.CommonErrorDocs;
 import com.ecommerce.Category.entity.Category;
 import com.ecommerce.Exception.BadRequestException;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.headers.Header;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -30,11 +32,14 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import org.hibernate.validator.constraints.Length;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter;
 
 import java.net.URI;
 import java.util.Collection;
@@ -51,6 +56,8 @@ public class ProductController {
     private ProductCategoryService productCategoryService;
     private ProductSearchService productSearchService;
     private ProductDtoQueryService productDTOQueryService;
+
+
     @Operation(summary = "product search and filtration")
     @ApiResponses(
             {
@@ -185,9 +192,11 @@ public class ProductController {
     )
     @CommonErrorDocs
     @GetMapping("/{id}/images")
-    public ResponseEntity<List<ProductImageDto>> getProductImages(@PathVariable  @NotNull  @Positive Long id){
+    public ResponseEntity<List<ProductImageDto>> getProductImages(@PathVariable  @NotNull  @Positive Long id) throws JsonProcessingException {
 
         List<ProductImageDto> productImageResponseDtoList = productImagesService.getProductImages(id);
+        System.out.println(productImageResponseDtoList.getClass());
+        System.out.println(productImageResponseDtoList.get(0).getClass());
         return ResponseEntity.ok(productImageResponseDtoList);
     }
 

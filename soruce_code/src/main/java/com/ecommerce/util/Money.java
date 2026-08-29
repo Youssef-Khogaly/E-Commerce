@@ -1,16 +1,19 @@
 package com.ecommerce.util;
 
 import com.ecommerce.ApplicationConstants;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Currency;
 
 @Getter
 @AllArgsConstructor
-public class Money {
+@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")
+public class Money implements Serializable {
     @Schema(description = "money in smallest unit", example = "100")
     private final long price;
     private final Currency currency;

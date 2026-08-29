@@ -56,7 +56,7 @@ public class ProductCategoryServiceImpl implements ProductCategoryService{
 
     @Override
     @Transactional(readOnly = true)
-    public Map<Long, Set<Category>> getProductsCategories(Set<Long> productIds){
+    public Map<Long, Collection<Category>> getProductsCategories(Set<Long> productIds){
         if(productIds == null || productIds.isEmpty())
             return Map.of();
 
@@ -65,6 +65,6 @@ public class ProductCategoryServiceImpl implements ProductCategoryService{
             return Map.of();
 
         return productCategories.stream().collect(Collectors.groupingBy(ProductCategory::getProductId,
-                                                                Collectors.mapping(ProductCategory::getCategory,Collectors.toSet())));
+                                                                Collectors.mapping(ProductCategory::getCategory,Collectors.toCollection(ArrayList::new))));
     }
 }
