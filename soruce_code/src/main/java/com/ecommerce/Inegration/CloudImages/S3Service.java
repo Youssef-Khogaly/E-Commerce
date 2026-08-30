@@ -1,6 +1,6 @@
 package com.ecommerce.Inegration.CloudImages;
 
-import com.ecommerce.entities.images.StorageProvider;
+import com.ecommerce.Images.StorageProvider;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;

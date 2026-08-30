@@ -1,0 +1,219 @@
+package com.ecommerce.Product;
+
+
+import com.ecommerce.Category.services.ProductCategoryService;
+import com.ecommerce.Images.dtos.ProductImageDto;
+import com.ecommerce.Images.services.ProductImagesService;
+import com.ecommerce.Product.dtos.ProductDTO;
+import com.ecommerce.Product.dtos.ProductSearchView;
+import com.ecommerce.Product.entity.ProductSortByOptions;
+import com.ecommerce.Product.entity.ProductSortDirection;
+import com.ecommerce.Product.requests.AddProductRequest;
+import com.ecommerce.Product.requests.PutProductRequest;
+import com.ecommerce.Product.services.crud.ProductCrudService;
+import com.ecommerce.Product.services.query.ProductDtoQueryService;
+import com.ecommerce.Product.services.query.ProductQueryService;
+import com.ecommerce.Product.services.search.ProductSearchService;
+import com.ecommerce.util.ErrorResponse;
+
+import com.ecommerce.docs.RequireAuthDocs;
+import com.ecommerce.docs.CommonErrorDocs;
+import com.ecommerce.Category.entity.Category;
+import com.ecommerce.Exception.BadRequestException;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.headers.Header;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.*;
+import lombok.AllArgsConstructor;
+import org.hibernate.validator.constraints.Length;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter;
+
+import java.net.URI;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+
+@RestController
+@RequestMapping("/api/products")
+@AllArgsConstructor
+@Validated
+public class ProductController {
+    private ProductCrudService productCrudService;
+    private ProductImagesService productImagesService;
+    private ProductCategoryService productCategoryService;
+    private ProductSearchService productSearchService;
+    private ProductDtoQueryService productDTOQueryService;
+
+
+    @Operation(summary = "product search and filtration")
+    @ApiResponses(
+            {
+                    @ApiResponse(responseCode = "200",content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,schema = @Schema(implementation = ProductSearchView.class)) ),
+                    @ApiResponse(responseCode = "400",description = "constrain violation",content = @Content(schema = @Schema(implementation = ErrorResponse.class),mediaType = MediaType.APPLICATION_JSON_VALUE)),
+                    @ApiResponse(responseCode = "500",description = "internal error",content = @Content(schema = @Schema(implementation = ErrorResponse.class),mediaType = MediaType.APPLICATION_JSON_VALUE))
+            }
+
+    )
+    @GetMapping
+    public ResponseEntity<Page<ProductSearchView>> getProducts(
+            @RequestParam(name = "page",defaultValue = "0") @PositiveOrZero int page
+            ,@RequestParam(name = "size",defaultValue = "50") @Positive int pageSize,
+            @RequestParam(required = false,name = "s") @Length(max = 64 ,message = "title text query can't have length more than 64") String title ,
+            @RequestParam( name = "minPrice" , defaultValue = "0")  @PositiveOrZero Long minPrice ,
+            @RequestParam(name = "maxPrice" , defaultValue = "1000000000") @Positive Long maxPrice,
+            @RequestParam(required = false, name = "catIds")  Set<@Positive Integer> categoryids,
+            @RequestParam(name = "sortBy" , defaultValue = "DATE") ProductSortByOptions sortBy,
+            @RequestParam(name = "direction" , defaultValue = "DESC") ProductSortDirection direction
+    )
+    {
+        if(maxPrice != null && minPrice != null && maxPrice < minPrice){
+
+            throw new BadRequestException("max product price can't be less than min price in query product");
+        }
+        var query = new ProductSearchService.QueryProduct(page,pageSize,title,minPrice,maxPrice,categoryids ,sortBy,direction);
+        var result = productSearchService.getProductSearchView(query);
+        return ResponseEntity.ok(result);
+    }
+
+    @Operation(summary = "get product")
+    @ApiResponses(
+            {
+                    @ApiResponse(responseCode = "200", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,schema = @Schema(implementation = ProductDTO.class)) ),
+            }
+
+    )
+    @CommonErrorDocs
+    @GetMapping("/{id}")
+    public ResponseEntity<ProductDTO>getProduct(@PathVariable @Positive long id){
+
+
+        var p = productDTOQueryService.findById(id);
+        return ResponseEntity.ok(p);
+    }
+
+    @Operation(summary = "create new product" , description = "Required Role: Admin")
+    @ApiResponses(
+            {
+                    @ApiResponse(responseCode = "201",headers = {@Header(name = "Location",description = "api/products/1",example = "api/products/1")}),
+            }
+    )
+    @RequireAuthDocs
+    @CommonErrorDocs
+    @PostMapping
+    public ResponseEntity<Void> addNewProduct(@Valid @RequestBody AddProductRequest req){
+        ProductCrudService.PostProductCommand command = new ProductCrudService.PostProductCommand(
+                req.title(), req.description(),req.priceInCents(),req.stock());
+        long id = productCrudService.addProduct(command).getId();
+        return ResponseEntity.created(URI.create("api/products/"+id)).build();
+    }
+
+    @Operation(summary = "delete product" , description = "Required Role: Admin")
+    @ApiResponses(
+            {
+                    @ApiResponse(responseCode = "200"),
+            }
+    )
+    @RequireAuthDocs
+    @CommonErrorDocs
+    @DeleteMapping("/{id}")
+    public  ResponseEntity<Void> deleteProduct(@PathVariable  @Positive long id){
+        productCrudService.deleteProduct(id);
+        return ResponseEntity.ok().build();
+    }
+
+    @Operation(summary = "update product", description = "Required Role: Admin")
+    @ApiResponses(
+            {
+                    @ApiResponse(responseCode = "200"),
+            }
+    )
+    @RequireAuthDocs
+    @CommonErrorDocs
+    @PutMapping("/{id}")
+    public ResponseEntity<Void> updateProduct(@RequestBody @Valid PutProductRequest putProductRequest, @PathVariable @Valid @NotNull @Positive Long id){
+
+        productCrudService.updateProduct(
+                new ProductCrudService.UpdateProductCommand(id,putProductRequest.title() , putProductRequest.description() ,putProductRequest.priceInCents())
+        );
+
+        return ResponseEntity.ok().build();
+    }
+
+    //////////////////// product category
+    @Operation(summary = "attach categories to product" , description = "Required Role: Admin")
+    @ApiResponses(
+            {
+                    @ApiResponse(responseCode = "200"),
+            }
+
+    )
+    @RequireAuthDocs
+    @CommonErrorDocs
+    @PutMapping("/{id}/categories")
+    public ResponseEntity<Void>putCategoryToProduct(@PathVariable @Valid @NotNull@Positive Long id ,@RequestBody @NotNull Set<@NotNull @Positive Integer> categoriesIds ){
+
+        productCategoryService.putProductCategories(id,categoriesIds);
+        return ResponseEntity.ok().build();
+    }
+    @Operation(summary = "get product categories")
+    @ApiResponses(
+            {
+                    @ApiResponse(responseCode = "200",useReturnTypeSchema = true),
+            }
+    )
+    @CommonErrorDocs
+    @GetMapping("/{id}/categories")
+    public ResponseEntity<Collection<Category>>getProductCategory(@PathVariable @Valid @NotNull@Positive Long id ){
+
+        Collection<Category> categories = productCategoryService.getProductCategories(id);
+        return ResponseEntity.ok().body(categories);
+    }
+    /// //////////////////
+    /// / product images
+
+    @Operation(summary = "get product images")
+    @ApiResponses(
+            {
+                    @ApiResponse(responseCode = "200",useReturnTypeSchema = true ),
+            }
+    )
+    @CommonErrorDocs
+    @GetMapping("/{id}/images")
+    public ResponseEntity<List<ProductImageDto>> getProductImages(@PathVariable  @NotNull  @Positive Long id) throws JsonProcessingException {
+
+        List<ProductImageDto> productImageResponseDtoList = productImagesService.getProductImages(id);
+        System.out.println(productImageResponseDtoList.getClass());
+        System.out.println(productImageResponseDtoList.get(0).getClass());
+        return ResponseEntity.ok(productImageResponseDtoList);
+    }
+
+
+    @Operation(summary = "put images to product, it replace product images" , description = "Required Role: Admin")
+    @ApiResponses(
+            {
+                    @ApiResponse(responseCode = "200")
+            }
+    )
+    @CommonErrorDocs
+    @RequireAuthDocs
+    @PutMapping(path = "/{id}/images/",params = "mainId")
+    public ResponseEntity<Void> addProductImages(@PathVariable @NotNull @Positive Long id ,@RequestParam @NotNull @Positive Long mainId,
+                                                 @RequestBody Set<@Positive @NotNull Long> imagesIds){
+        productImagesService.putProductImages(id,imagesIds,mainId);
+        return  ResponseEntity.ok().build();
+    }
+
+}

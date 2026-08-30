@@ -1,6 +1,5 @@
 package com.ecommerce.Inegration.PaymentGateWay.Model;
 
-import com.ecommerce.DTO.Money;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

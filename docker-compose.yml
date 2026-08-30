@@ -37,14 +37,19 @@ services:
           source: ./db-sql/db-init
           target: /docker-entrypoint-initdb.d
           read_only: true
-  cache:
-    image: redis:8.8.1
-    command: ["redis-server","--requirepass","${REDIS_PASSWORD}"]
-    networks:
-      - e-commernce-backend-net
+
+  caching-redis-service:
+    image: redis:8.8
+    expose:
+      - 6379
     env_file:
       - required: true
         path: ./soruce_code/backend.env
+
+    command: sh -c 'redis-server --requirepass "$$REDIS_PASSWORD"'
+    networks:
+      - e-commernce-backend-net
+
 networks:
   e-commernce-backend-net:
 

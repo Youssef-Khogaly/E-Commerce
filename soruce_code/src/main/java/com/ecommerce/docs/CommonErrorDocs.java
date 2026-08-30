@@ -1,7 +1,7 @@
 package com.ecommerce.docs;
 
 
-import com.ecommerce.DTO.ErrorResponse;
+import com.ecommerce.util.ErrorResponse;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
