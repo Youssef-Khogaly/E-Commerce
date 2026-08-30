@@ -40,7 +40,7 @@ The generated OpenAPI specification is also available at:
 ---
 ## To Do / Future Improvements
 - [X]  Implement product images end points and integrate with amazon s3 cloud storage
-- [X]  Implement caching for product search to improve performance
+- [X]  Add caching for product queries to improve performance
 - [ ]  Use multithreading to improve API performance
 - [ ]  implement email verification feature 
 - [ ]  Add email notifications for order creation, shipment, and cancellation
@@ -119,7 +119,7 @@ The generated OpenAPI specification is also available at:
 ## Tech Stack
 - **Backend:** JAVA 17 ,Spring Boot, Spring JPA, Hibernate, Spring MVC , Spring Security, JWT
 - **Database:** MySQL
-- **Caching & In-Memory Store:** Redis, Spring Data Redis
+- **Caching:** Redis
 - **Payment Gateway:** Stripe
 - **Cloud storage:** Amazon s3
 - **Build Tool:** Maven  Docker Docker-compose
