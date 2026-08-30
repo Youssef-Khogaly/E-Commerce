@@ -1,7 +1,6 @@
 package com.ecommerce;
 
 import com.ecommerce.Category.services.ProductCategoryCachingProxy;
-import com.ecommerce.Images.entity.ProductImages;
 import com.ecommerce.Images.services.ProductImagesCachingService;
 import com.ecommerce.Product.services.crud.ProductCrudService;
 import org.springframework.boot.autoconfigure.cache.RedisCacheManagerBuilderCustomizer;
