@@ -80,7 +80,9 @@ public class SecurityConfig {
                                     .requestMatchers(HttpMethod.POST,"/api/products/**").hasRole(UserRoles.ADMIN.toString())
                                     .requestMatchers(HttpMethod.PUT,"/api/products/*/images/**").hasRole(UserRoles.ADMIN.toString())
                                     // images
-                                    .requestMatchers("/api/images/**").hasRole(UserRoles.ADMIN.toString())
+                                    .requestMatchers(HttpMethod.POST,"/api/images/**").hasRole(UserRoles.ADMIN.toString())
+                                    .requestMatchers(HttpMethod.DELETE,"/api/images/**").hasRole(UserRoles.ADMIN.toString())
+                                    .requestMatchers(HttpMethod.GET,"/api/images/**").permitAll()
                                     // reg
                                     .requestMatchers(HttpMethod.POST,"/api/auth/register").not().authenticated()
                                     .requestMatchers(HttpMethod.POST, "/api/auth/login").not().authenticated()
@@ -157,6 +159,7 @@ public class SecurityConfig {
         var swagger2 = PathPatternRequestMatcher.withDefaults().matcher("/swagger-ui/**");
         var swagger3 = PathPatternRequestMatcher.withDefaults().matcher("/swagger-ui.html");
         var stocks = PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.GET,"/stocks/**");
-        return List.of(products,login,reg,webhook,categories,swagger1,swagger2,swagger3,stocks);
+        var images = PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.GET,"/api/images/**");
+        return List.of(products,login,reg,webhook,categories,swagger1,swagger2,swagger3,stocks,images);
     }
 }
