@@ -20,7 +20,7 @@ import java.time.Duration;
 public class S3Service implements CloudStorageService{
     private final S3Client s3Client;
     private final S3Presigner s3Presigner;
-    private final String publicUrlFormat = "https://s3.%s.amazonaws.com/%s/%s"; // region , bucketname , key
+    private final String publicUrlFormat = "http://s3.%s.localhost.localstack.cloud:4566/%s/%s"; // region , bucketname , key
     public S3Service(S3Client s3Client, S3Presigner s3Presigner) {
         this.s3Client = s3Client;
         this.s3Presigner = s3Presigner;

@@ -1,5 +1,6 @@
 package com.ecommerce.Images;
 
+import com.ecommerce.Images.dtos.ImageDTO;
 import com.ecommerce.Images.services.IImageService;
 import com.ecommerce.util.ErrorResponse;
 import com.ecommerce.Validation.ImageValidator;
@@ -43,10 +44,10 @@ public class ImagesController {
     )
     @CommonErrorDocs
     @GetMapping("/{id}")
-    public ResponseEntity<String> getImage(@PathVariable @NotNull @Positive Long id){
+    public ResponseEntity<ImageDTO> getImage(@PathVariable @NotNull @Positive Long id){
         String url =  imageService.getImage(id);
 
-        return ResponseEntity.ok(url);
+        return ResponseEntity.ok(new ImageDTO(id,url));
     }
     @Operation(summary = "upload multiple images sync" , description = "Required role: Admin  - Max image size: 5MB - Max request size 50 MB - Supported formats: JPG,PNG,WEBP " )
     @ApiResponses(
@@ -57,8 +58,8 @@ public class ImagesController {
             }
     )
     @RequireAuthDocs
-    @PostMapping
-    public ResponseEntity<Map<Long,String>>addImages(@RequestBody List<MultipartFile> images){
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Map<Long,String>>addImages(@RequestPart("images") List<MultipartFile> images){
         List<ImageWrapper> imageWrappersList = images.stream().map(ImageWrapper::fromMultiPart).toList();
         imageWrappersList.forEach(image -> imageValidator.isValid(image, ImagesFormat.JPEG,ImagesFormat.JPG,ImagesFormat.PNG , ImagesFormat.WEBP));
         Map<Long,String> id_url_map = imageService.saveImages(imageWrappersList);

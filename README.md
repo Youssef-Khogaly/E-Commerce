@@ -78,7 +78,9 @@ The generated OpenAPI specification is also available at:
        AWS_ACCESS_KEY_ID=
        AWS_REGION=
        cloud.aws.bucket.name=
-    
+       AWS_ENDPOINT=http://localstack-main:4566
+       cloud.aws.bucket.name=public-images
+        
        # Redis
     
        REDIS_HOST=
@@ -95,8 +97,12 @@ The generated OpenAPI specification is also available at:
     MYSQL_PASSWORD=your_db_password
 
     ### Running the Application
-
-4. Build the application's JAR file using Maven:
+4. create local stack environment file at `./localStack.env`
+    ```env
+   BUCKET_NAME="public-images"
+   LOCALSTACK_AUTH_TOKEN=
+   
+5. Build the application's JAR file using Maven:
     ```sh
     cd source_code
     ./mvnw clean package
@@ -123,3 +129,4 @@ The generated OpenAPI specification is also available at:
 - **Payment Gateway:** Stripe
 - **Cloud storage:** Amazon s3
 - **Build Tool:** Maven  Docker Docker-compose
+- **Local S3 Testing:** LocalStack
