@@ -5,3 +5,4 @@ target
 .gitignore
 .git
 volume/
+stressTesting/
