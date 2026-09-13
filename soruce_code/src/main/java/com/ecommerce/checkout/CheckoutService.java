@@ -15,12 +15,14 @@ import com.ecommerce.Stock.service.StockService;
 import com.ecommerce.Cart.services.CartService;
 import com.ecommerce.Payment.services.IPaymentGatewayService;
 import com.ecommerce.orders.services.OrderService;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -72,7 +74,7 @@ public class CheckoutService {
     }
 
 
-
+    @SneakyThrows
     public PaymentSession checkout(CheckoutReq req , Long cust_id)  {
 
         CartDTO cart = cartService.getCart(cust_id);
@@ -109,6 +111,9 @@ public class CheckoutService {
                 SessionGenerationCommand command =  new SessionGenerationCommand(paymentOrder, Duration.ofMinutes(40),"https://www.google.com/","https://www.google.com/" ,order.getPaymentMethod());
 
                 paymentSession = paymentGatewayService.generateSessionUrl(command);
+                //var orderModel = new PaymentGatewayOrderModel();
+                //orderModel.setOrder_id(order.getId());
+                // paymentSession = new PaymentSession(UUID.randomUUID().toString(),"testurl",UUID.randomUUID().toString(),orderModel, Instant.now());
                 order.setSession_id(paymentSession.getSession_id());
                 orderJpaRepo.save(order);
             }catch (Exception e)
@@ -120,7 +125,7 @@ public class CheckoutService {
                     stockService.release(id_quantityMap);
                     orderService.deleteOrder(finalOrderDelete.getId());
                 });
-                throw new RuntimeException(e.getCause());
+                throw e.getCause();
             }
 
 
