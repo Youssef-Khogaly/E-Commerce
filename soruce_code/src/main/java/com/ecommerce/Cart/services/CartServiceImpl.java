@@ -50,7 +50,12 @@ public class CartServiceImpl implements CartService {
     @Transactional(readOnly = true , isolation = Isolation.READ_COMMITTED)
     public CartDTO getCart(Long cust_id) {
 
-        Cart cart =  cartJpaRepo.findById(cust_id).orElseThrow(() -> new NotFoundException("Cart id doesn't exists:" + cust_id));
+        Cart cart =  cartJpaRepo.findById(cust_id).orElseGet(() -> {
+            var emptycart = new Cart();
+            emptycart.setId(cust_id);
+            emptycart.setProductId_quantity_map(Map.of());
+            return emptycart;
+        });
         CartDTO cartDTO = new CartDTO();
         cartDTO.setCartId(cust_id);
         Set<Long> productIds = cart.getProductId_quantity_map().keySet();
