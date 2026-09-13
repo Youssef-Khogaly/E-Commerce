@@ -98,8 +98,8 @@ public class StripeWebhookHandler implements PaymentWebhookParser, PaymentWebhoo
         Order order = orderJpaRepo.findByIdForPaymentEvent(orderId);
 
         var payment  =  new Payment();
-        payment.setAmount(event.getTotalAmount().getPrice());
-        payment.setCurrency(event.getTotalAmount().getCurrency().getCurrencyCode());
+        payment.setAmount(event.getTotalAmount().price());
+        payment.setCurrency(event.getTotalAmount().currency().getCurrencyCode());
         payment.setOrder(order);
         payment.setTransactionId(event.getTransactionId());
         payment.setPaymentState(PaymentState.PAID);

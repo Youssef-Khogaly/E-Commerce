@@ -11,7 +11,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 
-import static com.ecommerce.Product.services.crud.ProductCrudService.CACHE_NAME;
+import static com.ecommerce.CacheUtils.CacheName_RawProduct;
+import static com.ecommerce.CacheUtils.RawProductUtils.*;
 
 @Primary
 @Service
@@ -26,24 +27,10 @@ public class ProductRawQueryCaching implements ProductQueryService<ProductRawDto
         this.objectMapper = objectMapper;
     }
 
-    public static Long toProductId(String redisId)
-    {
-        int lastIdx = redisId.lastIndexOf(":");
-
-        return Long.parseLong(redisId.substring(lastIdx+1));
-    }
-    public static String toRedisKey(Long id)
-    {
-        return CACHE_NAME + "::"+id;
-    }
-    public static List<String> toRedisKeys(Collection<Long>ids)
-    {
-        return ids.stream().map(ProductRawQueryCaching::toRedisKey).toList();
-    }
 
     @Override
     @ReqCollapsing(keys = {"#productId"})
-    @Cacheable(value = CACHE_NAME,key = "#productId")
+    @Cacheable(value = CacheName_RawProduct,key = "#productId")
     public ProductRawDto findById(Long productId) {
         return productQueryService.findById(productId);
     }
@@ -67,7 +54,7 @@ public class ProductRawQueryCaching implements ProductQueryService<ProductRawDto
         for(;i < redisKeys.size() ; ++i)
         {
             rawCached = objectList.get(i);
-            productId = toProductId(redisKeys.get(i));
+            productId = redisKeyToId(redisKeys.get(i));
             if(rawCached== null)
                 nonExistingIds.add(productId);
             else {

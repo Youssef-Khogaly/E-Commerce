@@ -7,11 +7,13 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.io.Serializable;
+
 
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter@Setter
-public class DiscountDTO {
+public class DiscountDTO implements Serializable {
     @Schema(description = "net discount")
     private Money money;
 

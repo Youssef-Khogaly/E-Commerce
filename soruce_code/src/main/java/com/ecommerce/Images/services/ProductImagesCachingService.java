@@ -14,6 +14,9 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 
+import static com.ecommerce.CacheUtils.CacheName_ProductImage;
+import static com.ecommerce.CacheUtils.ProductImagesUtils.*;
+
 @Service
 @Primary
 public class ProductImagesCachingService implements ProductImagesService{
@@ -21,7 +24,6 @@ public class ProductImagesCachingService implements ProductImagesService{
     private final ProductImagesService productImagesService;
     private final RedisTemplate<String,Object>redisTemplate;
     private final ObjectMapper objectMapper;
-    public static final String CACHE_NAME = ProductCrudService.CACHE_NAME+":images";
 
     public ProductImagesCachingService(@Qualifier("productImageServiceImpl") ProductImagesService productImagesService, RedisTemplate<String, Object> redisTemplate, ObjectMapper objectMapper) {
         this.productImagesService = productImagesService;
@@ -31,31 +33,17 @@ public class ProductImagesCachingService implements ProductImagesService{
 
     @Override
     @ReqCollapsing(keys = {"#productId"})
-    @Cacheable(value = CACHE_NAME,key = "#productId",unless = "#result == null")
+    @Cacheable(value = CacheName_ProductImage,key = "#productId",unless = "#result == null")
     public List<ProductImageDto> getProductImages(Long productId) {
         return productImagesService.getProductImages(productId);
     }
 
-    @CacheEvict(value = CACHE_NAME,key = "#productId")
+    @CacheEvict(value = CacheName_ProductImage,key = "#productId")
     @Override
     public void putProductImages(Long productId, Set<Long> imagesIds, Long mainImageId) {
         productImagesService.putProductImages(productId,imagesIds,mainImageId);
     }
 
-    public static Long toProductId(String redisKey)
-    {
-        int lastIdx = redisKey.lastIndexOf(":");
-
-        return Long.parseLong(redisKey.substring(lastIdx+1));
-    }
-    public static String toRedisKey(Long productId)
-    {
-        return CACHE_NAME + "::"+productId;
-    }
-    public List<String> toRedisKeys(Collection<Long> productIds)
-    {
-        return productIds.stream().map(ProductImagesCachingService::toRedisKey).toList();
-    }
 
     @ReqCollapsing(keys = {"#productIds"})
     @Override
@@ -76,7 +64,7 @@ public class ProductImagesCachingService implements ProductImagesService{
         for(;i < redisKeys.size() ; ++i)
         {
             rawCached = objectList.get(i);
-            productId = toProductId(redisKeys.get(i));
+            productId = redisKeyToId(redisKeys.get(i));
             if(rawCached== null)
                 nonExistingIds.add(productId);
             else {

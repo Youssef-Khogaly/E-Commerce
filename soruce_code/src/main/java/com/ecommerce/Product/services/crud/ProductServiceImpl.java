@@ -14,6 +14,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.ecommerce.CacheUtils.CacheName_RawProduct;
+
 @Service
 @AllArgsConstructor
 public class ProductServiceImpl implements ProductCrudService {
@@ -73,7 +75,7 @@ public class ProductServiceImpl implements ProductCrudService {
     }
     @Caching(
             evict = {
-                    @CacheEvict(value = CACHE_NAME,key = "#product.id"),
+                    @CacheEvict(value = CacheName_RawProduct,key = "#product.id"),
             }
 
 
@@ -109,7 +111,7 @@ public class ProductServiceImpl implements ProductCrudService {
     @Override
     @Caching(
             evict = {
-                    @CacheEvict(value = CACHE_NAME,key = "#product_id"),
+                    @CacheEvict(value = CacheName_RawProduct,key = "#product_id"),
             }
 
 
@@ -138,7 +140,7 @@ public class ProductServiceImpl implements ProductCrudService {
     }
     @Override
     @Transactional(isolation = Isolation.READ_COMMITTED)
-    @CacheEvict(value = CACHE_NAME,key = "#command.product_id")
+    @CacheEvict(value = CacheName_RawProduct,key = "#command.product_id")
     public void updateProduct(UpdateProductCommand command){
 
 

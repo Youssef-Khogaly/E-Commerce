@@ -19,6 +19,8 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 import java.util.concurrent.*;
 
+import static com.ecommerce.CacheUtils.*;
+
 @Service
 @Primary
 public class ProductDtoQueryImpl implements ProductDtoQueryService {
@@ -45,7 +47,7 @@ public class ProductDtoQueryImpl implements ProductDtoQueryService {
         if(object == null)
         {
             product = productQueryService.findById(productId); // get from db
-            cacheAfterMap.put(ProductRawQueryCaching.toRedisKey(productId),product);
+            cacheAfterMap.put(RawProductUtils.toRedisKey(productId),product);
         }else{
             product = objectMapper.convertValue(object,ProductRawDto.class);
         }
@@ -58,7 +60,7 @@ public class ProductDtoQueryImpl implements ProductDtoQueryService {
         if(object == null)
         {
             productImageDtoList = productImagesService.getProductImages(productId);
-            cacheAfterMap.put(ProductImagesCachingService.toRedisKey(productId),productImageDtoList);
+            cacheAfterMap.put(ProductImagesUtils.toRedisKey(productId),productImageDtoList);
         }else{
             productImageDtoList = objectMapper.convertValue(object, new TypeReference<List<ProductImageDto>>() {});
         }
@@ -72,7 +74,7 @@ public class ProductDtoQueryImpl implements ProductDtoQueryService {
         if(object == null)
         {
             categoryList = productCategoryService.getProductCategories(productId).stream().toList();
-            cacheAfterMap.put(ProductCategoryCachingProxy.productIdToRedisKey(productId),categoryList);
+            cacheAfterMap.put(ProductCategoriesUtils.toRedisKey(productId),categoryList);
         }else{
             categoryList =  objectMapper.convertValue(object, new TypeReference<List<Category>>() {});
         }
@@ -94,9 +96,9 @@ public class ProductDtoQueryImpl implements ProductDtoQueryService {
 
         // keys to fetch
         List<String>redisKeys = new ArrayList<>(3);
-        redisKeys.add(ProductRawQueryCaching.toRedisKey(productId));
-        redisKeys.add(ProductImagesCachingService.toRedisKey(productId));
-        redisKeys.add((ProductCategoryCachingProxy.productIdToRedisKey(productId)));
+        redisKeys.add(RawProductUtils.toRedisKey(productId));
+        redisKeys.add(ProductImagesUtils.toRedisKey(productId));
+        redisKeys.add((ProductCategoriesUtils.toRedisKey(productId)));
 
         List<Object> objectList = redisTemplate.opsForValue().multiGet(redisKeys);
         assert objectList != null;
@@ -188,10 +190,10 @@ public class ProductDtoQueryImpl implements ProductDtoQueryService {
         Map<String,Object> imagesCacheAfter = new HashMap<>(1,1);
         // keys to fetch
         List<String>redisKeys = new ArrayList<>(3);
-        redisKeys.add(ProductRawQueryCaching.toRedisKey(productId));
+        redisKeys.add(RawProductUtils.toRedisKey(productId));
         if(fetchImages)
         {
-            redisKeys.add(ProductImagesCachingService.toRedisKey(productId));
+            redisKeys.add(ProductImagesUtils.toRedisKey(productId));
             categoryIdx = redisKeys.size()-1;
         } else {
             categoryIdx = 0;
@@ -199,7 +201,7 @@ public class ProductDtoQueryImpl implements ProductDtoQueryService {
 
         if(fetchCategory)
         {
-            redisKeys.add((ProductCategoryCachingProxy.productIdToRedisKey(productId)));
+            redisKeys.add((ProductCategoriesUtils.toRedisKey(productId)));
             imagesIdx = redisKeys.size()-1;
         } else {
             imagesIdx = 0;

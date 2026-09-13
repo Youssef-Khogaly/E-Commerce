@@ -15,6 +15,8 @@ import org.springframework.data.redis.serializer.*;
 import java.time.Duration;
 
 
+
+import static com.ecommerce.CacheUtils.*;
 @Configuration
 @EnableCaching
 public class RedisConfig {
@@ -36,9 +38,9 @@ public class RedisConfig {
                                     .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(jdkValueSerializer))
                                     .entryTtl(Duration.ofDays(1))
                     );
-            builder.withCacheConfiguration(ProductCrudService.CACHE_NAME,RedisCacheConfiguration.defaultCacheConfig().entryTtl(Duration.ofDays(1)));
-            builder.withCacheConfiguration(ProductCategoryCachingProxy.CACHE_NAME,RedisCacheConfiguration.defaultCacheConfig().entryTtl(Duration.ofDays(3)));
-            builder.withCacheConfiguration(ProductImagesCachingService.CACHE_NAME,RedisCacheConfiguration.defaultCacheConfig().entryTtl(Duration.ofDays(3)));
+            builder.withCacheConfiguration(CacheName_RawProduct,RedisCacheConfiguration.defaultCacheConfig().entryTtl(Duration.ofDays(1)));
+            builder.withCacheConfiguration(CacheName_ProductImage,RedisCacheConfiguration.defaultCacheConfig().entryTtl(Duration.ofDays(3)));
+            builder.withCacheConfiguration(CacheName_ProductCategories,RedisCacheConfiguration.defaultCacheConfig().entryTtl(Duration.ofDays(3)));
         };
 
     }

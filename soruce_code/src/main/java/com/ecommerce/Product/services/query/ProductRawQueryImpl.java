@@ -1,7 +1,6 @@
 package com.ecommerce.Product.services.query;
 
 import com.ecommerce.Product.dtos.ProductRawDto;
-import com.ecommerce.Product.entity.Product;
 import com.ecommerce.Product.services.crud.ProductCrudService;
 import org.springframework.stereotype.Service;
 

@@ -28,8 +28,8 @@ public class OrderMapper {
         order.setOrderItems(orderItemMapper.from(orderDTO.getOrderItemDTOS()));
         // address
         order = setOrderShipping(order,orderDTO.getShippingDTO());
-        order.setCurrencyCode(orderDTO.getTotal().getCurrency().toString());
-        order.setSubTotal(orderDTO.getTotal().getPrice());
+        order.setCurrencyCode(orderDTO.getTotal().currency().toString());
+        order.setSubTotal(orderDTO.getTotal().price());
 
         order.setCustomer(customerJpaRepo.getReferenceById(orderDTO.getCust_id()));
         final Order orderTmp = order;

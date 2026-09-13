@@ -1,7 +1,6 @@
 package com.ecommerce.Category.services;
 
 import com.ecommerce.Category.entity.Category;
-import com.ecommerce.Product.services.crud.ProductCrudService;
 import com.ecommerce.util.advices.ReqCollapsing;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -14,13 +13,15 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 
-import static java.util.stream.Collectors.toList;
+import static com.ecommerce.CacheUtils.CacheName_ProductCategories;
+import static com.ecommerce.CacheUtils.ProductCategoriesUtils.redisKeyToId;
+import static com.ecommerce.CacheUtils.ProductCategoriesUtils.toRedisKey;
+import static com.ecommerce.CacheUtils.ProductCategoriesUtils.toRedisKeys;
 
 @Service
 @Primary
 public class ProductCategoryCachingProxy implements ProductCategoryService{
 
-    public static final String CACHE_NAME = ProductCrudService.CACHE_NAME + ":categories";
     private final ProductCategoryService productCategoryService;
     private final RedisTemplate<String,Object> redisTemplate;
     private final ObjectMapper objectMapper;
@@ -29,32 +30,18 @@ public class ProductCategoryCachingProxy implements ProductCategoryService{
         this.redisTemplate = redisTemplate;
         this.objectMapper = objectMapper;
     }
-    @CacheEvict(value = CACHE_NAME,key = "#productId")
+    @CacheEvict(value = CacheName_ProductCategories,key = "#productId")
     @Override
     public void putProductCategories(Long productId, Set<Integer> categoriesIds) {
         productCategoryService.putProductCategories(productId,categoriesIds);
     }
 
     @ReqCollapsing(keys = {"#productId"})
-    @Cacheable(value = CACHE_NAME,key = "#productId")
+    @Cacheable(value = CacheName_ProductCategories,key = "#productId")
     @Override
     public Collection<Category> getProductCategories(Long productId) {
 
         return productCategoryService.getProductCategories(productId);
-    }
-
-    public static String productIdToRedisKey(Long productId)
-    {
-        return CACHE_NAME+"::"+productId;
-    }
-    public static List<String> productIdsToRedisKey(Collection<Long> productIds)
-    {
-        return productIds.stream().map(ProductCategoryCachingProxy::productIdToRedisKey).collect(toList());
-    }
-    public static Long fromRedisKeyToId(String key)
-    {
-        int lastIdx = key.lastIndexOf(":");
-        return Long.parseLong(key.substring(lastIdx+1));
     }
 
     @ReqCollapsing(keys = {"#productIds"})
@@ -62,7 +49,7 @@ public class ProductCategoryCachingProxy implements ProductCategoryService{
     public Map<Long, Collection<Category>> getProductsCategories(Set<Long> productIds) {
 
         Map<Long,Collection<Category>> resultMap = new HashMap<>();
-        List<String>redisKeys = productIdsToRedisKey(productIds);
+        List<String>redisKeys = toRedisKeys(productIds);
         List<Object> objectList =  redisTemplate.opsForValue().multiGet(redisKeys);
         if(objectList == null)
         {
@@ -77,7 +64,7 @@ public class ProductCategoryCachingProxy implements ProductCategoryService{
         for(;i < redisKeys.size() ; ++i)
         {
             rawCached = objectList.get(i);
-            productId = fromRedisKeyToId(redisKeys.get(i));
+            productId = redisKeyToId(redisKeys.get(i));
             if(rawCached== null)
                 nonExistingIds.add(productId);
             else {
@@ -100,7 +87,7 @@ public class ProductCategoryCachingProxy implements ProductCategoryService{
             Map<String,Collection<Category>>redisMap = new HashMap<>(fromDbResult.size());
             for(var entry : fromDbResult.entrySet())
             {
-                redisMap.put(productIdToRedisKey(entry.getKey()),entry.getValue());
+                redisMap.put(toRedisKey(entry.getKey()),entry.getValue());
             }
             // cache result
             redisTemplate.opsForValue().multiSet(redisMap);

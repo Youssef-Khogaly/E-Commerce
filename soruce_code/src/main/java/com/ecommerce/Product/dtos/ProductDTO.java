@@ -1,7 +1,6 @@
 package com.ecommerce.Product.dtos;
 
 import com.ecommerce.Category.entity.Category;
-import com.ecommerce.Images.dtos.ImageDTO;
 import com.ecommerce.Images.dtos.ProductImageDto;
 import com.ecommerce.Product.entity.Product;
 import com.ecommerce.util.Money;
@@ -17,7 +16,6 @@ import lombok.Setter;
 
 import java.io.Serializable;
 import java.util.Collection;
-import java.util.List;
 import java.util.Objects;
 
 @Getter
@@ -44,7 +42,9 @@ public class ProductDTO implements Serializable {
     Collection<Category> categories;
 
     public static ProductDTO fromProduct(ProductRawDto product, Collection<ProductImageDto>images, Collection<Category> categories){
-        return new ProductDTO(product.id(),product.name(),product.description(),product.price(),new DiscountDTO(0),images,categories);
+        return new ProductDTO(product.id()
+                ,product.name(),product.description(),
+                product.price(),new DiscountDTO(0),images,categories);
     }
     public static ProductDTO fromProduct(Product product, Collection<ProductImageDto>images, Collection<Category> categories){
         return new ProductDTO(product.getId(),product.getTitle(),product.getDescription(),product.getPriceMoney(),new DiscountDTO(0),images,categories);
