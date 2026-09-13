@@ -7,7 +7,7 @@ import com.ecommerce.Images.dtos.ProductImageDto;
 import com.ecommerce.Images.services.ProductImagesCachingService;
 import com.ecommerce.Images.services.ProductImagesService;
 import com.ecommerce.Product.dtos.ProductDTO;
-import com.ecommerce.Product.entity.Product;
+import com.ecommerce.Product.dtos.ProductRawDto;
 import com.ecommerce.util.advices.ReqCollapsing;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -22,12 +22,12 @@ import java.util.concurrent.*;
 @Service
 @Primary
 public class ProductDtoQueryImpl implements ProductDtoQueryService {
-    private final ProductQueryService<Product> productQueryService;
+    private final ProductQueryService<ProductRawDto> productQueryService;
     private final ProductCategoryService productCategoryService;
     private final ProductImagesService productImagesService;
     private final RedisTemplate<String,Object>redisTemplate;
     private final ObjectMapper objectMapper;;
-    public ProductDtoQueryImpl(@Qualifier("productQueryImpl") ProductQueryService<Product> productQueryService
+    public ProductDtoQueryImpl(@Qualifier("productRawQueryImpl") ProductQueryService<ProductRawDto> productQueryService
             , @Qualifier("productCategoryServiceImpl") ProductCategoryService productCategoryService
             , @Qualifier("productImageServiceImpl") ProductImagesService productImagesService
             , RedisTemplate<String, Object> redisTemplate, ObjectMapper objectMapper) {
@@ -39,15 +39,15 @@ public class ProductDtoQueryImpl implements ProductDtoQueryService {
     }
 
 
-    private Product convertProductOrFetchFromDp(Object object,Long productId ,Map<String,Object> cacheAfterMap)
+    private ProductRawDto convertProductOrFetchFromDp(Object object,Long productId ,Map<String,Object> cacheAfterMap)
     {
-        Product product = null;
+        ProductRawDto product = null;
         if(object == null)
         {
             product = productQueryService.findById(productId); // get from db
-            cacheAfterMap.put(ProductQueryCaching.toRedisKey(productId),product);
+            cacheAfterMap.put(ProductRawQueryCaching.toRedisKey(productId),product);
         }else{
-            product = objectMapper.convertValue(object,Product.class);
+            product = objectMapper.convertValue(object,ProductRawDto.class);
         }
 
         return  product;
@@ -82,7 +82,7 @@ public class ProductDtoQueryImpl implements ProductDtoQueryService {
     @Override
     @ReqCollapsing(keys = {"#productId"})
     public ProductDTO findById(Long productId) {
-        Product product = null;
+        ProductRawDto product = null;
         List<ProductImageDto>productImageDtoList = null;
         List<Category>categoryList = null;
 
@@ -94,7 +94,7 @@ public class ProductDtoQueryImpl implements ProductDtoQueryService {
 
         // keys to fetch
         List<String>redisKeys = new ArrayList<>(3);
-        redisKeys.add(ProductQueryCaching.toRedisKey(productId));
+        redisKeys.add(ProductRawQueryCaching.toRedisKey(productId));
         redisKeys.add(ProductImagesCachingService.toRedisKey(productId));
         redisKeys.add((ProductCategoryCachingProxy.productIdToRedisKey(productId)));
 
@@ -136,7 +136,7 @@ public class ProductDtoQueryImpl implements ProductDtoQueryService {
         var imagesFuture = CompletableFuture.supplyAsync(() -> productImagesService.getproductsImages(ids));
         var categoriesFuture = CompletableFuture.supplyAsync(() -> productCategoryService.getProductsCategories(ids));
 
-         Map<Long,Product> productMap = null;
+         Map<Long, ProductRawDto> productMap = null;
          Map<Long,List<ProductImageDto>> imagesMap = null;
          Map<Long, Collection<Category>> categoriesMap = null;
 
@@ -171,7 +171,7 @@ public class ProductDtoQueryImpl implements ProductDtoQueryService {
     @Override
     @ReqCollapsing(keys = {"#productId","#includes"})
     public ProductDTO findById(final Long productId, final EnumSet<ProductDtoFields> includes) {
-        Product product = null;
+        ProductRawDto product = null;
         List<ProductImageDto>productImageDtoList = null;
         List<Category>categoryList = null;
         final boolean fetchCategory = includes.contains(ProductDtoFields.CATEGORY);
@@ -188,7 +188,7 @@ public class ProductDtoQueryImpl implements ProductDtoQueryService {
         Map<String,Object> imagesCacheAfter = new HashMap<>(1,1);
         // keys to fetch
         List<String>redisKeys = new ArrayList<>(3);
-        redisKeys.add(ProductQueryCaching.toRedisKey(productId));
+        redisKeys.add(ProductRawQueryCaching.toRedisKey(productId));
         if(fetchImages)
         {
             redisKeys.add(ProductImagesCachingService.toRedisKey(productId));
@@ -254,7 +254,7 @@ public class ProductDtoQueryImpl implements ProductDtoQueryService {
             return findAllByIds(ids);
 
 
-        Map<Long,Product> productMap = null;
+        Map<Long, ProductRawDto> productMap = null;
         Map<Long,List<ProductImageDto>> imagesMap = null;
         Map<Long, Collection<Category>> categoriesMap = null;
         CompletableFuture<Map<Long, Collection<Category>>> categoriesFuture = null;

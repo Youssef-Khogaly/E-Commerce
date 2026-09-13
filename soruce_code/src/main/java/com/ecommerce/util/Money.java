@@ -12,7 +12,6 @@ import java.util.Currency;
 
 @Getter
 @AllArgsConstructor
-@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")
 public class Money implements Serializable {
     @Schema(description = "money in smallest unit", example = "100")
     private final long price;

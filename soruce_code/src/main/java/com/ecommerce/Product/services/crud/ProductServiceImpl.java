@@ -31,7 +31,31 @@ public class ProductServiceImpl implements ProductCrudService {
     }
 
     @Override
+    public Product getRawProductById(Long productId) {
+        return productJpaRepo.findRawProductById(productId).orElseThrow(
+                ()-> new NotFoundException("product with id:" +productId +" doesn't exists")
+        );
+    }
+
+    @Override
+    public Map<Long,Product> getRawProductsByIds(Set<Long> ids) {
+        if(ids.isEmpty())
+            return Map.of();
+        List<Product> products = productJpaRepo.findRawProductsByIds(ids);
+        if(ids.size() != products.size())
+        {
+            Set<Long> existingIds = products.stream().map(Product::getId).collect(Collectors.toSet());
+            List<Long> nonExisitng = ids.stream().filter(i -> !existingIds.contains(i)).toList();
+            throw new NotFoundException("product ids does not exists: " + nonExisitng);
+        }
+
+        return products.stream().collect(Collectors.toMap(Product::getId,product -> product));
+    }
+
+    @Override
     public Map<Long, Product> getProductsByIds(Set<Long> ids) {
+        if(ids.isEmpty())
+            return Map.of();
         List<Product> products = productJpaRepo.findAllByIdReadOnly(ids);
         if(ids.size() != products.size())
         {

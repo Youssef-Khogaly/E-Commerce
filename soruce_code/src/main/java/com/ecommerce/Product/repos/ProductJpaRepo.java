@@ -62,4 +62,15 @@ public interface ProductJpaRepo extends JpaRepository<Product, Long>   {
     Optional<Product> findByIdWithImagesOnly(long product_id);
 
     Product id(long id);
+
+    @Query("""
+        select p.id,p.title,p.price,p.addedAt from Product p where p.id = :id
+        """)
+    Optional<Product>findRawProductById(Long id);
+
+    @Query("""
+        select p.id,p.title,p.price,p.addedAt from Product p where p.id in :ids
+        """)
+    List<Product>findRawProductsByIds(Set<Long> ids);
+
 }

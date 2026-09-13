@@ -24,7 +24,6 @@ import java.util.Objects;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-
 public class ProductDTO implements Serializable {
     @Schema(name = "Product id", example = "1")
     @Positive
@@ -44,6 +43,9 @@ public class ProductDTO implements Serializable {
     @Nullable
     Collection<Category> categories;
 
+    public static ProductDTO fromProduct(ProductRawDto product, Collection<ProductImageDto>images, Collection<Category> categories){
+        return new ProductDTO(product.id(),product.name(),product.description(),product.price(),new DiscountDTO(0),images,categories);
+    }
     public static ProductDTO fromProduct(Product product, Collection<ProductImageDto>images, Collection<Category> categories){
         return new ProductDTO(product.getId(),product.getTitle(),product.getDescription(),product.getPriceMoney(),new DiscountDTO(0),images,categories);
     }

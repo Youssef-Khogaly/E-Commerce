@@ -1,9 +1,7 @@
 package com.ecommerce.Product.services.query;
 
-import com.ecommerce.Images.dtos.ProductImageDto;
-import com.ecommerce.Product.entity.Product;
+import com.ecommerce.Product.dtos.ProductRawDto;
 import com.ecommerce.util.advices.ReqCollapsing;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.Cacheable;
@@ -17,12 +15,12 @@ import static com.ecommerce.Product.services.crud.ProductCrudService.CACHE_NAME;
 
 @Primary
 @Service
-public class ProductQueryCaching implements ProductQueryService<Product>{
+public class ProductRawQueryCaching implements ProductQueryService<ProductRawDto>{
 
-    private final ProductQueryService<Product> productQueryService;
+    private final ProductQueryService<ProductRawDto> productQueryService;
     private final RedisTemplate<String,Object> redisTemplate;
     private final ObjectMapper objectMapper;
-    public ProductQueryCaching(@Qualifier("productQueryImpl") ProductQueryService<Product> productQueryService, RedisTemplate<String, Object> redisTemplate, ObjectMapper objectMapper) {
+    public ProductRawQueryCaching(@Qualifier("productRawQueryImpl") ProductQueryService<ProductRawDto> productQueryService, RedisTemplate<String, Object> redisTemplate, ObjectMapper objectMapper) {
         this.productQueryService = productQueryService;
         this.redisTemplate = redisTemplate;
         this.objectMapper = objectMapper;
@@ -40,20 +38,20 @@ public class ProductQueryCaching implements ProductQueryService<Product>{
     }
     public static List<String> toRedisKeys(Collection<Long>ids)
     {
-        return ids.stream().map(ProductQueryCaching::toRedisKey).toList();
+        return ids.stream().map(ProductRawQueryCaching::toRedisKey).toList();
     }
 
     @Override
     @ReqCollapsing(keys = {"#productId"})
     @Cacheable(value = CACHE_NAME,key = "#productId")
-    public Product findById(Long productId) {
+    public ProductRawDto findById(Long productId) {
         return productQueryService.findById(productId);
     }
 
     @Override
     @ReqCollapsing(keys = {"#ids"})
-    public Map<Long, Product> findAllByIds(Set<Long> ids) {
-        Map<Long, Product> resultMap = new HashMap<>();
+    public Map<Long, ProductRawDto> findAllByIds(Set<Long> ids) {
+        Map<Long, ProductRawDto> resultMap = new HashMap<>();
         List<String>redisKeys = toRedisKeys(ids);
         List<Object> objectList =  redisTemplate.opsForValue().multiGet(redisKeys);
         if(objectList == null)
@@ -64,7 +62,7 @@ public class ProductQueryCaching implements ProductQueryService<Product>{
         int i = 0;
         long productId;
         Object rawCached;
-        Product value;
+        ProductRawDto value;
         // get products ids for elements not cached in redis and add cached elements to result map
         for(;i < redisKeys.size() ; ++i)
         {
@@ -73,7 +71,7 @@ public class ProductQueryCaching implements ProductQueryService<Product>{
             if(rawCached== null)
                 nonExistingIds.add(productId);
             else {
-                value = objectMapper.convertValue(rawCached,Product.class);
+                value = objectMapper.convertValue(rawCached,ProductRawDto.class);
                 resultMap.put(productId,value);
             }
 
@@ -89,7 +87,7 @@ public class ProductQueryCaching implements ProductQueryService<Product>{
             resultMap.putAll(fromDbResult);
 
             // convert map to redis key and value
-            Map<String,Product>redisMap = new HashMap<>(fromDbResult.size());
+            Map<String,ProductRawDto>redisMap = new HashMap<>(fromDbResult.size());
             for(var entry : fromDbResult.entrySet())
             {
                 redisMap.put(toRedisKey(entry.getKey()),entry.getValue());

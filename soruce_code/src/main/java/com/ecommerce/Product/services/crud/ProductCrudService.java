@@ -32,6 +32,8 @@ public interface ProductCrudService {
 
 
     public Product getProductById(Long product_id);
+        public Product getRawProductById(Long productId);
+        public Map<Long,Product> getRawProductsByIds(Set<Long>ids);
     public Map<Long,Product>getProductsByIds(Set<Long>ids);
     public boolean isProductExists(Long product_id);
     public void existsById(Long productId);
