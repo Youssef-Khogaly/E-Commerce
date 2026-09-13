@@ -272,9 +272,11 @@ public class ProductDtoQueryImpl implements ProductDtoQueryService {
 
 
         try{
+            if(fetchImages)
+                imagesMap = imagesFuture.join();
 
-            imagesMap = imagesFuture.join();
-            categoriesMap = categoriesFuture.join();
+            if(fetchCategories)
+                categoriesMap = categoriesFuture.join();
 
         } catch (CompletionException e)
         {
