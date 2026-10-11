@@ -1,0 +1,14 @@
+{
+  "shipping": {
+    "recipientName": "string",
+    "recipientPhone": "string",
+    "shippingAddress": {
+      "country": "string",
+      "city": "string",
+      "street": "string",
+      "buildingDetail": "string"
+    },
+    "method": "NOT_SUPPORTED_YET"
+  },
+  "paymentMethod": "Stripe"
+}
