@@ -89,10 +89,10 @@ The generated OpenAPI specification is also available at:
     
        ```
 
-3.  Create the database environment file at `DB-init/db-sql.env`:
+3.  Create the database environment file at `./db-sql/db-sql`:
     ```env
     MYSQL_ROOT_PASSWORD=your_root_password
-    MYSQL_DATABASE=E_learning
+    MYSQL_DATABASE=E_Commerce
     MYSQL_USER=your_db_user
     MYSQL_PASSWORD=your_db_password
 
