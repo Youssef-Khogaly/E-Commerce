@@ -192,11 +192,9 @@ public class ProductController {
     )
     @CommonErrorDocs
     @GetMapping("/{id}/images")
-    public ResponseEntity<List<ProductImageDto>> getProductImages(@PathVariable  @NotNull  @Positive Long id) throws JsonProcessingException {
+    public ResponseEntity<List<ProductImageDto>> getProductImages(@PathVariable  @NotNull  @Positive Long id) {
 
         List<ProductImageDto> productImageResponseDtoList = productImagesService.getProductImages(id);
-        System.out.println(productImageResponseDtoList.getClass());
-        System.out.println(productImageResponseDtoList.get(0).getClass());
         return ResponseEntity.ok(productImageResponseDtoList);
     }
 
