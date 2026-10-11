@@ -2,7 +2,7 @@
 services:
 
   backend:
-      build: ./soruce_code/
+      build: source_code/
       networks:
         - e-commernce-backend-net
       expose:
@@ -13,7 +13,7 @@ services:
           published: 8080
       env_file:
         - required: true
-          path: ./soruce_code/backend.env
+          path: source_code/backend.env
   db-sql-service:
     image: mysql:8.4
     expose:
@@ -44,7 +44,7 @@ services:
       - 6379
     env_file:
       - required: true
-        path: ./soruce_code/backend.env
+        path: source_code/backend.env
 
     command: sh -c 'redis-server --requirepass "$$REDIS_PASSWORD"'
     networks:
