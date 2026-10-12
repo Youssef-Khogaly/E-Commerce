@@ -1,9 +1,9 @@
-package com.ecommerce.Stock.service;
+package com.ecommerce.inventory.legacy.service;
 
 import com.ecommerce.Exception.BadRequestException;
 import com.ecommerce.Exception.NotFoundException;
-import com.ecommerce.Stock.entity.ProductStock;
-import com.ecommerce.Stock.repos.StockJpaRepo;
+import com.ecommerce.inventory.legacy.entity.ProductStock;
+import com.ecommerce.inventory.legacy.repos.StockJpaRepo;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;

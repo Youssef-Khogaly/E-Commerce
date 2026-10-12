@@ -3,7 +3,7 @@ package com.ecommerce.Product.services.crud;
 import com.ecommerce.Exception.NotFoundException;
 import com.ecommerce.Product.entity.Product;
 import com.ecommerce.Product.repos.ProductJpaRepo;
-import com.ecommerce.Stock.service.IStockService;
+import com.ecommerce.inventory.legacy.service.IStockService;
 import lombok.AllArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Caching;

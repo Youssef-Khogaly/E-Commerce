@@ -4,7 +4,7 @@ import com.ecommerce.util.ErrorResponse;
 import com.ecommerce.Exception.BadRequestException;
 import com.ecommerce.Exception.ConflictException;
 import com.ecommerce.Exception.NotFoundException;
-import com.ecommerce.Stock.exceptions.OutOfStock;
+import com.ecommerce.inventory.exceptions.OutOfStock;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ValidationException;

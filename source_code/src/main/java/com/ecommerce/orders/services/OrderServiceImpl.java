@@ -10,7 +10,7 @@ import com.ecommerce.orders.entity.OrderState;
 import com.ecommerce.orders.mappers.OrderDtoViewMapper;
 import com.ecommerce.orders.mappers.OrderMapper;
 import com.ecommerce.Payment.entity.PaymentMethod;
-import com.ecommerce.Stock.service.StockService;
+import com.ecommerce.inventory.legacy.service.StockService;
 import com.ecommerce.Payment.services.IPaymentGatewayService;
 import com.ecommerce.orders.repos.OrderJpaRepo;
 import lombok.AllArgsConstructor;

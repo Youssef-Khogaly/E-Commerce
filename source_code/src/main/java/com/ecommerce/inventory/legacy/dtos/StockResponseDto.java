@@ -1,6 +1,6 @@
-package com.ecommerce.Stock.dtos;
+package com.ecommerce.inventory.legacy.dtos;
 
-import com.ecommerce.Stock.entity.ProductStock;
+import com.ecommerce.inventory.legacy.entity.ProductStock;
 import lombok.Builder;
 
 import java.util.Objects;

@@ -1,6 +1,6 @@
-package com.ecommerce.Stock.service;
+package com.ecommerce.inventory.legacy.service;
 
-import com.ecommerce.Stock.entity.ProductStock;
+import com.ecommerce.inventory.legacy.entity.ProductStock;
 
 import java.util.Map;
 import java.util.Set;

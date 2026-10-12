@@ -10,7 +10,7 @@ import com.ecommerce.orders.entity.OrderItem;
 import com.ecommerce.orders.entity.OrderState;
 import com.ecommerce.orders.repos.OrderJpaRepo;
 import com.ecommerce.Payment.repos.PaymentJpaRepo;
-import com.ecommerce.Stock.service.StockService;
+import com.ecommerce.inventory.legacy.service.StockService;
 import com.ecommerce.webhook.Interfaces.PaymentWebhookHandler;
 import com.ecommerce.webhook.Interfaces.PaymentWebhookParser;
 import com.ecommerce.webhook.Interfaces.PaymentWebhookValidator;

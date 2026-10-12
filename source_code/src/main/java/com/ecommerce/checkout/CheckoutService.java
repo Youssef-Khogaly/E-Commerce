@@ -11,7 +11,7 @@ import com.ecommerce.orders.entity.OrderItem;
 import com.ecommerce.orders.entity.OrderState;
 import com.ecommerce.orders.repos.OrderJpaRepo;
 import com.ecommerce.User.UsersRepo.CustomerJpaRepo;
-import com.ecommerce.Stock.service.StockService;
+import com.ecommerce.inventory.legacy.service.StockService;
 import com.ecommerce.Cart.services.CartService;
 import com.ecommerce.Payment.services.IPaymentGatewayService;
 import com.ecommerce.orders.services.OrderService;
@@ -22,7 +22,6 @@ import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.Duration;
-import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 

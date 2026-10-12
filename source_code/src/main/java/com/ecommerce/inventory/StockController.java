@@ -1,9 +1,9 @@
-package com.ecommerce.Stock;
+package com.ecommerce.inventory;
 
-import com.ecommerce.Stock.dtos.StockQuantityRequest;
-import com.ecommerce.Stock.dtos.StockResponseDto;
-import com.ecommerce.Stock.entity.ProductStock;
-import com.ecommerce.Stock.service.IStockService;
+import com.ecommerce.inventory.legacy.dtos.StockQuantityRequest;
+import com.ecommerce.inventory.legacy.dtos.StockResponseDto;
+import com.ecommerce.inventory.legacy.entity.ProductStock;
+import com.ecommerce.inventory.legacy.service.IStockService;
 import com.ecommerce.util.ErrorResponse;
 import com.ecommerce.docs.CommonErrorDocs;
 import com.ecommerce.docs.RequireAuthDocs;

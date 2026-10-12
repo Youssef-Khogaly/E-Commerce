@@ -1,6 +1,6 @@
-package com.ecommerce.Stock.entity;
+package com.ecommerce.inventory.legacy.entity;
 
-import com.ecommerce.Stock.exceptions.OutOfStock;
+import com.ecommerce.inventory.exceptions.OutOfStock;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.Getter;

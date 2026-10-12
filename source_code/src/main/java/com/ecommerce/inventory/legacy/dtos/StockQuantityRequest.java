@@ -1,4 +1,4 @@
-package com.ecommerce.Stock.dtos;
+package com.ecommerce.inventory.legacy.dtos;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
