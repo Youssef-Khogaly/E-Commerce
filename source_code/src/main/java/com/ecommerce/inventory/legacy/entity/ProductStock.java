@@ -1,11 +1,12 @@
 package com.ecommerce.inventory.legacy.entity;
 
-import com.ecommerce.inventory.exceptions.OutOfStock;
+import com.ecommerce.inventory.exceptions.InventoryInsufficientStock;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
 import java.util.Objects;
 
 /*
@@ -75,7 +76,7 @@ public class ProductStock {
         if(quantity == 0)
             return;
         if(availableStock < quantity)
-            throw  new OutOfStock("can't remove from stock , available stock will be negative!! , pid: " + getId());
+            throw  new InventoryInsufficientStock("can't remove from stock , available stock will be negative!! , pid: " + getId() , List.of(getId()));
         setStock(getStock()-quantity);
 
     }
@@ -87,7 +88,7 @@ public class ProductStock {
         if(quantity == 0)
             return;
         if(getAvailableStock() < quantity)
-            throw new OutOfStock("not enough stock for product:"+ getId() + "available stock:" + getAvailableStock());
+            throw new InventoryInsufficientStock("not enough stock for product:"+ getId() + "available stock:" + getAvailableStock(),List.of(getId()));
 
         setReservedStock(getReservedStock()+quantity);
 
@@ -100,7 +101,7 @@ public class ProductStock {
             return;
 
         if(quantity > getReservedStock())
-            throw  new OutOfStock("can't release stock , reserved will be negative!! , pid: " + getId() + " quantity to release:" +quantity);
+            throw  new InventoryInsufficientStock("can't release stock , reserved will be negative!! , pid: " + getId() + " quantity to release:" +quantity , List.of(getId()));
 
         setReservedStock(getReservedStock()-quantity);
 
@@ -114,9 +115,9 @@ public class ProductStock {
             return;
 
         if(quantity > getReservedStock())
-            throw  new OutOfStock("can't commit stock , reserved will be negative!! , pid: " + getId() + "quantity to commit:" +quantity);
+            throw  new InventoryInsufficientStock("can't commit stock , reserved will be negative!! , pid: " + getId() + "quantity to commit:" +quantity, List.of(getId()));
         if(quantity > getStock())
-            throw  new OutOfStock("can't commit stock , stock will be negative!! , pid: " + getId() + "quantity to commit:" +quantity);
+            throw  new InventoryInsufficientStock("can't commit stock , stock will be negative!! , pid: " + getId() + "quantity to commit:" +quantity, List.of(getId()));
 
         setReservedStock(getReservedStock()-quantity);
         setStock(getStock()-quantity);
