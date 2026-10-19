@@ -12,6 +12,7 @@ import com.ecommerce.util.advices.ReqCollapsing;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -28,15 +29,25 @@ public class ProductDtoQueryImpl implements ProductDtoQueryService {
     private final ProductCategoryService productCategoryService;
     private final ProductImagesService productImagesService;
     private final RedisTemplate<String,Object>redisTemplate;
+    private final ProductQueryService<ProductRawDto> productQueryServiceCaching;
+    private final ProductCategoryService productCategoryServiceCaching;
+    private final ProductImagesService productImagesServiceCaching;
     private final ObjectMapper objectMapper;;
     public ProductDtoQueryImpl(@Qualifier("productRawQueryImpl") ProductQueryService<ProductRawDto> productQueryService
             , @Qualifier("productCategoryServiceImpl") ProductCategoryService productCategoryService
             , @Qualifier("productImageServiceImpl") ProductImagesService productImagesService
-            , RedisTemplate<String, Object> redisTemplate, ObjectMapper objectMapper) {
+            , RedisTemplate<String, Object> redisTemplate,
+                                ProductQueryService<ProductRawDto> productQueryServiceCaching,
+                               ProductCategoryService productCategoryServiceCaching,
+                               ProductImagesService productImagesServiceCaching,
+                               ObjectMapper objectMapper) {
         this.productQueryService = productQueryService;
         this.productCategoryService = productCategoryService;
         this.productImagesService = productImagesService;
         this.redisTemplate = redisTemplate;
+        this.productQueryServiceCaching = productQueryServiceCaching;
+        this.productCategoryServiceCaching = productCategoryServiceCaching;
+        this.productImagesServiceCaching = productImagesServiceCaching;
         this.objectMapper = objectMapper;
     }
 
@@ -135,8 +146,8 @@ public class ProductDtoQueryImpl implements ProductDtoQueryService {
     @ReqCollapsing(keys = {"#ids"})
     public Map<Long, ProductDTO> findAllByIds(Set<Long> ids) {
 
-        var imagesFuture = CompletableFuture.supplyAsync(() -> productImagesService.getproductsImages(ids));
-        var categoriesFuture = CompletableFuture.supplyAsync(() -> productCategoryService.getProductsCategories(ids));
+        var imagesFuture = CompletableFuture.supplyAsync(() -> productImagesServiceCaching.getproductsImages(ids));
+        var categoriesFuture = CompletableFuture.supplyAsync(() -> productCategoryServiceCaching.getProductsCategories(ids));
 
          Map<Long, ProductRawDto> productMap = null;
          Map<Long,List<ProductImageDto>> imagesMap = null;
@@ -145,7 +156,7 @@ public class ProductDtoQueryImpl implements ProductDtoQueryService {
         final Map<Long ,ProductDTO> ret = new HashMap<>(ids.size(),1);
 
 
-        productMap = productQueryService.findAllByIds(ids);
+        productMap = productQueryServiceCaching.findAllByIds(ids);
         try{
 
             imagesMap = imagesFuture.join();
@@ -263,11 +274,11 @@ public class ProductDtoQueryImpl implements ProductDtoQueryService {
         CompletableFuture<Map<Long,List<ProductImageDto>>> imagesFuture = null;
 
         if(fetchImages)
-            imagesFuture = CompletableFuture.supplyAsync(() -> productImagesService.getproductsImages(ids));
+            imagesFuture = CompletableFuture.supplyAsync(() -> productImagesServiceCaching.getproductsImages(ids));
         if(fetchCategories)
-            categoriesFuture = CompletableFuture.supplyAsync(() -> productCategoryService.getProductsCategories(ids));
+            categoriesFuture = CompletableFuture.supplyAsync(() -> productCategoryServiceCaching.getProductsCategories(ids));
 
-        productMap = productQueryService.findAllByIds(ids);
+        productMap = productQueryServiceCaching.findAllByIds(ids);
 
         final Map<Long ,ProductDTO> ret = new HashMap<>(ids.size(),1);
 
