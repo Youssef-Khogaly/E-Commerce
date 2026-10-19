@@ -1,7 +1,7 @@
 package com.ecommerce.inventory.exceptions;
 
-public class StockException extends RuntimeException {
-    public StockException(String message) {
+public class InventoryException extends RuntimeException {
+    public InventoryException(String message) {
         super(message);
     }
 }
