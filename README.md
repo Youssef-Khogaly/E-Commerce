@@ -17,7 +17,10 @@ Designed a concurrent inventory reservation system using MySQL `SELECT ... FOR U
 See [Inventory Reservation Benchmark](benchmark/CheckoutBenchmark.md) for more details.
 
 ## Checkout test
-![checkout-test.mp4](checkout-test.mp4)
+
+https://github.com/user-attachments/assets/e8e6f7ed-4961-4d20-bcfe-076ca80a31a0
+
+
 
 ## Database schema
 ![E_Commerce_DBSCHEMA.png](E_Commerce_DBSCHEMA.png)
