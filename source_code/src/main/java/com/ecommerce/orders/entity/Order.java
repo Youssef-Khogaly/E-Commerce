@@ -42,7 +42,7 @@ public class Order {
     @Enumerated(EnumType.STRING)
     private OrderState state;
 
-
+    private Long reservationId;
     private Long subTotal;
     @Column(name = "currency_code")
     @NotEmpty(message = "order currency code required")
