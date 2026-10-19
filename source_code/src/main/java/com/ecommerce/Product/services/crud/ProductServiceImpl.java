@@ -3,7 +3,7 @@ package com.ecommerce.Product.services.crud;
 import com.ecommerce.Exception.NotFoundException;
 import com.ecommerce.Product.entity.Product;
 import com.ecommerce.Product.repos.ProductJpaRepo;
-import com.ecommerce.inventory.legacy.service.IStockService;
+import com.ecommerce.inventory.service.InventoryService;
 import lombok.AllArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Caching;
@@ -22,7 +22,7 @@ public class ProductServiceImpl implements ProductCrudService {
 
 
     private final ProductJpaRepo productJpaRepo;
-    private final IStockService stockService;
+    private final InventoryService inventoryService;
 
     @Override
     public Product getProductById(Long product_id) {
@@ -134,7 +134,7 @@ public class ProductServiceImpl implements ProductCrudService {
         product.setDescription(command.description());
         product =  productJpaRepo.save(product);
 
-        stockService.create(product.getId(),command.stock());
+        inventoryService.create(product.getId(),command.stock());
 
         return product;
     }
