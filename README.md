@@ -23,7 +23,7 @@ Supports product management, categories, cart, orders, checkout with Stripe paym
 
 ---
 ## Database schema
-![alt text](https://github.com/Youssef-Khogaly/E-Commerce/blob/main/E_Commerce_DBSCHEM_DEMOV2.png?raw=true)
+![alt text](https://github.com/Youssef-Khogaly/E-Commerce/blob/main/E_Commerce_DBSCHEMA.png?raw=true)
 
 
 --------
