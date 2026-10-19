@@ -2,6 +2,8 @@ package com.ecommerce.orders.services;
 
 import com.ecommerce.Exception.BadRequestException;
 import com.ecommerce.Exception.NotFoundException;
+import com.ecommerce.inventory.service.InventoryReservationService;
+import com.ecommerce.inventory.service.InventoryService;
 import com.ecommerce.orders.dtos.OrderDTO;
 import com.ecommerce.orders.dtos.OrderDTOView;
 import com.ecommerce.orders.entity.Order;
@@ -33,7 +35,8 @@ public class OrderServiceImpl implements OrderService {
     private final IPaymentGatewayService paymentGatewayService;
     private final OrderMapper orderMapper;
     private final OrderDtoViewMapper orderDtoViewMapper;
-    private final StockService stockService;
+    private final InventoryReservationService inventoryReservationService;
+    private final InventoryService inventoryService;
     @Override
     public Order createOrder(OrderDTO orderDTO) {
         if(orderDTO.getOrderState() == null || orderDTO.getOrderState() != OrderState.PENDING)
@@ -84,6 +87,13 @@ public class OrderServiceImpl implements OrderService {
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public void cancelOrder(Long customer_id, Long orderId) {
         Order order = orderJpaRepo.findWithAllByIdAndCustId(orderId,customer_id);
+
+        cancelOrder(order);
+    }
+
+    @Override
+    @Transactional(isolation = Isolation.READ_COMMITTED)
+    public void cancelOrder(Order order) {
         if(order == null)
             throw new NotFoundException("order is not found or not attached to this customer");
 
@@ -99,22 +109,31 @@ public class OrderServiceImpl implements OrderService {
             case DELIVERED -> throw new BadRequestException("can't cancel,  order is already delivered");
             case PENDING -> {
                 order.setState(OrderState.CANCELED);
-                var idQuantityMap = order.getOrderItems().stream().collect(Collectors.toMap(OrderItem::getProduct_id, OrderItem::getQuantity));
-                stockService.release(idQuantityMap);
+                inventoryReservationService.release(order.getReservationId());
             }
             case PROCESSING -> {
                 order.setState(OrderState.CANCELED);
                 var idQuantityMap = order.getOrderItems().stream().collect(Collectors.toMap(OrderItem::getProduct_id, OrderItem::getQuantity));
-                stockService.add(idQuantityMap);
+                inventoryService.add(idQuantityMap);
                 // issue refund!! to do later
             }
         }
-
+    }
+    @Transactional(isolation = Isolation.READ_COMMITTED)
+    @Override
+    public void cancelOrder(Long orderId) {
+        Order order = orderJpaRepo.findById(orderId).orElseThrow(() -> new NotFoundException("order is not found or not attached to this customer"));
+        cancelOrder(order);
     }
 
     @Override
     public void deleteOrder(Long orderId) {
         orderJpaRepo.deleteById(orderId);
+    }
+
+    @Override
+    public Order findById(Long orderId) {
+        return orderJpaRepo.findById(orderId).orElseThrow(() -> new NotFoundException("order is not found or not attached to this customer"));
     }
 
 
