@@ -1,31 +1,49 @@
 # E-Commerce REST API
 
-A e-commerce REST API built with **Spring Boot**, **Spring JPA**, **Hibernate**, **Spring Security**, and **MySQL**.  
-Supports product management, categories, cart, orders, checkout with Stripe payment Gateway, integration with Amazon S3 for efficient image storage and management. and JWT-based stateless authentication.
+A e-commerce REST API built with **Spring Boot**, **Spring JPA**, **Hibernate**, **Spring Security**, **Redis** and **MySQL**.  
+Supports product management, categories, cart, orders, checkout with Stripe payment Gateway, integration with Amazon S3 for efficient image storage and management.
 
----
+-------------------------
+
+## Inventory Reservation & Concurrency
+
+Designed a concurrent inventory reservation system using MySQL `SELECT ... FOR UPDATE SKIP LOCKED` and a bounded available-stock pool to reduce  storage overhead.
+
+- **Concurrent reservations:** Allows transactions to claim different inventory units without waiting on locks held by other transactions.
+- **Bounded inventory pool:** Maintains approximately 500–1,000 unit rows per product, replenishing the pool when needed.
+- **Coordinated refills:** Combines database row locking with application-level request collapsing to avoid redundant refill operations and db connection.
+- **Benchmark:** Achieved approximately **1,135 requests/second** with 50 concurrent clients in a local test of 10,000 checkout requests.
+
+See [Inventory Reservation Benchmark](benchmark/CheckoutBenchmark.md) for more details.
+
+## Checkout test
+
+https://github.com/user-attachments/assets/e8e6f7ed-4961-4d20-bcfe-076ca80a31a0
+
+
+
+## Database schema
+![E_Commerce_DBSCHEMA.png](E_Commerce_DBSCHEMA.png)
+
+-------------------
 
 ## Features
 - **User Authentication:** Registration & login using JWT with Spring Security filters (stateless authentication)
-- **Product Management:**  
-  - Public: Search, pagination, sorting, filtering, view product details  
-  - Admin: Create, update products 
+- **Product Management:**
+    - Public: Search, pagination, sorting, filtering, view product details
+    - Admin: Create, update products
 - **Image Management(Admin):**
-  - Admin: upload and delete images to amazon s3 storage ,  attach images , set main image for a product   
-- **Category Management (Admin):** CRUD operations  
+    - Admin: upload and delete images to amazon s3 storage ,  attach images , set main image for a product
+- **Category Management (Admin):** CRUD operations
 - **Inventory & Stock Management:**
-  - Dedicated endpoints to re-stock, adjust inventory
-  - public endpoint to check available stock
+    - Dedicated endpoints to re-stock, adjust inventory
+    - public endpoint to check available stock
 - **In-Memory Cart Management:** Fast, low-latency cart operations stored in Redis, bypassing database load until checkout.
-- **Checkout :** Stripe payment integration  
-- **Order Management:** View orders, get order details, cancel orders  
-- **Security:** JWT-secured endpoints; admin-only access where applicable  
+- **Checkout :** Stripe payment integration
+- **Order Management:** View orders, get order details, cancel orders
+- **Security:** JWT-secured endpoints; admin-only access where applicable
 
----
-## Database schema
-![alt text](https://github.com/Youssef-Khogaly/E-Commerce/blob/main/E_Commerce_DBSCHEM_DEMOV2.png?raw=true)
-
-
+----------------
 --------
 ## API Documentation — Swagger UI
 
@@ -41,7 +59,7 @@ The generated OpenAPI specification is also available at:
 ## To Do / Future Improvements
 - [X]  Implement product images end points and integrate with amazon s3 cloud storage
 - [X]  Add caching for product queries to improve performance
-- [ ]  Use multithreading to improve API performance
+- [X]  Optimize checkout and inventory reservation for concurrent users
 - [ ]  implement email verification feature 
 - [ ]  Add email notifications for order creation, shipment, and cancellation
 - [ ]  integration with shipping service
@@ -89,10 +107,10 @@ The generated OpenAPI specification is also available at:
     
        ```
 
-3.  Create the database environment file at `DB-init/db-sql.env`:
+3.  Create the database environment file at `./db-sql/db-sql`:
     ```env
     MYSQL_ROOT_PASSWORD=your_root_password
-    MYSQL_DATABASE=E_learning
+    MYSQL_DATABASE=E_Commerce
     MYSQL_USER=your_db_user
     MYSQL_PASSWORD=your_db_password
 

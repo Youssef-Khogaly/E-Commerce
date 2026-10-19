@@ -4,7 +4,7 @@ import com.ecommerce.util.ErrorResponse;
 import com.ecommerce.Exception.BadRequestException;
 import com.ecommerce.Exception.ConflictException;
 import com.ecommerce.Exception.NotFoundException;
-import com.ecommerce.Stock.exceptions.OutOfStock;
+import com.ecommerce.inventory.exceptions.InventoryInsufficientStock;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ValidationException;
@@ -51,20 +51,20 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ret);
     }
     @ExceptionHandler({ConflictException.class})
-    public ResponseEntity<ErrorResponse>handleConflit(ConflictException exception , HttpServletRequest req){
+    public ResponseEntity<ErrorResponse> handleConflict(ConflictException exception , HttpServletRequest req){
 
         ErrorResponse ret = new ErrorResponse(HttpStatus.CONFLICT,List.of(exception.getMessage()),req.getRequestURI(), Instant.now());
         return ResponseEntity.status(HttpStatus.CONFLICT).body(ret);
     }
-    @ExceptionHandler({OutOfStock.class})
-    public ResponseEntity<ErrorResponse>handleoutOfStock(OutOfStock exception , HttpServletRequest req){
+    @ExceptionHandler({InventoryInsufficientStock.class})
+    public ResponseEntity<ErrorResponse> handoutOfStock(InventoryInsufficientStock exception , HttpServletRequest req){
 
         ErrorResponse ret = new ErrorResponse(HttpStatus.CONFLICT,List.of(exception.getMessage()),req.getRequestURI(), Instant.now());
         return ResponseEntity.status(HttpStatus.CONFLICT).body(ret);
     }
 
     @ExceptionHandler({BadCredentialsException.class})
-    public ResponseEntity<ErrorResponse>handleoutOfStock(BadRequestException exception , HttpServletRequest req){
+    public ResponseEntity<ErrorResponse>handleBadCredentials(BadRequestException exception , HttpServletRequest req){
 
         ErrorResponse ret = new ErrorResponse(HttpStatus.UNAUTHORIZED,List.of(exception.getMessage()),req.getRequestURI(), Instant.now());
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ret);

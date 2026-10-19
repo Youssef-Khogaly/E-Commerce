@@ -98,13 +98,14 @@ public class SecurityConfig {
 
                                     // orders config
                                     .requestMatchers(HttpMethod.POST, "/api/me/checkout").hasRole(UserRoles.CUSTOMER.toString())
+                                    .requestMatchers(HttpMethod.GET, "/api/me/checkout/**").hasRole(UserRoles.CUSTOMER.toString())
                                     .requestMatchers(HttpMethod.GET, "/api/me/orders/**").hasRole(UserRoles.CUSTOMER.toString())
                                     .requestMatchers(HttpMethod.POST, "/api/me/orders/**").hasRole(UserRoles.CUSTOMER.toString())
                                     // web hook config
                                     .requestMatchers(HttpMethod.POST,"/api/webhooks/**").not().authenticated()
                                     // stocks
-                                    .requestMatchers(HttpMethod.GET,"/stocks/**").permitAll()
-                                    .requestMatchers(HttpMethod.POST,"/stocks/**").hasRole(UserRoles.ADMIN.toString())
+                                    .requestMatchers(HttpMethod.GET,"/api/inventory/*").permitAll()
+                                    .requestMatchers(HttpMethod.POST,"/api/inventory/").hasRole(UserRoles.ADMIN.toString())
 
                                     // allow swagger ui end point
                                     .requestMatchers("/v3/api-docs/**","/swagger-ui/**","/swagger-ui.html").permitAll()
@@ -158,7 +159,7 @@ public class SecurityConfig {
         var swagger1 = PathPatternRequestMatcher.withDefaults().matcher("/v3/api-docs/**");
         var swagger2 = PathPatternRequestMatcher.withDefaults().matcher("/swagger-ui/**");
         var swagger3 = PathPatternRequestMatcher.withDefaults().matcher("/swagger-ui.html");
-        var stocks = PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.GET,"/stocks/**");
+        var stocks = PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.GET,"/api/inventory/*");
         var images = PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.GET,"/api/images/**");
         return List.of(products,login,reg,webhook,categories,swagger1,swagger2,swagger3,stocks,images);
     }

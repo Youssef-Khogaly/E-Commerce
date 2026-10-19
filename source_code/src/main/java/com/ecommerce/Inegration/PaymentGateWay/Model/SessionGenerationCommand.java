@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.time.Duration;
+import java.util.Map;
 
 @AllArgsConstructor
 @Getter
@@ -14,5 +15,5 @@ public class SessionGenerationCommand {
     private final String successUrl;
     private final String failUrl;
     private final PaymentMethod method;
-
+    private final Map<String,String> metaData;
 }

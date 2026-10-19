@@ -16,6 +16,9 @@ public interface OrderService {
      List<OrderDTOView> getOrders(Long cust_id);
      OrderDTOView getOrder(Long customer_id , Long orderId);
      void cancelOrder(Long customer_id , Long orderId);
+     void cancelOrder(Order order);
+     void cancelOrder(Long orderId);
      void deleteOrder(Long orderId);
+     Order findById(Long orderId);
 
 }

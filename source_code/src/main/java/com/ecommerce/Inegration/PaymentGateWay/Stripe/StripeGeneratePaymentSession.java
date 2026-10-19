@@ -41,9 +41,12 @@ public class StripeGeneratePaymentSession implements GeneratePaymentSession {
                             .setSuccessUrl(command.getSuccessUrl())
                             .setCancelUrl(command.getFailUrl())
                             .putMetadata("OrderId",String.valueOf(command.getOrderModel().getOrder_id()))
+                            .putAllMetadata(command.getMetaData())
                             .setPaymentIntentData(
                                     SessionCreateParams.PaymentIntentData.builder()
-                                            .putMetadata("OrderId",String.valueOf(command.getOrderModel().getOrder_id())).build()
+                                            .putMetadata("OrderId",String.valueOf(command.getOrderModel().getOrder_id()))
+                                            .putAllMetadata(command.getMetaData())
+                                            .build()
                             )
                             .build();
     }
@@ -51,7 +54,7 @@ public class StripeGeneratePaymentSession implements GeneratePaymentSession {
     @Override
     public PaymentSession generateSessionUrl(SessionGenerationCommand command) {
 
-        if (command.getExpireAfter().compareTo(Duration.ofMinutes(30)) < 1){
+        if (command.getExpireAfter().compareTo(Duration.ofMinutes(30)) < 0){
             throw new GateWayInvalidSessionDuration("min stripe session url duration is: 30min");
         }
         SessionCreateParams params =createSessionPara(command);
