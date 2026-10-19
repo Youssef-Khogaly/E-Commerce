@@ -1,6 +1,9 @@
 package com.ecommerce.webhook.Stripe;
 
 
+import com.ecommerce.inventory.exceptions.InventoryOverSellingException;
+import com.ecommerce.inventory.exceptions.InventoryReservationNotFound;
+import com.ecommerce.inventory.service.InventoryReservationService;
 import com.ecommerce.util.Money;
 import com.ecommerce.Payment.entity.Payment;
 import com.ecommerce.Payment.entity.PaymentMethod;
@@ -14,6 +17,8 @@ import com.ecommerce.inventory.legacy.service.StockService;
 import com.ecommerce.webhook.Interfaces.PaymentWebhookHandler;
 import com.ecommerce.webhook.Interfaces.PaymentWebhookParser;
 import com.ecommerce.webhook.Interfaces.PaymentWebhookValidator;
+import com.ecommerce.webhook.OrderReservationError;
+import com.ecommerce.webhook.OrderReservationErrorRepo;
 import com.ecommerce.webhook.PaymentEvents;
 import com.ecommerce.webhook.PaymentWebhookEvent;
 import com.stripe.model.Event;
@@ -39,12 +44,15 @@ public class StripeWebhookHandler implements PaymentWebhookParser, PaymentWebhoo
     private final String stripeHookSec;
     private final PaymentJpaRepo paymentJpaRepo;
     private final OrderJpaRepo orderJpaRepo;
-    private final StockService stockService;
-    public StripeWebhookHandler(@Value("${StripeWhsec}") String stripeHookSec, PaymentJpaRepo paymentJpaRepo, OrderJpaRepo orderJpaRepo, StockService stockService) {
+    private final InventoryReservationService inventoryReservationService;
+    private final OrderReservationErrorRepo orderReservationErrorRepo;
+
+    public StripeWebhookHandler(@Value("${StripeWhsec}") String stripeHookSec, PaymentJpaRepo paymentJpaRepo, OrderJpaRepo orderJpaRepo, InventoryReservationService inventoryReservationService, OrderReservationErrorRepo orderReservationErrorRepo) {
         this.stripeHookSec = stripeHookSec;
         this.paymentJpaRepo = paymentJpaRepo;
         this.orderJpaRepo = orderJpaRepo;
-        this.stockService = stockService;
+        this.inventoryReservationService = inventoryReservationService;
+        this.orderReservationErrorRepo = orderReservationErrorRepo;
     }
 
     private PaymentWebhookEvent toPaymentSucceedEvent(Event event){
@@ -94,7 +102,7 @@ public class StripeWebhookHandler implements PaymentWebhookParser, PaymentWebhoo
         if(paymentJpaRepo.existsByTransactionId(event.getTransactionId()))
             return; // duplicate webhook;
         Long orderId = Long.valueOf(event.getMetaData().get("OrderId"));
-
+        long resId = Long.parseLong(event.getMetaData().get("resID"));
         Order order = orderJpaRepo.findByIdForPaymentEvent(orderId);
 
         var payment  =  new Payment();
@@ -108,9 +116,25 @@ public class StripeWebhookHandler implements PaymentWebhookParser, PaymentWebhoo
         // processing should overwrite everything else expect cancelled!! since we need to issue a refund for this transaction
         if(order.getState() != OrderState.CANCELED){
             order.setState(OrderState.PROCESSING);
+
             // commit stock
-            Map<Long , Integer> iq_quantity_map = order.getOrderItems().stream().collect(Collectors.toMap(OrderItem::getProduct_id, OrderItem::getQuantity));
-            stockService.commit(iq_quantity_map);
+            try {
+                inventoryReservationService.commit(resId);
+            }catch (InventoryReservationNotFound e){
+                OrderReservationError error = new OrderReservationError();
+                error.setOrderId(orderId);
+                error.setResID(resId);
+                error.setError("Order without reserved Stock");
+                orderReservationErrorRepo.save(error);
+
+            } catch (InventoryOverSellingException e) {
+                OrderReservationError error = new OrderReservationError();
+                error.setOrderId(orderId);
+                error.setResID(resId);
+                error.setError("Over selling order!!");
+                orderReservationErrorRepo.save(error);
+            }
+
         }
 
     }
@@ -126,9 +150,9 @@ public class StripeWebhookHandler implements PaymentWebhookParser, PaymentWebhoo
         }
         order.setState(OrderState.EXPIRED);
         // release stock
-        Map<Long , Integer> iq_quantity_map = order.getOrderItems().stream().collect(Collectors.toMap(OrderItem::getProduct_id , OrderItem::getQuantity));
+        long resID = Long.parseLong(event.getMetaData().get("resID"));
 
-        stockService.release(iq_quantity_map);
+        inventoryReservationService.release(resID);
 
     }
     @Override
