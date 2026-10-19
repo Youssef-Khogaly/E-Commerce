@@ -129,7 +129,7 @@ The root cause is not simply the type of database lock being used. The root caus
 
 Instead of storing each product's stock quantity in a single inventory row, we represent stock as individual unit rows. During reservation, we use MySQL's `SELECT ... FOR UPDATE SKIP LOCKED` to allow concurrent transactions to claim different units without waiting for locks on units already claimed by other transactions.
 
-![alt text](https://github.com/Youssef-Khogaly/E-Commerce/blob/main/benchmark/reserveStock.excalidraw.png?raw=true)
+![reserveStock.excalidraw.png](reserveStock.excalidraw.png)
 
 ### Bounded Available-Stock Pool
 
@@ -149,7 +149,7 @@ The refill service also checks the available pool before inserting more unit row
 
 ## Checkout flow chart
 
-![alt text](https://github.com/Youssef-Khogaly/E-Commerce/blob/main/benchmark/checkoutFlowChart.png?raw=true)
+![checkoutFlowChart.png](checkoutFlowChart.png)
 
 
 ## Checkout final Benchmark
