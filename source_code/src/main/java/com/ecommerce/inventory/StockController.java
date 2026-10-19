@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-@RestController
+@Deprecated
 @RequestMapping("/stocks")
 @Validated
 @AllArgsConstructor
