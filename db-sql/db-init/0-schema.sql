@@ -47,13 +47,55 @@ create index product_priceIdx on product(price) using BTREE;
 create FULLTEXT INDEX product_title_idx on product(title);
 create index  product_addedAt_idx  on product(addedAt) using BTREE;
 
-create table if not exists product_stock(
-    product_id bigint primary key ,
-    stock INT  not null DEFAULT 0 CHECK (stock >= 0),
-    reservedStock INT not null default 0 check ( reservedStock >= 0),
-    availableStock int  generated always as (stock-reservedStock)virtual,
-    constraint frg_p foreign key (product_id) references product(product_id)
+
+create table if not exists inventory
+(
+    id bigint primary key ,
+    totalQuantity int ,
+
+    constraint frg_p foreign key (id) references product(product_id)
+                on update restrict
+                on delete restrict
 );
+
+create table if not exists inventory_available_pool
+(
+    id        bigint,
+    productId bigint,
+    primary key (productId, id)
+);
+create table  if not exists reserved_pool
+(
+    id   bigint primary key,
+    operationId bigint    ,
+    productId   bigint    ,
+    quantity    int       ,
+    expireAt    timestamp default now(),
+    constraint operationProductndex
+        unique (operationId, productId),
+    index(expireAt)
+);
+
+create table if not exists orderReservationError(
+    orderId bigint primary key,
+    resID bigint ,
+    error varchar(512)
+);
+
+create table if not exists checkoutJob
+(
+    id         binary(16)    primary key,
+    userId     bigint                                   not null,
+    orderId    bigint                                   not null,
+    status     enum ('PROCESSING', 'SUCCESS', 'FAILED') not null,
+    sessionId  varchar(128)                          default    null,
+    sessionUrl text                                  default   null,
+    command    json                                     not null,
+    createdAt  timestamp default NOW()
+);
+
+
+
 create table if not exists image
 (
     image_id        bigint auto_increment
@@ -103,9 +145,10 @@ CREATE TABLE IF NOT EXISTS product_category (
 
 CREATE TABLE IF NOT EXISTS CustomerOrder (
                                              id  bigint auto_increment primary key,
-                                             cust_id  bigint  ,
+                                             cust_id  bigint  not null ,
                                              recipientName VARCHAR(63) not null ,
                                              recipientPhone VARCHAR(63) not null ,
+                                             reservationId bigint not null,
                                              country VARCHAR(64)  not null ,
                                              city VARCHAR(64) not null ,
                                              street VARCHAR(63) not null ,

@@ -7,7 +7,6 @@ CREATE PROCEDURE populate_products()
 BEGIN
     DECLARE i INT DEFAULT 1;
 
-
     WHILE i <= 10000 DO
         INSERT INTO product (title, description, price)
         VALUES (
@@ -16,7 +15,7 @@ BEGIN
                 ' Model ', i
             ),
             CONCAT('This is a description for product ', i),
-            ROUND(RAND() * 1000000000 + 500, 2)  -- price between 500 and 1000000000
+            ROUND(RAND() * 1000000000 + 5000, 2)  -- price between 5000 and 1000000000
         );
         SET i = i + 1;
 END WHILE;
@@ -32,30 +31,19 @@ CALL populate_products();
 -- =====================================
 DELIMITER $$
 
-DROP PROCEDURE IF EXISTS populate_product_stock$$
+DROP PROCEDURE IF EXISTS populate_product_inventory$$
 
-CREATE PROCEDURE populate_product_stock()
+CREATE PROCEDURE populate_product_inventory()
 BEGIN
-    DECLARE i INT DEFAULT 1;
-    DECLARE stock_tmp int;
-    DECLARE reservedStock_tmp int;
-    WHILE i <= 10000 DO
-        set stock_tmp = FLOOR(RAND() * 100 + 1);   -- stock between 1 and 100;
-        set reservedStock_tmp = FLOOR(RAND() * stock_tmp);  -- reservedStock between 0 and stock_tmp
-        INSERT INTO product_stock (product_id, stock, reservedStock)
-        VALUES (
-            i,
-            stock_tmp,
-            reservedStock_tmp
-        );
-        SET i = i + 1;
-END WHILE;
+
+insert ignore into  inventory(id,totalQuantity)  select  p.product_id , FLOOR(RAND() * 1000 + 1) from product p ;
+
 END$$
 
 DELIMITER ;
 
 -- Call the procedure to populate product_stock
-CALL populate_product_stock();
+CALL populate_product_inventory();
 
 -- add electronics category
 insert into category(cate_id,name) values(1,'electronics');
