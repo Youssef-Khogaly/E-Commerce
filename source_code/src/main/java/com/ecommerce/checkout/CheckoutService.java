@@ -3,25 +3,29 @@ package com.ecommerce.checkout;
 import com.ecommerce.Cart.Dto.CartDTO;
 import com.ecommerce.Cart.Dto.CartItemDTO;
 import com.ecommerce.Exception.BadRequestException;
+import com.ecommerce.Exception.NotFoundException;
 import com.ecommerce.Images.dtos.ProductImageDto;
 import com.ecommerce.Inegration.PaymentGateWay.Model.*;
+import com.ecommerce.checkout.async.*;
+import com.ecommerce.inventory.exceptions.InventoryAvailablePoolInsufficientException;
+import com.ecommerce.inventory.exceptions.InventoryInsufficientStock;
+import com.ecommerce.inventory.service.InventoryReservationService;
+import com.ecommerce.inventory.service.StockPoolRefillService;
 import com.ecommerce.orders.mappers.OrderMapper;
 import com.ecommerce.orders.entity.Order;
 import com.ecommerce.orders.entity.OrderItem;
 import com.ecommerce.orders.entity.OrderState;
-import com.ecommerce.orders.repos.OrderJpaRepo;
-import com.ecommerce.User.UsersRepo.CustomerJpaRepo;
-import com.ecommerce.inventory.legacy.service.StockService;
 import com.ecommerce.Cart.services.CartService;
-import com.ecommerce.Payment.services.IPaymentGatewayService;
 import com.ecommerce.orders.services.OrderService;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -29,23 +33,25 @@ import java.util.stream.Collectors;
 @Slf4j
 public class CheckoutService {
 
-    private final StockService stockService;
-    private final IPaymentGatewayService paymentGatewayService;
+    private final InventoryReservationService inventoryReservationService;
     private final CartService cartService;
     private final OrderService orderService;
     private final OrderMapper orderMapper;
-    private final OrderJpaRepo orderJpaRepo;
     private final TransactionTemplate orderCheckOutTransactionTemplate;
-    private final Duration checkoutSessionTimeOut = Duration.ofMinutes(40);
-    public CheckoutService(StockService stockService, IPaymentGatewayService paymentGatewayService, CartService cartService, OrderService orderService, OrderMapper orderMapper, OrderJpaRepo orderJpaRepo, TransactionTemplate transactionTemplate, CustomerJpaRepo customerJpaRepo) {
-        this.stockService = stockService;
-        this.paymentGatewayService = paymentGatewayService;
+    private final Duration checkoutSessionTimeOut = Duration.ofMinutes(30);
+    private final CheckoutJobRepo checkoutJobRepo;
+    private final ApplicationEventPublisher applicationEventPublisher;
+    private final StockPoolRefillService stockPoolRefillService;
+    public CheckoutService(InventoryReservationService inventoryReservationService, CartService cartService, OrderService orderService, OrderMapper orderMapper, TransactionTemplate transactionTemplate, CheckoutSessionGenerationPublisher sessionGenerationPublisher, CheckoutJobRepo checkoutJobRepo, ApplicationEventPublisher applicationEventPublisher, StockPoolRefillService stockPoolRefillService) {
+        this.inventoryReservationService = inventoryReservationService;
         this.cartService = cartService;
         this.orderService = orderService;
         this.orderMapper = orderMapper;
-        this.orderJpaRepo = orderJpaRepo;
         this.orderCheckOutTransactionTemplate = transactionTemplate;
+        this.applicationEventPublisher = applicationEventPublisher;
+        this.stockPoolRefillService = stockPoolRefillService;
         transactionTemplate.setIsolationLevel(TransactionDefinition.ISOLATION_READ_COMMITTED);
+        this.checkoutJobRepo = checkoutJobRepo;
     }
 
     private List<PaymentGatewayLineItem> toItemModel(List<OrderItem> orderItems, Map<Long , List<String>>productId_Images){
@@ -73,8 +79,7 @@ public class CheckoutService {
     }
 
 
-    @SneakyThrows
-    public PaymentSession checkout(CheckoutReq req , Long cust_id)  {
+    public CheckoutJob checkout(CheckoutReq req , Long cust_id)  {
 
         CartDTO cart = cartService.getCart(cust_id);
         if(cart.getItems().isEmpty())
@@ -90,47 +95,79 @@ public class CheckoutService {
         final Map<Long,Integer>id_quantityMap =  cart.getItems().stream().collect(Collectors.toUnmodifiableMap(i -> i.getProductDTO().getId() , CartItemDTO::getQuantity));
 
             Order order = orderMapper.from(cart,req.shipping());
-            PaymentSession paymentSession = null;
             order.setState(OrderState.PENDING);
             order.setPaymentMethod(req.paymentMethod());
             order.setExpireAt(checkoutSessionTimeOut.toSeconds());
-            final Order finalOrder = order;
-            order =  orderCheckOutTransactionTemplate.execute((status) ->{
-                stockService.reserve(id_quantityMap);
-                return  orderService.createOrder(finalOrder);
-            });
 
+        PaymentGatewayOrderModel paymentOrder = createPaymentOrderModel(order,productId_Images);
+        var before = Instant.now();
+        try{
 
+            return checkoutTransaction(id_quantityMap,order,paymentOrder);
+        } catch (InventoryAvailablePoolInsufficientException e) {
+            long beforeRefill = Instant.now().toEpochMilli();
+            List<Long> insufficientStockIds = new ArrayList<>();
+            for(var id : e.getId_required_map().keySet()){
+                try{
+                    stockPoolRefillService.refill(id);
+                } catch (InventoryInsufficientStock ex) {
+                    insufficientStockIds.addAll(ex.getProductIds());
+                }
+            }
+            long time = Instant.now().toEpochMilli() - beforeRefill;
+            log.debug("refill transaction time: {}" , time);
+            if(!insufficientStockIds.isEmpty())
+                throw new InventoryInsufficientStock("Insufficient stock" ,insufficientStockIds );
 
+//             refill successfully , try again
 
             try{
-                // create model
-                PaymentGatewayOrderModel paymentOrder = createPaymentOrderModel(order,productId_Images);
+                return checkoutTransaction(id_quantityMap,order,paymentOrder);
+            }catch (InventoryAvailablePoolInsufficientException ex){
 
-                SessionGenerationCommand command =  new SessionGenerationCommand(paymentOrder, Duration.ofMinutes(40),"https://www.google.com/","https://www.google.com/" ,order.getPaymentMethod());
-
-                paymentSession = paymentGatewayService.generateSessionUrl(command);
-                //var orderModel = new PaymentGatewayOrderModel();
-                //orderModel.setOrder_id(order.getId());
-                // paymentSession = new PaymentSession(UUID.randomUUID().toString(),"testurl",UUID.randomUUID().toString(),orderModel, Instant.now());
-                order.setSession_id(paymentSession.getSession_id());
-                orderJpaRepo.save(order);
-            }catch (Exception e)
-            {
-                // session creation failed!!
-
-                final Order finalOrderDelete = order;
-                orderCheckOutTransactionTemplate.executeWithoutResult((status) ->{
-                    stockService.release(id_quantityMap);
-                    orderService.deleteOrder(finalOrderDelete.getId());
-                });
-                throw e.getCause();
+                throw new InventoryInsufficientStock("Insufficient stock", e.getId_required_map().keySet() );
             }
+        }
+
+        finally {
+            long time = Instant.now().toEpochMilli() - before.toEpochMilli();
+            final String thread = Thread.currentThread().getName();
+            log.debug("TESTTransaction {} running time:{}" , thread, time);
+            if(time > 20){
+                log.debug("TESTTransaction {} , run more than 20ms" , thread);
+            }
+        }
 
 
-            return paymentSession;
+    }
+    private CheckoutJob checkoutTransaction(Map<Long,Integer> id_quantityMap,Order order,PaymentGatewayOrderModel paymentOrder){
+        return orderCheckOutTransactionTemplate.execute((status) ->{
+            long t1 = Instant.now().toEpochMilli();;
+            long resId = inventoryReservationService.try_reserve(id_quantityMap);
+            log.debug("reserve stock time, {}" , Instant.now().toEpochMilli() - t1);
+            order.setReservationId(resId);
+            var order2 = orderService.createOrder(order);
+            paymentOrder.setOrder_id(order2.getId());
 
-
+            SessionGenerationCommand command =  new SessionGenerationCommand(paymentOrder, checkoutSessionTimeOut,"https://www.google.com/","https://www.google.com/" ,order.getPaymentMethod(),Map.of("resID",String.valueOf(resId)));
+            var job = createJob(command);
+             applicationEventPublisher.publishEvent(new CheckoutJobCreatedEvent(job));
+            return job;
+        });
+    }
+    private CheckoutJob createJob(SessionGenerationCommand command)
+    {
+        var checkoutJob = new CheckoutJob();
+        checkoutJob.setOrderId(command.getOrderModel().getOrder_id());
+        checkoutJob.setCommand(command);
+        checkoutJob.setStatus(CheckoutJobStatus.PROCESSING);
+        checkoutJob.setCreatedAt(Instant.now());
+        checkoutJob.setUserId(command.getOrderModel().getCustomer_id());
+        return checkoutJobRepo.save(checkoutJob);
+    }
+    public CheckoutJob findCheckoutJob(UUID jobId, Long custId)
+    {
+        return checkoutJobRepo.findByIdAndUserId(jobId,custId).orElseThrow(() -> new NotFoundException("Checkout job does not exists, id:" + jobId.toString()));
     }
 
 
